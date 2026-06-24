@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Cache
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pytest_cache/
+*.pytest_cache
+.cache/
+
+# Local development artifacts
+.omo/
+.opencode/
+
+# Generated data
+data/*.db
+data/vector_store/
+output/
+
+# Environment
+.env
+.env.local
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# Provider-agnostic LLM configuration for the Autonomous ML Research Engineer
+# ---------------------------------------------------------------------------
+#
+# This file is loaded by ``research_engineer.llm.factory.load_config()``.
+# Override the path with the ``RE_LLM_CONFIG`` environment variable.
+#
+# `${VAR}` placeholders are expanded against the process environment, so
+# secrets (API keys) never need to be committed.
+#
+# Switching a provider or model for an agent is a *config-only* change:
+# no source edits are required.
+# ---------------------------------------------------------------------------
+
+# Provider used when an agent config omits ``provider``.
+default_provider: ollama
+# Model used when an agent config omits ``model`` (and the provider does
+# not declare its own ``default_model``).
+default_model: llama3
+
+# --- Provider connection settings ----------------------------------------
+providers:
+  ollama:
+    # Maps to OllamaCloudProvider (see llm/ollama_provider.py).
+    type: ollama
+    # Ollama Cloud OpenAI-compatible base URL. Override with OLLAMA_BASE_URL.
+    base_url: https://api.olama.cloud
+    # API key. Leave as ${OLLAMA_API_KEY} so the secret stays out of git.
+    api_key: ${OLLAMA_API_KEY}
+    # Model used when a request does not specify one.
+    default_model: llama3
+    # Per-request HTTP timeout, in seconds.
+    timeout: 60
+
+# --- Per-agent model assignments -----------------------------------------
+#
+# Each entry maps an agent class name to a (provider, model) pair.
+# To use a different model for an agent, change the ``model`` value here
+# only. Add new providers under ``providers:`` above to mix vendors.
+#
+# The router resolves a model per agent via research_engineer.llm.router.
+agents:
+  ResearchAgent:
+    provider: ollama
+    model: llama3
+  RepositoryAgent:
+    provider: ollama
+    model: llama3
+  ExperimentPlannerAgent:
+    provider: ollama
+    model: llama3
+  CodingAgent:
+    provider: ollama
+    model: llama3
+  MemoryAgent:
+    provider: ollama
+    model: llama3
+  LiteratureAgent:
+    provider: ollama
+    model: llama3
+  ExperimentAgent:
+    provider: ollama
+    model: llama3
+  EvaluationAgent:
+    provider: ollama
+    model: llama3
+  ResearchLoopAgent:
+    provider: ollama
+    model: llama3

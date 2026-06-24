@@ -1,0 +1,84 @@
+[project]
+name = "research-engineer"
+version = "0.9.0"
+description = "Autonomous ML Research Engineer - Analyze papers and generate implementation plans"
+license = {text = "MIT"}
+authors = [
+    {name = "Autonomous ML Research Engineer Team"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0",
+    "typer>=0.12.0",
+    "httpx>=0.26.0",
+    "pymupdf>=1.23.0",
+    "arxiv>=2.0.0",
+    "numpy>=2.4.6",
+    "chromadb>=1.5.9",
+    "sentence-transformers>=5.5.1",
+]
+
+[project.scripts]
+research-engineer = "research_engineer.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-ignore = ["D203", "D212"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90", "I", "N", "U"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_subclass_override = true
+strict_equality = true
+strict_optional = true
+exclude = ["tests"]
+
+[tool.coverage.run]
+source = ["src/research_engineer"]
+omit = [
+    "*/__pycache__/*",
+    "*/_.*.py",
+    "*__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
