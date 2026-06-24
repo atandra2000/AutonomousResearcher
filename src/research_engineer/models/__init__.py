@@ -229,6 +229,51 @@ from .repo import (
 )
 from .storage import StoredPaper
 from .summary import ResearchSummary
+from .task import (
+    TaskConfig,
+    TaskResult,
+    TaskStatus,
+    TaskStep,
+    TaskStepType,
+    new_task_id,
+)
+from .delegation import (
+    AgentCapability,
+    AgentDescriptor,
+    AgentRole,
+    DelegationStatus,
+    DelegationStep,
+    Feedback,
+    FeedbackType,
+    SharedTaskContext,
+)
+from .repair import (
+    FailureCategory,
+    FailureReport,
+    FailureSeverity,
+    RepairActionType,
+    RepairCycle,
+    RepairConfig,
+    RepairOutcome,
+    RepairResult,
+    RepairStrategy,
+    RepairTerminationReason,
+)
+from .research import (
+    ExperimentDesign,
+    ExperimentOutcome,
+    Hypothesis,
+    HypothesisStatus,
+    KnowledgeSynthesis,
+    PaperFinding,
+    ResearchResult,
+    ResearchStageRecord,
+    ResearchStageStatus,
+    ResearchStageType,
+    ResearchWorkflowStatus,
+    ResultAnalysis,
+    SharedResearchContext,
+)
 
 __all__ = [
     # Paper
@@ -450,4 +495,45 @@ __all__ = [
     "ReportInput",
     "ReportOutput",
     "LoopResult",
+    # Phase 11 - Terminal-first autonomous coding agent
+    "TaskStatus",
+    "TaskStepType",
+    "TaskConfig",
+    "TaskStep",
+    "TaskResult",
+    "new_task_id",
+    # Phase 13 - Multi-agent delegation
+    "AgentRole",
+    "AgentCapability",
+    "AgentDescriptor",
+    "DelegationStatus",
+    "DelegationStep",
+    "Feedback",
+    "FeedbackType",
+    "SharedTaskContext",
+    # Phase 14 - Autonomous self-repair
+    "FailureCategory",
+    "FailureSeverity",
+    "RepairActionType",
+    "RepairOutcome",
+    "RepairTerminationReason",
+    "FailureReport",
+    "RepairStrategy",
+    "RepairCycle",
+    "RepairConfig",
+    "RepairResult",
+    # Phase 15 - Autonomous research workflows
+    "ResearchStageType",
+    "ResearchStageStatus",
+    "ResearchWorkflowStatus",
+    "HypothesisStatus",
+    "PaperFinding",
+    "KnowledgeSynthesis",
+    "Hypothesis",
+    "ExperimentDesign",
+    "ExperimentOutcome",
+    "ResultAnalysis",
+    "SharedResearchContext",
+    "ResearchStageRecord",
+    "ResearchResult",
 ]

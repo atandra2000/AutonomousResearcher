@@ -1,6 +1,6 @@
 # Agents Reference
 
-Deep-dive into the nine agents that power the Autonomous ML Research Engineer. Each agent has a single responsibility, a typed result model, and an LLM provider resolved through `resolve_llm()`.
+Deep-dive into the 23 agents that power the Autonomous ML Research Engineer. Each agent has a single responsibility, a typed result model, and an LLM provider resolved through `resolve_llm()`.
 
 > See [Architecture](architecture.md) for how agents fit together and [LLM Integration](llm_integration.md) for provider routing.
 
@@ -434,27 +434,315 @@ output/loops/<loop_id>/
 
 ---
 
+## 10. TaskAgent (Phase 11)
+
+**File:** `agents/task_agent.py`
+**Responsibility:** Terminal-first autonomous coding: analyze goal → plan steps → implement via TerminalTool → generate diff → (optionally) run tests. Can optionally delegate to ArchitectAgent, ReviewerAgent, and TestAgent via the DelegationFramework, with self-repair via SelfRepairFramework.
+
+### Constructor
+
+```python
+TaskAgent(
+    terminal_tool: TerminalTool | None = None,
+    delegation_framework: DelegationFramework | None = None,
+    self_repair_framework: SelfRepairFramework | None = None,
+    repository_memory: RepositoryMemory | None = None,
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async execute(goal, repo_path, delegate=False, max_repairs=3, run_tests=False, output_dir="output") -> TaskResult` | Main entry point. |
+
+### Workflow
+
+1. Analyze goal with LLM → structured task plan.
+2. For each step: implement via `TerminalTool` operations.
+3. Generate unified diff of changes.
+4. Optionally run tests and iterate on failures.
+5. When `delegate=True`: route through `DelegationFramework` → ArchitectAgent plans → CodingAgent codes → ReviewerAgent reviews → TestAgent tests → SelfRepairFramework repairs.
+
+### Output
+
+```
+output/tasks/<task_id>/
+├── task_result.json
+├── task_summary.md
+├── diff.patch
+└── (test output logs)
+```
+
+---
+
+## 11. ArchitectAgent (Phase 13)
+
+**File:** `agents/_adapters.py` (wraps CodingAgent)
+**Responsibility:** Produces implementation plans grounded in repository memory + research context. Used by the DelegationFramework for planning before coding.
+
+### Constructor
+
+```python
+ArchitectAgent(
+    coding_agent: CodingAgent | None = None,
+    repository_memory: RepositoryMemory | None = None,
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async execute(ctx: SharedTaskContext) -> dict` | Produce an implementation plan from context. |
+
+### Role
+
+Used in delegation mode: TaskAgent routes planning work to ArchitectAgent, which analyzes the shared context and produces a structured plan for the CodingAgent to implement.
+
+---
+
+## 12. ReviewerAgent (Phase 13)
+
+**File:** `agents/_adapters.py` (wraps CodingAgent)
+**Responsibility:** Reviews generated code changes; delivers structured feedback (issues, suggestions) to the DelegationFramework.
+
+### Constructor
+
+```python
+ReviewerAgent(
+    coding_agent: CodingAgent | None = None,
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async execute(ctx: SharedTaskContext) -> dict` | Review code changes and produce feedback. |
+
+### Review dimensions
+
+- Code correctness
+- Style and conventions
+- Architecture alignment
+- Performance considerations
+- Test coverage
+
+---
+
+## 13. TestAgent (Phase 13)
+
+**File:** `agents/_adapters.py`
+**Responsibility:** Executes tests via TerminalTool, parses pytest failures, and provides structured feedback for the repair loop.
+
+### Constructor
+
+```python
+TestAgent(
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async execute(ctx: SharedTaskContext) -> dict` | Run tests and report results. |
+
+### Workflow
+
+1. Determine test command from context.
+2. Execute via `TerminalTool.run_command`.
+3. Parse output for pass/fail/skip counts.
+4. Collect failed test details.
+5. Return structured feedback.
+
+---
+
+## 14. FailureAnalyzer (Phase 14)
+
+**File:** `agents/self_repair.py`
+**Responsibility:** Diagnoses failures from test, review, or implementation errors and produces a structured `FailureReport` with root cause, affected files, severity, and repair hints.
+
+### Constructor
+
+```python
+FailureAnalyzer(
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async analyze(failure_source: FailureSource, context: dict) -> FailureReport` | Analyze a failure and produce a report. |
+
+### Failure categories
+
+- `TEST_FAILURE`
+- `REVIEW_FAILURE`
+- `IMPL_FAILURE`
+- `UNKNOWN`
+
+---
+
+## 15. RepairStrategist (Phase 14)
+
+**File:** `agents/self_repair.py`
+**Responsibility:** Generates ranked repair strategies from a `FailureReport`, using a category-keyed strategy map.
+
+### Constructor
+
+```python
+RepairStrategist(
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async strategize(report: FailureReport) -> list[RepairStrategy]` | Generate ranked repair strategies. |
+
+### Strategy categories
+
+- `FIX_SYNTAX`
+- `FIX_LOGIC`
+- `FIX_IMPORT`
+- `FIX_TYPE`
+- `FIX_TEST`
+- `REIMPLEMENT`
+- `UNDO_CHANGE`
+- `CONSULT_ARCHITECT`
+
+---
+
+## 16. Research Stage Agents (Phase 15)
+
+**Files:** `agents/research_stages.py`
+**Responsibility:** Seven specialized agents for the end-to-end research workflow, each implementing `async execute(ctx: SharedTaskContext) -> dict`.
+
+### 16.1 LiteratureDiscoveryAgent
+
+Discovers relevant papers for the research goal using the LiteratureAgent.
+
+### 16.2 KnowledgeSynthesisAgent
+
+Synthesizes key findings, identifies gaps and trends from discovered papers.
+
+### 16.3 HypothesisGeneratorAgent
+
+Generates testable hypotheses from the knowledge synthesis.
+
+### 16.4 ResearchExperimentPlannerAgent
+
+Designs experiments to test each hypothesis. Note: this is distinct from the Phase 3 `ExperimentPlannerAgent` — it works at a higher level, designing experiments for research hypotheses rather than paper-vs-repo integration.
+
+### 16.5 ExperimentExecutorAgent
+
+Executes the designed experiments (dry-run default for safety).
+
+### 16.6 ResultAnalyzerAgent
+
+Analyzes experiment results and updates hypothesis status (confirmed/rejected/inconclusive).
+
+### 16.7 ReportGeneratorAgent
+
+Generates the final research report with evidence, conclusions, and citations.
+
+---
+
+## 17. ResearchOrchestrator (Phase 15)
+
+**File:** `agents/research_orchestrator.py`
+**Responsibility:** Top-level coordinator for end-to-end research workflows. Creates a `ResearchWorkflowFramework`, manages the lifecycle, and coordinates the 7 research stage agents.
+
+### Constructor
+
+```python
+ResearchOrchestrator(
+    memory_agent: Any | None = None,
+    literature_agent: Any | None = None,
+    task_agent: Any | None = None,
+    config: ResearchConfig | None = None,
+    llm: LLMProvider | None = None,
+)
+```
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `async run_workflow(goal, config=None, workdir=None) -> WorkflowResult` | Run a complete research workflow. |
+| `async generate_report(workflow_id, output_dir=None) -> ReportOutput` | Generate the final report. |
+
+### Workflow stages (each skippable)
+
+1. Literature discovery
+2. Knowledge synthesis
+3. Hypothesis generation
+4. Experiment planning
+5. Experiment execution
+6. Result analysis
+7. Report generation
+
+### Output
+
+```
+output/research/<workflow_id>/
+├── research_report.md    # Full report with literature review, hypotheses, experiments, conclusions
+└── research_report.json  # Full WorkflowResult serialized
+```
+
+---
+
 ## Agent LLM routing summary
 
 | Agent | `agent_name` | Default routing |
 |-------|--------------|-----------------|
-| ResearchAgent | `ResearchAgent` | ollama / llama3 |
+| ResearchAgent | `ResearchAgent` | ollama / glm-5.2:cloud |
 | RepositoryAgent | `RepositoryAgent` | *(none unless `llm_enabled=True`)* |
-| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / llama3 |
-| CodingAgent | `CodingAgent` | ollama / llama3 |
-| MemoryAgent | `MemoryAgent` | ollama / llama3 |
-| LiteratureAgent | `LiteratureAgent` | ollama / llama3 |
-| ExperimentAgent | `ExperimentAgent` | ollama / llama3 |
-| EvaluationAgent | `EvaluationAgent` | ollama / llama3 |
-| ResearchLoopAgent | `ResearchLoopAgent` | ollama / llama3 |
+| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| CodingAgent | `CodingAgent` | ollama / qwen3-coder-next:cloud |
+| MemoryAgent | `MemoryAgent` | ollama / glm-5.2:cloud |
+| LiteratureAgent | `LiteratureAgent` | ollama / glm-5.2:cloud |
+| ExperimentAgent | `ExperimentAgent` | ollama / minimax-m3:cloud |
+| EvaluationAgent | `EvaluationAgent` | ollama / glm-5.2:cloud |
+| ResearchLoopAgent | `ResearchLoopAgent` | ollama / minimax-m3:cloud |
+| TaskAgent | `TaskAgent` | ollama / minimax-m3:cloud |
+| ArchitectAgent | `ArchitectAgent` | ollama / glm-5.2:cloud |
+| ReviewerAgent | `ReviewerAgent` | ollama / glm-5.2:cloud |
+| TestAgent | `TestAgent` | ollama / minimax-m3:cloud |
+| FailureAnalyzer | `FailureAnalyzer` | ollama / glm-5.2:cloud |
+| RepairStrategist | `RepairStrategist` | ollama / glm-5.2:cloud |
+| LiteratureDiscoveryAgent | `LiteratureDiscoveryAgent` | ollama / glm-5.2:cloud |
+| KnowledgeSynthesisAgent | `KnowledgeSynthesisAgent` | ollama / glm-5.2:cloud |
+| HypothesisGeneratorAgent | `HypothesisGeneratorAgent` | ollama / glm-5.2:cloud |
+| ResearchExperimentPlannerAgent | `ResearchExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| ExperimentExecutorAgent | `ExperimentExecutorAgent` | ollama / minimax-m3:cloud |
+| ResultAnalyzerAgent | `ResultAnalyzerAgent` | ollama / glm-5.2:cloud |
+| ReportGeneratorAgent | `ReportGeneratorAgent` | ollama / glm-5.2:cloud |
+| ResearchOrchestrator | `ResearchOrchestrator` | ollama / minimax-m3:cloud |
 
 Override any agent's model in `llm_config.yaml` — no source changes required.
 
 ```yaml
 agents:
-  CodingAgent: {provider: ollama, model: qwen2.5-coder}
+  CodingAgent: {provider: ollama, model: qwen3-coder-next:cloud}
+  TaskAgent:   {provider: ollama, model: minimax-m3:cloud}
 ```
+
+The platform uses three specialized models:
+- **qwen3-coder-next:cloud** — coding
+- **glm-5.2:cloud** — reasoning
+- **minimax-m3:cloud** — orchestration
 
 ---
 
-*Version: 1.0 · 9 agents · all routed via `resolve_llm()`*
+*Version: 2.0 · 23 agents · all routed via `resolve_llm()`*

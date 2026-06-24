@@ -1,6 +1,6 @@
 # Tools Reference
 
-Reference for all **51 typed tools** in the Autonomous ML Research Engineer. Every tool follows the `Tool[InputType, OutputType]` ABC (`async execute`, `async validate`, `ToolError`). Inputs and outputs are Pydantic v2 models.
+Reference for all **61 typed tools** in the Autonomous ML Research Engineer. Every tool follows the `Tool[InputType, OutputType]` ABC (`async execute`, `async validate`, `ToolError`). Inputs and outputs are Pydantic v2 models.
 
 > See [System Design](system_design.md) for the tool interface contract and [Agents](agents.md) for how tools are wired into agents.
 
@@ -200,4 +200,4 @@ class MyTool(Tool[MyInput, MyOutput]):
 
 ---
 
-*Version: 1.0 · 51 tools · all typed via `Tool[Input, Output]`*
+*Version: 2.0 · 61 tools · all typed via `Tool[Input, Output]`*

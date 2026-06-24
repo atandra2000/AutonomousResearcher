@@ -46,6 +46,11 @@
 | `research-engineer loop iteration <iteration_id>` | Get iteration details |
 | `research-engineer loop search <query>` | Search loop history |
 | `research-engineer loop report <loop_id>` | Generate research report |
+| `research-engineer task <goal> --repo <path>` | Terminal-first autonomous coding (Phase 11) |
+| `research-engineer research <goal>` | Autonomous research workflow (Phase 15) |
+| `research-engineer memory build --repo <path>` | Build repository memory (Phase 12) |
+| `research-engineer memory query <query> --repo <path>` | Query repository memory |
+| `research-engineer memory symbol-graph <symbol> --repo <path>` | Explore symbol graph |
 | `research-engineer llm status` | Show per-agent provider/model routing |
 | `research-engineer llm config [--config <path>]` | Dump resolved LLM YAML config |
 | `uv run pytest` | Run test suite |
@@ -226,6 +231,75 @@ agent.llm_provider (every agent exposes this)
 await provider.complete(LLMRequest) → LLMResponse
 ```
 
+### Phase 11: Terminal-First Autonomous Coding
+
+```
+CLI → TaskAgent
+      ↓
+TerminalTool (7 operations: run_command, read_file, write_file,
+              search_code, apply_patch, git_status, git_diff)
+      ↓
+Analyze → Plan → Implement → Diff → (Optional) Test
+      ↓
+TaskResult → output/tasks/<task_id>/
+```
+
+### Phase 12: Repository Memory
+
+```
+CLI → RepositoryMemory
+      ↓
+RepositoryIndexer (AST parsing → symbols + chunks)
+SymbolGraph (deps, callers, callees, related, tests)
+HashingEmbedder (offline lightweight embeddings)
+InMemoryVectorBackend (no heavy deps)
+      ↓
+HybridRetriever (semantic + graph + metadata)
+      ↓
+RepositoryMemoryStore (SQLite-backed, incremental refresh)
+```
+
+### Phase 13: Multi-Agent Delegation
+
+```
+CLI → TaskAgent --delegate
+      ↓
+DelegationFramework (AgentRole, AgentCapability, SharedTaskContext)
+      ↓
+ArchitectAgent → CodingAgent → ReviewerAgent → TestAgent
+      ↓
+Delegated result with repair loop
+```
+
+### Phase 14: Autonomous Self-Repair
+
+```
+SelfRepairFramework
+      ↓
+FailureAnalyzer (FailureReport with root cause + severity)
+RepairStrategist (ranked repair strategies by category)
+      ↓
+Termination: SUCCESS | BUDGET_EXHAUSTED | NO_STRATEGIES | STAGNATION
+```
+
+### Phase 15: End-to-End Research Workflows
+
+```
+CLI → ResearchOrchestrator
+      ↓
+ResearchWorkflowFramework (7 skippable stages)
+      ↓
+1. LiteratureDiscoveryAgent
+2. KnowledgeSynthesisAgent
+3. HypothesisGeneratorAgent
+4. ResearchExperimentPlannerAgent
+5. ExperimentExecutorAgent
+6. ResultAnalyzerAgent
+7. ReportGeneratorAgent
+      ↓
+output/research/<workflow_id>/research_report.md + .json
+```
+
 ## Source Structure
 
 ```
@@ -243,10 +317,27 @@ src/research_engineer/
 │   ├── coding_agent.py       # Phase 4: code implementation
 │   ├── memory_agent.py       # Phase 5: research memory
 │   ├── literature_agent.py    # Phase 6: literature intelligence
-│   └── experiment_agent.py    # Phase 7: experiment execution
+│   ├── experiment_agent.py    # Phase 7: experiment execution
 │   ├── evaluation_agent.py    # Phase 8: evaluation & conclusions
 │   ├── research_loop_agent.py  # Phase 9: autonomous research loop
-│   └── _llm_support.py         # Phase 10: resolve_llm() helper for agents
+│   ├── _llm_support.py         # Phase 10: resolve_llm() helper for agents
+│   ├── task_agent.py           # Phase 11: terminal-first autonomous coding
+│   ├── self_repair.py          # Phase 14: SelfRepairFramework, FailureAnalyzer, RepairStrategist
+│   ├── delegation.py           # Phase 13: DelegationFramework, AgentRole, AgentCapability
+│   ├── _adapters.py            # Phase 13: ArchitectAgent, ReviewerAgent, TestAgent adapters
+│   ├── research_stages.py      # Phase 15: 7 research stage agents
+│   ├── research_workflow.py    # Phase 15: ResearchWorkflowFramework, ResearchConfig
+│   └── research_orchestrator.py # Phase 15: ResearchOrchestrator
+├── memory/                     # Phase 12: repository memory
+│   ├── __init__.py
+│   ├── models.py
+│   ├── indexer.py
+│   ├── symbol_graph.py
+│   ├── embeddings.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── storage.py
+│   └── repository_memory.py
 ├── llm/                       # Phase 10: provider-agnostic LLM layer
 │   ├── __init__.py            # Public exports
 │   ├── base.py                # LLMProvider ABC, LLMRequest/Response/Message/Role, ProviderError
@@ -267,7 +358,11 @@ src/research_engineer/
 │   ├── experiment.py          # All Phase 7 models (30+ classes)
 │   ├── evaluation.py          # All Phase 8 models (30+ classes)
 │   ├── loop.py                # All Phase 9 models (25+ classes)
-│   └── ast_models.py         # AST analysis models
+│   ├── ast_models.py         # AST analysis models
+│   ├── task.py               # Phase 11: TaskConfig, TaskResult (with delegation fields)
+│   ├── delegation.py         # Phase 13: AgentRole, AgentCapability, DelegationResult
+│   ├── repair.py             # Phase 14: RepairConfig, RepairResult, FailureReport
+│   └── research.py           # Phase 15: ResearchConfig, WorkflowResult, ResearchHypothesis
 ├── tools/
 │   ├── __init__.py           # Re-exports all tools + I/O models
 │   ├── base.py               # Tool[InputType, OutputType] ABC, ToolError
@@ -363,16 +458,23 @@ tests/
 ├── test_experiment_models.py  # Phase 7 model tests
 ├── test_experiment_tools.py    # Phase 7 tool tests
 ├── test_experiment_agent.py    # Phase 7 agent tests
-└── test_experiment_cli.py      # Phase 7 CLI command tests
+├── test_experiment_cli.py      # Phase 7 CLI command tests
 ├── test_evaluation_models.py   # Phase 8 model tests
 ├── test_evaluation_tools.py    # Phase 8 tool tests
 ├── test_evaluation_agent.py    # Phase 8 agent tests
-└── test_evaluation_cli.py      # Phase 8 CLI command tests
+├── test_evaluation_cli.py      # Phase 8 CLI command tests
 ├── test_loop_models.py         # Phase 9 model tests
 ├── test_loop_tools.py          # Phase 9 tool tests
 ├── test_loop_agent.py          # Phase 9 agent tests
-└── test_loop_cli.py            # Phase 9 CLI command tests
+├── test_loop_cli.py            # Phase 9 CLI command tests
 ├── test_llm.py                # Phase 10 LLM layer tests (provider, factory, router, agent wiring)
+├── test_terminal_tool.py       # Phase 11 TerminalTool tests
+├── test_task_agent.py          # Phase 11 TaskAgent tests
+├── test_task_cli.py            # Phase 11 CLI command tests
+├── test_repo_memory.py         # Phase 12 repository memory tests
+├── test_delegation.py          # Phase 13 delegation framework tests
+├── test_self_repair.py         # Phase 14 self-repair framework tests
+└── test_research_workflow.py   # Phase 15 research workflow tests
 ```
 
 ## Phase 3 Models
@@ -581,7 +683,7 @@ research-engineer llm config --config path/to/llm_config.yaml
 | `RE_LLM_CONFIG` | factory | `llm_config.yaml` at repo root |
 | `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://api.olama.cloud` |
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
-| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `llama3` |
+| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
 
 ## Storage
@@ -604,6 +706,9 @@ research-engineer llm config --config path/to/llm_config.yaml
 - **Phase 9 DB tables**: `research_loops` (loop_id, goal, config_json, status, iteration_count, best_metric_value, primary_metric_name, stopping_condition, stopping_reason, memory_ids_json), `loop_iterations` (iteration_id, loop_id, iteration_number, phase, paper_id, paper_title, plan_id, implementation_id, experiment_id, evaluation_id, metrics_json, primary_metric_name, primary_metric_value, best_metric_value, improvement, decision, memory_ids_json, error, status)
 - **Phase 9 output**: `output/loops/<loop_id>/` (research_report.md, research_report.json)
 - **Phase 10 config**: `llm_config.yaml` (provider + per-agent model assignments, `${VAR}` env expansion)
+- **Phase 11 output**: `output/tasks/<task_id>/` (task_result.json, task_summary.md, diff.patch)
+- **Phase 12 storage**: `data/repo_memory/` (SQLite symbol index + vectors)
+- **Phase 15 output**: `output/research/<workflow_id>/` (research_report.md, research_report.json)
 
 ## Tool Interface Pattern
 
@@ -629,40 +734,6 @@ All tools follow `Tool[Input, Output]` ABC:
 - **Paper-agnostic**: Works for any ML paper (attention, MoE, diffusion, etc.)
 - **No direct model calls**: Agents obtain LLM providers via `resolve_llm()` (Phase 10); model switching is config-only
 
-## Agent Status
-
-| Agent | Phase | Status |
-|-------|-------|--------|
-| ResearchAgent | 1 | Complete |
-| RepositoryAgent | 2 | Complete |
-| ExperimentPlannerAgent | 3 | Complete |
-| CodingAgent | 4 | Complete |
-| MemoryAgent | 5 | Complete |
-| LiteratureAgent | 6 | Complete |
-| ExperimentAgent | 7 | Complete |
-| EvaluationAgent | 8 | Complete |
-| ResearchLoopAgent | 9 | Complete |
-| LLM Layer | 10 | Complete |
-
-**Current Production Metrics**:
-- **Total Agents**: 9/9 complete + LLM layer (Phase 10)
-- **Tools**: 46 tools implemented across all phases
-- **Models**: 75+ Pydantic models
-- **Tests**: 687 tests passing (29 Phase 10)
-- **Coverage**: All phases (1-10) covered
-
-**Capabilities**:
-- **Phase 1**: Paper analysis from arXiv/PDF → structured summary + plan
-- **Phase 2**: Repository analysis with AST + config analysis
-- **Phase 3**: Experiment planning with 9 output files
-- **Phase 4**: Code implementation via patches + tests
-- **Phase 5**: Research memory with SQLite + ChromaDB
-- **Phase 6**: Literature intelligence with paper search + comparison
-- **Phase 7**: Experiment execution with monitoring + metrics
-- **Phase 8**: Evaluation agent with comparison + dynamics analysis
-- **Phase 9**: Autonomous research loop orchestrating all agents with iterative cycles, stopping conditions, and report generation
-- **Phase 10**: Provider-agnostic LLM layer (Ollama Cloud default, per-agent model routing, config-only switching)
-
 ## Key Dependencies
 
 **Core**: pydantic>=2.0, typer>=0.12, httpx>=0.26, pymupdf>=1.23, arxiv>=2.0
@@ -671,6 +742,6 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-- **Total Tests**: 687 (29 Phase 10)
-- **Coverage**: All phases (1-10)
+- **Total Tests**: 878 (29 Phase 10, 60 Phase 11, 51 Phase 12, 31 Phase 13, 31 Phase 14, 39 Phase 15)
+- **Coverage**: All phases (1–15)
 - **Status**: All passing

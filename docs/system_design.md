@@ -1,6 +1,6 @@
 # System Design
 
-Detailed technical design for the Autonomous ML Research Engineer v1.0. This document covers domain models, tool contracts, the LLM layer, storage schema, enums, error handling, and the testing strategy.
+Detailed technical design for the Autonomous ML Research Engineer v2.0. This document covers domain models, tool contracts, the LLM layer, storage schema, enums, error handling, and the testing strategy.
 
 > See [Architecture](architecture.md) for the high-level phase pipeline and [Storage Schema](storage_schema.md) for full table definitions.
 
@@ -33,7 +33,7 @@ Detailed technical design for the Autonomous ML Research Engineer v1.0. This doc
 
 ## 2. Domain models
 
-**207 Pydantic v2 models** across 13 modules. All enums use `StrEnum`. See [Models Reference](models.md) for the complete list.
+**186 Pydantic v2 models** across 18 modules. All enums use `StrEnum`. See [Models Reference](models.md) for the complete list.
 
 ### Core entities
 
@@ -232,7 +232,7 @@ class Tool(ABC, Generic[InputType, OutputType]):
         return await self.execute(input)
 ```
 
-**51 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
+**61 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
 
 ### Caching & rate limiting
 
@@ -362,7 +362,7 @@ class ToolError(Exception):
 
 ## 7. CLI layer
 
-**49 commands** across 6 Typer sub-apps: `core`, `memory`, `literature`, `experiment`, `evaluate`, `loop`, `llm`. See [CLI Reference](cli_reference.md).
+**56 commands** across 7 Typer sub-apps: `core`, `memory`, `literature`, `experiment`, `evaluate`, `loop`, `llm`. See [CLI Reference](cli_reference.md).
 
 Global agent instances are lazily constructed by `_get_*()` helpers in `cli/__init__.py`.
 
@@ -426,4 +426,4 @@ Optimization strategies: async I/O, connection pooling, caching (`SimpleCache`/`
 
 ---
 
-*Version: 1.0 · 10/10 phases · 690 tests*
+*Version: 2.0 · 15/15 phases · 878 tests*

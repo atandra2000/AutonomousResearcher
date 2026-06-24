@@ -1,6 +1,6 @@
 # Memory System
 
-Deep dive into the Autonomous ML Research Engineer's memory system (Phase 5) — the platform's long-term brain. It persists across runs and powers cross-run learning in the autonomous loop.
+Deep dive into the Autonomous ML Research Engineer's memory system (Phase 5 and Phase 12) — the platform's long-term brain. It persists across runs and powers cross-run learning in the autonomous loop.
 
 > See [Storage Schema](storage_schema.md) for table definitions and [Agents](agents.md) for the `MemoryAgent` API.
 
@@ -239,4 +239,28 @@ Three tools wrap `MemoryAgent` for use by other agents:
 
 ---
 
-*Version: 1.0 · 9 memory types · 10 relationship types · 6 retrieval strategies*
+## Phase 12 — Repository Memory
+
+The platform also includes a **separate repository memory system** (Phase 12) focused on code-level retrieval:
+
+| Component | Purpose |
+|-----------|---------|
+| `RepositoryIndexer` | AST-based symbol extraction (classes, functions, imports, variables). |
+| `SymbolGraph` | Dependency, caller/callee, related, and test relationships between symbols. |
+| `HashingEmbedder` | Lightweight offline embeddings (no heavy deps like sentence-transformers). |
+| `InMemoryVectorBackend` | In-memory vector index for semantic search. |
+| `HybridRetriever` | Combines semantic, graph, and metadata signals for ranking. |
+| `RepositoryMemoryStore` | SQLite-backed persistent storage with incremental refresh. |
+
+CLI access:
+
+```bash
+research-engineer memory build --repo <path>          # Build the index
+research-engineer memory query <query> --repo <path>   # Hybrid search
+research-engineer memory symbol-graph <symbol> --repo <path>  # Explore symbol relationships
+research-engineer memory stats --repo <path>           # Index statistics
+```
+
+---
+
+*Version: 2.0 · 9 memory types (Phase 5) + repository memory (Phase 12) · 10 relationship types · 6 retrieval strategies*

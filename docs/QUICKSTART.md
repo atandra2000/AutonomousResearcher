@@ -37,7 +37,7 @@ The platform runs without an LLM for Phases 1–3 (rule-based extraction). To en
 export OLLAMA_API_KEY="your-key"
 # Optional overrides
 export OLLAMA_BASE_URL="https://api.olama.cloud"
-export OLLAMA_MODEL="llama3"
+export OLLAMA_MODEL="glm-5.2:cloud"
 
 # Verify routing
 research-engineer llm status
@@ -228,7 +228,64 @@ The report (`output/loops/<loop_id>/research_report.md`) contains an executive s
 
 ---
 
-## 10. Programmatic usage
+## 10. Run a terminal-first autonomous coding task (Phase 11)
+
+The `TaskAgent` orchestrates terminal-first coding: analyze → plan → implement → diff → (optionally) test.
+
+```bash
+# Basic task
+research-engineer task "Add EMA checkpoint support" --repo ./my_repo
+
+# With multi-agent delegation (Phase 13) + self-repair (Phase 14)
+research-engineer task "Add EMA checkpoint support" \
+  --repo ./my_repo \
+  --delegate \
+  --max-repairs 3 \
+  --run-tests
+```
+
+---
+
+## 11. Build and query repository memory (Phase 12)
+
+Index the repository for semantic code retrieval, then query with natural language.
+
+```bash
+# Build the memory index
+research-engineer memory build --repo ./my_repo
+
+# Query for relevant code
+research-engineer memory query "checkpoint saving logic" --repo ./my_repo
+
+# Explore the symbol graph
+research-engineer memory symbol-graph "Trainer" --repo ./my_repo
+
+# View memory stats
+research-engineer memory stats --repo ./my_repo
+```
+
+---
+
+## 12. Run an autonomous research workflow (Phase 15)
+
+The `ResearchOrchestrator` runs end-to-end research: literature review → synthesis → hypotheses → experiments → analysis → report.
+
+```bash
+# Dry-run research workflow (default)
+research-engineer research "Design a more efficient diffusion transformer" \
+  --max-papers 30 \
+  --max-hypotheses 5
+
+# Full workflow with output
+research-engineer research "Design a more efficient diffusion transformer" \
+  --max-papers 30 \
+  --max-hypotheses 5 \
+  --output-dir ./research_output
+```
+
+---
+
+## 13. Programmatic usage
 
 ```python
 import asyncio
@@ -264,7 +321,7 @@ agent = CodingAgent(llm=custom)   # explicit provider wins over router
 
 ---
 
-## 11. Memory & history
+## 14. Memory & history
 
 ```bash
 # Paper history
@@ -281,7 +338,7 @@ research-engineer memory graph
 
 ---
 
-## 12. Troubleshooting
+## 15. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -294,10 +351,10 @@ research-engineer memory graph
 
 ---
 
-## 13. Development
+## 16. Development
 
 ```bash
-uv run pytest -q          # 690 tests
+uv run pytest -q          # 878 tests
 uv run ruff check .       # lint
 uv run mypy src/research_engineer/llm   # type-check LLM layer
 ```
@@ -308,7 +365,7 @@ See [Contributing](contributing.md) for conventions and PR checklist.
 
 ## Next steps
 
-- **[Architecture](architecture.md)** — understand the 10-phase design.
+- **[Architecture](architecture.md)** — understand the 15-phase design.
 - **[CLI Reference](cli_reference.md)** — every command and flag.
 - **[LLM Integration](llm_integration.md)** — configure per-agent models.
 - **[Agents](agents.md)** — deep-dive into each agent.

@@ -194,6 +194,12 @@ from .self_review import (
 from .statistical_significance import StatisticalSignificanceTool
 from .stopping_condition import StoppingConditionChecker
 from .storage import SQLiteStorage, StorageInput, StorageTool, StorageToolAlias
+from .terminal import (
+    ALLOWED_COMMAND_PREFIXES,
+    TerminalInput,
+    TerminalOutput,
+    TerminalTool,
+)
 from .test_generation import (
     TestGenerationInput,
     TestGenerationOutput,
@@ -252,6 +258,11 @@ __all__ = [
     "StorageToolAlias",
     "StorageInput",
     "SQLiteStorage",
+    # Phase 11 - Terminal Tool
+    "TerminalTool",
+    "TerminalInput",
+    "TerminalOutput",
+    "ALLOWED_COMMAND_PREFIXES",
     # Scanner
     "RepositoryScannerTool",
     "RepoScanInput",

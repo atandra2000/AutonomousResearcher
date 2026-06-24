@@ -1,31 +1,36 @@
 # Roadmap
 
-Versioned roadmap for the Autonomous ML Research Engineer, from the v1.0 baseline through v2.0.
+Versioned roadmap for the Autonomous ML Research Engineer, from the v1.0 baseline through v2.0 and beyond.
 
-> **Current state (v1.0):** 10/10 phases complete · 9 agents · 51 tools · 207 models · 690 tests.
-
----
-
-## v1.0 (current — complete)
-
-All ten phases are production-ready:
-
-| Phase | Status |
-|-------|--------|
-| 1 — Paper Analysis | ✅ Complete |
-| 2 — Repository Analysis | ✅ Complete |
-| 3 — Experiment Planning | ✅ Complete |
-| 4 — Code Implementation | ✅ Complete (patch-first) |
-| 5 — Research Memory | ✅ Complete (SQLite + ChromaDB + knowledge graph) |
-| 6 — Literature Intelligence | ✅ Complete |
-| 7 — Experiment Execution | ✅ Complete (sandboxed) |
-| 8 — Evaluation | ✅ Complete (pure-Python stats) |
-| 9 — Autonomous Loop | ✅ Complete (stopping conditions + approval gates) |
-| 10 — LLM Layer | ✅ Complete (Ollama Cloud, per-agent routing) |
+> **Current state (v2.0):** 15/15 phases complete · 23 agents · 61 tools · 186 models · 878 tests.
 
 ---
 
-## v1.1 — Multi-provider LLM support
+## v2.0 (current — complete)
+
+All fifteen phases are production-ready:
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| 1 — Paper Analysis | ✅ Complete | arXiv/PDF → structured `ResearchSummary` + `EngineeringReport` |
+| 2 — Repository Analysis | ✅ Complete | AST scan, dependency graph, training pipeline, config analysis, knowledge graph |
+| 3 — Experiment Planning | ✅ Complete | 7-dim compatibility, 5-group experiment matrix, 7-category risk, GPU-hour estimate |
+| 4 — Code Implementation | ✅ Complete | Patch-first: code generation → unified diffs → self-review → tests → migration |
+| 5 — Research Memory | ✅ Complete | 9 memory types, 10 relationship types, SQLite + ChromaDB + knowledge graph |
+| 6 — Literature Intelligence | ✅ Complete | Multi-source search, 7-dim comparison, structured reviews, trend analysis |
+| 7 — Experiment Execution | ✅ Complete | Sandboxed runner with allowlist + dry-run default + failure detection |
+| 8 — Evaluation | ✅ Complete | Experiment comparison, training dynamics, Welch t-tests + Cohen's d (pure Python) |
+| 9 — Autonomous Loop | ✅ Complete | State-machine orchestrator with stopping conditions + approval gates |
+| 10 — LLM Layer | ✅ Complete | Provider-agnostic LLM layer (Ollama Cloud), per-agent model routing |
+| 11 — Terminal-First Coding | ✅ Complete | `TaskAgent` with `TerminalTool`: analyze → plan → implement → diff → test |
+| 12 — Repository Memory | ✅ Complete | AST-based symbol indexing, semantic chunking, symbol graph, hybrid retrieval |
+| 13 — Multi-Agent Delegation | ✅ Complete | `DelegationFramework` with role/capability routing, `ArchitectAgent`, `ReviewerAgent`, `TestAgent` |
+| 14 — Autonomous Self-Repair | ✅ Complete | `SelfRepairFramework` with `FailureAnalyzer`, `RepairStrategist`, 4 termination conditions |
+| 15 — Research Workflows | ✅ Complete | `ResearchOrchestrator`: literature → synthesis → hypotheses → experiments → analysis → report |
+
+---
+
+## v2.1 — Multi-provider LLM support
 
 **Goal:** Run the platform on any OpenAI-compatible provider, not just Ollama Cloud.
 
@@ -40,7 +45,7 @@ All ten phases are production-ready:
 
 ---
 
-## v1.2 — Structured tool-calling
+## v2.2 — Structured tool-calling
 
 **Goal:** Let agents use LLM tool-calling for richer code generation and analysis.
 
@@ -52,7 +57,7 @@ All ten phases are production-ready:
 
 ---
 
-## v1.3 — Web UI dashboard
+## v2.3 — Web UI dashboard
 
 **Goal:** Visualize loops, memory, and the knowledge graph in a browser.
 
@@ -65,7 +70,7 @@ All ten phases are production-ready:
 
 ---
 
-## v1.4 — Distributed execution
+## v2.4 — Distributed execution
 
 **Goal:** Run experiments across multiple nodes / GPUs.
 
@@ -77,7 +82,7 @@ All ten phases are production-ready:
 
 ---
 
-## v2.0 — Self-improving meta-loop
+## v3.0 — Self-improving meta-loop
 
 **Goal:** The platform proposes its own research goals from memory trends.
 
@@ -112,4 +117,4 @@ This project follows [semantic versioning](https://semver.org/):
 
 ---
 
-*Last updated: v1.0 · 10/10 phases complete*
+*Last updated: v2.0 · 15/15 phases complete*

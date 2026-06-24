@@ -75,6 +75,20 @@ class ModelRouter:
         "ExperimentAgent",
         "EvaluationAgent",
         "ResearchLoopAgent",
+        "TaskAgent",
+        "ArchitectAgent",
+        "ReviewerAgent",
+        "TestAgent",
+        "FailureAnalyzer",
+        "RepairStrategist",
+        "LiteratureDiscoveryAgent",
+        "KnowledgeSynthesisAgent",
+        "HypothesisGeneratorAgent",
+        "ResearchExperimentPlannerAgent",
+        "ExperimentExecutorAgent",
+        "ResultAnalyzerAgent",
+        "ReportGeneratorAgent",
+        "ResearchOrchestrator",
     )
 
     def __init__(self, factory: ProviderFactory | None = None) -> None:

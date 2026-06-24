@@ -1,6 +1,6 @@
 # CLI Reference
 
-Complete reference for all **49 CLI commands** in the Autonomous ML Research Engineer, organized by sub-app.
+Complete reference for all **56 CLI commands** in the Autonomous ML Research Engineer, organized by sub-app.
 
 > Run `research-engineer <command> --help` for the full flag list.
 
@@ -65,6 +65,32 @@ research-engineer implement --task "Add Grouped Query Attention" --repo ./repo
 research-engineer implement --plan output/plans/.../implementation_plan.md --repo ./repo
 ```
 
+### `task` (Phase 11)
+
+Run terminal-first autonomous coding. The `TaskAgent` analyzes, plans, implements, diffs, and optionally tests.
+
+```bash
+research-engineer task <goal> --repo <path> [--delegate] [--max-repairs N] [--run-tests] [--output-dir DIR]
+```
+
+```bash
+research-engineer task "Add EMA checkpoint support" --repo ./my_repo
+research-engineer task "Add EMA checkpoint support" --delegate --max-repairs 3 --run-tests
+```
+
+### `research` (Phase 15)
+
+Run an end-to-end autonomous research workflow. Orchestrates literature → synthesis → hypotheses → experiments → analysis → report.
+
+```bash
+research-engineer research <goal> [--repo PATH] [--max-papers N] [--max-hypotheses N] [--dry-run] [--output-dir DIR]
+```
+
+```bash
+research-engineer research "Design a more efficient diffusion transformer" --max-papers 30
+research-engineer research "Design a more efficient diffusion transformer" --max-papers 30 --max-hypotheses 5 --dry-run
+```
+
 ### `get`
 
 Retrieve a previously analyzed paper.
@@ -101,7 +127,9 @@ research-engineer cache-status
 
 ## `memory` sub-app
 
-Research memory management (Phase 5).
+Research memory management (Phase 5) and repository memory (Phase 12).
+
+### Phase 5 — Research memory
 
 ```bash
 research-engineer memory search <query>           # Search memories
@@ -112,6 +140,16 @@ research-engineer memory graph                       # Knowledge graph stats
 research-engineer memory export [--output FILE]      # Export to JSON
 research-engineer memory import [--input FILE] [--skip-existing]
 research-engineer memory archive <memory_id>         # Archive a memory
+```
+
+### Phase 12 — Repository memory
+
+```bash
+research-engineer memory build --repo <path>          # Build the memory index
+research-engineer memory refresh --repo <path>        # Refresh the index incrementally
+research-engineer memory stats --repo <path>           # Repository memory statistics
+research-engineer memory query <query> --repo <path>  # Hybrid semantic+symbol search
+research-engineer memory symbol-graph <symbol> --repo <path>  # Explore symbol relationships
 ```
 
 ---
@@ -224,12 +262,14 @@ research-engineer llm config [--config PATH]
 ```
 LLM layer status
   default provider: ollama
-  default model:    llama3
+  default model:    glm-5.2:cloud
   providers:        ollama
 
 Per-agent routing:
-  ResearchAgent            -> ollama / llama3
-  CodingAgent              -> ollama / qwen2.5-coder
+  ResearchAgent            -> ollama / glm-5.2:cloud
+  CodingAgent              -> ollama / qwen3-coder-next:cloud
+  TaskAgent                -> ollama / minimax-m3:cloud
+  ResearchOrchestrator     -> ollama / minimax-m3:cloud
   ...
 ```
 
@@ -252,16 +292,24 @@ Every CLI command has a programmatic equivalent via the agents:
 
 ```python
 import asyncio
-from research_engineer.agents import ResearchAgent, ResearchLoopAgent
+from research_engineer.agents import ResearchAgent, TaskAgent, ResearchOrchestrator
 
 async def main():
     # analyze
     r = await ResearchAgent().analyze("2503.12345")
     print(r["title"])
 
-    # loop run
-    res = await ResearchLoopAgent().run("Improve stability", repo_path="./repo", )
-    print(res.status, res.iteration_count)
+    # task (Phase 11)
+    task = TaskAgent()
+    result = await task.execute("Add EMA checkpoint support", repo_path="./repo")
+    print(result.status)
+
+    # research workflow (Phase 15)
+    orch = ResearchOrchestrator()
+    wf_result = await orch.run_workflow(
+        "Design efficient diffusion transformer",
+    )
+    print(f"Workflow status: {wf_result.status}")
 
 asyncio.run(main())
 ```
@@ -270,4 +318,4 @@ See [Agents](agents.md) for the full agent API.
 
 ---
 
-*Version: 1.0 · 49 commands · 6 sub-apps*
+*Version: 2.0 · 56 commands · 7 sub-apps*

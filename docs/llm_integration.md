@@ -62,26 +62,40 @@ the router applies the configured one — **no agent calls a model directly**.
 
 ```yaml
 default_provider: ollama
-default_model: llama3
+default_model: glm-5.2:cloud
 
 providers:
   ollama:
     type: ollama
     base_url: https://api.olama.cloud
     api_key: ${OLLAMA_API_KEY}      # expanded from the environment
-    default_model: llama3
+    default_model: glm-5.2:cloud
     timeout: 60
 
 agents:
-  ResearchAgent:          {provider: ollama, model: llama3}
-  RepositoryAgent:        {provider: ollama, model: llama3}
-  ExperimentPlannerAgent: {provider: ollama, model: llama3}
-  CodingAgent:            {provider: ollama, model: llama3}
-  MemoryAgent:            {provider: ollama, model: llama3}
-  LiteratureAgent:        {provider: ollama, model: llama3}
-  ExperimentAgent:        {provider: ollama, model: llama3}
-  EvaluationAgent:        {provider: ollama, model: llama3}
-  ResearchLoopAgent:      {provider: ollama, model: llama3}
+  ResearchAgent:          {provider: ollama, model: glm-5.2:cloud}
+  RepositoryAgent:        {provider: ollama, model: glm-5.2:cloud}
+  ExperimentPlannerAgent: {provider: ollama, model: glm-5.2:cloud}
+  CodingAgent:            {provider: ollama, model: qwen3-coder-next:cloud}
+  MemoryAgent:            {provider: ollama, model: glm-5.2:cloud}
+  LiteratureAgent:        {provider: ollama, model: glm-5.2:cloud}
+  ExperimentAgent:        {provider: ollama, model: minimax-m3:cloud}
+  EvaluationAgent:        {provider: ollama, model: glm-5.2:cloud}
+  ResearchLoopAgent:      {provider: ollama, model: minimax-m3:cloud}
+  TaskAgent:              {provider: ollama, model: minimax-m3:cloud}
+  ArchitectAgent:         {provider: ollama, model: glm-5.2:cloud}
+  ReviewerAgent:          {provider: ollama, model: glm-5.2:cloud}
+  TestAgent:              {provider: ollama, model: minimax-m3:cloud}
+  FailureAnalyzer:        {provider: ollama, model: glm-5.2:cloud}
+  RepairStrategist:       {provider: ollama, model: glm-5.2:cloud}
+  LiteratureDiscoveryAgent:    {provider: ollama, model: glm-5.2:cloud}
+  KnowledgeSynthesisAgent:     {provider: ollama, model: glm-5.2:cloud}
+  HypothesisGeneratorAgent:    {provider: ollama, model: glm-5.2:cloud}
+  ResearchExperimentPlannerAgent: {provider: ollama, model: glm-5.2:cloud}
+  ExperimentExecutorAgent:     {provider: ollama, model: minimax-m3:cloud}
+  ResultAnalyzerAgent:         {provider: ollama, model: glm-5.2:cloud}
+  ReportGeneratorAgent:        {provider: ollama, model: glm-5.2:cloud}
+  ResearchOrchestrator:        {provider: ollama, model: minimax-m3:cloud}
 ```
 
 ### Environment variables
@@ -91,11 +105,21 @@ agents:
 | `RE_LLM_CONFIG` | factory | path to `llm_config.yaml` |
 | `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://api.olama.cloud` |
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
-| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `llama3` |
+| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
 
 `${VAR}` placeholders in the YAML are expanded against the process
 environment, so secrets never need to be committed.
+
+## Model assignment strategy
+
+The platform uses three specialized models:
+
+- **qwen3-coder-next:cloud** — coding (assigned to `CodingAgent`)
+- **glm-5.2:cloud** — reasoning (Research, Planning, Literature, Evaluation, Architecture, Review, Analysis agents)
+- **minimax-m3:cloud** — orchestration (TaskAgent, ResearchLoop, Experiment, Test, ResearchOrchestrator agents)
+
+This is a config-only decision — switch any agent to any model by editing `llm_config.yaml`.
 
 ## Running on Ollama Cloud
 
@@ -121,17 +145,17 @@ print(resp.content, resp.usage.total_tokens)
 ## Using different models per agent
 
 Edit `llm_config.yaml` only — no source changes. For example, give the
-CodingAgent a coder-tuned model:
+CodingAgent a different coder-tuned model:
 
 ```yaml
 agents:
-  CodingAgent: {provider: ollama, model: qwen2.5-coder}
+  CodingAgent: {provider: ollama, model: qwen3-coder-next:cloud}
 ```
 
 Then `research-engineer llm status` shows:
 
 ```
-CodingAgent              -> ollama / qwen2.5-coder
+CodingAgent              -> ollama / qwen3-coder-next:cloud
 ```
 
 All other agents keep their configured models. Reload is automatic on
@@ -165,15 +189,29 @@ keyword argument and exposes:
 
 | Agent | `agent_name` | Default routing |
 |-------|--------------|-----------------|
-| ResearchAgent | `ResearchAgent` | ollama / llama3 |
+| ResearchAgent | `ResearchAgent` | ollama / glm-5.2:cloud |
 | RepositoryAgent | `RepositoryAgent` | *(none unless `llm_enabled=True`)* |
-| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / llama3 |
-| CodingAgent | `CodingAgent` | ollama / llama3 |
-| MemoryAgent | `MemoryAgent` | ollama / llama3 |
-| LiteratureAgent | `LiteratureAgent` | ollama / llama3 |
-| ExperimentAgent | `ExperimentAgent` | ollama / llama3 |
-| EvaluationAgent | `EvaluationAgent` | ollama / llama3 |
-| ResearchLoopAgent | `ResearchLoopAgent` | ollama / llama3 |
+| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| CodingAgent | `CodingAgent` | ollama / qwen3-coder-next:cloud |
+| MemoryAgent | `MemoryAgent` | ollama / glm-5.2:cloud |
+| LiteratureAgent | `LiteratureAgent` | ollama / glm-5.2:cloud |
+| ExperimentAgent | `ExperimentAgent` | ollama / minimax-m3:cloud |
+| EvaluationAgent | `EvaluationAgent` | ollama / glm-5.2:cloud |
+| ResearchLoopAgent | `ResearchLoopAgent` | ollama / minimax-m3:cloud |
+| TaskAgent | `TaskAgent` | ollama / minimax-m3:cloud |
+| ArchitectAgent | `ArchitectAgent` | ollama / glm-5.2:cloud |
+| ReviewerAgent | `ReviewerAgent` | ollama / glm-5.2:cloud |
+| TestAgent | `TestAgent` | ollama / minimax-m3:cloud |
+| FailureAnalyzer | `FailureAnalyzer` | ollama / glm-5.2:cloud |
+| RepairStrategist | `RepairStrategist` | ollama / glm-5.2:cloud |
+| LiteratureDiscoveryAgent | `LiteratureDiscoveryAgent` | ollama / glm-5.2:cloud |
+| KnowledgeSynthesisAgent | `KnowledgeSynthesisAgent` | ollama / glm-5.2:cloud |
+| HypothesisGeneratorAgent | `HypothesisGeneratorAgent` | ollama / glm-5.2:cloud |
+| ResearchExperimentPlannerAgent | `ResearchExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| ExperimentExecutorAgent | `ExperimentExecutorAgent` | ollama / minimax-m3:cloud |
+| ResultAnalyzerAgent | `ResultAnalyzerAgent` | ollama / glm-5.2:cloud |
+| ReportGeneratorAgent | `ReportGeneratorAgent` | ollama / glm-5.2:cloud |
+| ResearchOrchestrator | `ResearchOrchestrator` | ollama / minimax-m3:cloud |
 
 ### Backwards compatibility
 
@@ -184,7 +222,7 @@ keyword argument and exposes:
   available the new path is used preferentially.
 - `RepositoryAgent._llm_enabled` and the `llm_enabled`/`llm_model` CLI flags
   behave exactly as before.
-- The full existing test suite (658 tests) passes unchanged; 29 new tests
+- The full existing test suite (878 tests) passes unchanged; 29 new tests
   cover the LLM layer.
 
 ## CLI
@@ -199,7 +237,7 @@ research-engineer llm config --config path/to/llm_config.yaml
 ## Verification
 
 ```bash
-uv run pytest -q            # 687 passed (658 existing + 29 new)
+uv run pytest -q            # 878 passed (849 existing + 29 new)
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check src/research_engineer/llm src/research_engineer/agents/_llm_support.py tests/test_llm.py   # clean
 ```

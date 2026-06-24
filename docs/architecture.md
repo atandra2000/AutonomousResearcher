@@ -1,14 +1,14 @@
 # Architecture
 
-Technical architecture for the Autonomous ML Research Engineer v1.0 — a ten-phase, agent-based platform that automates the ML research lifecycle.
+Technical architecture for the Autonomous ML Research Engineer v2.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
 
-> **Status:** 10/10 phases complete · 9 agents · 51 tools · 207 Pydantic models · 49 CLI commands · 690 tests.
+> **Status:** 15/15 phases complete · 23 agents · 61 tools · 186 Pydantic models · 56 CLI commands · 878 tests.
 
 ---
 
 ## Executive summary
 
-The platform decomposes ML research work into **ten cooperating phases**, each a self-contained layer with agents, typed tools, and Pydantic models. Phases 1–8 are individual capabilities; **Phase 9** orchestrates them into an autonomous loop; **Phase 10** is the provider-agnostic LLM substrate every agent sits on.
+The platform decomposes ML research work into **fifteen cooperating phases**, each a self-contained layer with agents, typed tools, and Pydantic models. Phases 1–8 are individual capabilities; **Phase 9** orchestrates them into an autonomous loop; **Phase 10** is the provider-agnostic LLM substrate every agent sits on; **Phase 11** adds terminal-first coding via `TaskAgent`; **Phase 12** adds repository memory with hybrid retrieval; **Phase 13** adds multi-agent delegation; **Phase 14** adds autonomous self-repair; **Phase 15** adds end-to-end research workflows.
 
 ### Design principles
 
@@ -30,9 +30,10 @@ flowchart TD
         P["📄 arXiv / PDF paper"]
         R["🗂️ ML repository"]
         G["🎯 Research goal"]
+        T["💻 Coding task"]
     end
 
-    subgraph Agents["Agent Ecosystem (Phases 1–9)"]
+    subgraph Agents["Agent Ecosystem (Phases 1–15)"]
         A1["ResearchAgent"]
         A2["RepositoryAgent"]
         A3["ExperimentPlannerAgent"]
@@ -42,6 +43,13 @@ flowchart TD
         A7["ExperimentAgent"]
         A8["EvaluationAgent"]
         A9["ResearchLoopAgent<br/>(orchestrator)"]
+        A10["TaskAgent<br/>(Phase 11)"]
+        A11["ArchitectAgent<br/>(Phase 13)"]
+        A12["ReviewerAgent<br/>(Phase 13)"]
+        A13["TestAgent<br/>(Phase 13)"]
+        A14["FailureAnalyzer<br/>(Phase 14)"]
+        A15["RepairStrategist<br/>(Phase 14)"]
+        A16["ResearchOrchestrator<br/>(Phase 15)"]
     end
 
     subgraph LLM["Phase 10 — LLM Layer"]
@@ -52,20 +60,28 @@ flowchart TD
     end
 
     subgraph Store["Persistent State"]
-        SQL[("SQLite<br/>8 tables")]
+        SQL[("SQLite<br/>10+ tables")]
         CHR[("ChromaDB<br/>vector store")]
         KG[("Knowledge graph")]
+        RM[("Repository Memory<br/>(Phase 12)<br/>symbol graph + hybrid index")]
     end
 
     P --> A1
     R --> A2
     G --> A9
+    G --> A16
+    T --> A10
+    A10 --> A11 & A12 & A13
+    A10 --> A14 & A15
     A9 --> A1 & A2 & A3 & A4 & A6 & A7 & A8
     A1 & A2 & A3 & A4 & A6 & A7 & A8 --> A5
     A5 <--> SQL
     A5 <--> CHR
     A5 <--> KG
+    A16 --> A6 & A5
+    A16 --> A10
     A9 --> REP["📄 research_report.md / .json"]
+    A10 -.-> ROUT
     A1 -.-> ROUT
     A2 -.-> ROUT
     A3 -.-> ROUT
@@ -75,6 +91,12 @@ flowchart TD
     A7 -.-> ROUT
     A8 -.-> ROUT
     A9 -.-> ROUT
+    A11 -.-> ROUT
+    A12 -.-> ROUT
+    A13 -.-> ROUT
+    A14 -.-> ROUT
+    A15 -.-> ROUT
+    A16 -.-> ROUT
     CFG --> FAC --> ROUT --> PROV
 ```
 
@@ -84,24 +106,30 @@ flowchart TD
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  CLI Layer  (Typer — 49 commands across 6 sub-apps)             │
+│  CLI Layer  (Typer — 56 commands across 7 sub-apps)             │
 ├─────────────────────────────────────────────────────────────────┤
-│  Agent Layer  (9 agents + _llm_support.resolve_llm)            │
-│   ResearchAgent · RepositoryAgent · ExperimentPlannerAgent     │
-│   CodingAgent · MemoryAgent · LiteratureAgent                   │
-│   ExperimentAgent · EvaluationAgent · ResearchLoopAgent        │
+│  Agent Layer  (23 agents + frameworks + _llm_support.resolve_llm)│
+│   Phases 1–9: ResearchAgent · RepositoryAgent ·                 │
+│   ExperimentPlannerAgent · CodingAgent · MemoryAgent ·          │
+│   LiteratureAgent · ExperimentAgent · EvaluationAgent ·         │
+│   ResearchLoopAgent                                              │
+│   Phase 11: TaskAgent                                            │
+│   Phase 13: ArchitectAgent · ReviewerAgent · TestAgent           │
+│   Phase 14: FailureAnalyzer · RepairStrategist                   │
+│   Phase 15: 7 ResearchStage agents + ResearchOrchestrator        │
 ├─────────────────────────────────────────────────────────────────┤
-│  Tool Layer  (51 typed tools, Tool[Input, Output] ABC)         │
-│   Phases 1–9 each contribute 4–8 tools                          │
+│  Tool Layer  (61 typed tools, Tool[Input, Output] ABC)          │
+│   Phases 1–15 each contribute tools                               │
 ├─────────────────────────────────────────────────────────────────┤
 │  LLM Layer  (Phase 10 — provider-agnostic)                     │
 │   LLMProvider ABC · OllamaCloudProvider · ProviderFactory      │
 │   ModelRouter · _BoundProvider · resolve_llm                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  Domain Layer  (207 Pydantic models across 13 modules)         │
+│  Domain Layer  (186 Pydantic models across 18 modules)         │
 ├─────────────────────────────────────────────────────────────────┤
 │  Infrastructure Layer                                          │
 │   SQLite · ChromaDB · arXiv API · PyMuPDF · AST · httpx       │
+│   Semantic Scholar API · TerminalTool                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -123,6 +151,11 @@ flowchart LR
     P5 --> P3
     P9 -->|iterate| P3
     P10[Phase 10<br/>LLM Layer] -.-> P1 & P2 & P3 & P4 & P5 & P6 & P7 & P8 & P9
+    P11[Phase 11<br/>Terminal Coding] -.-> P10
+    P12[Phase 12<br/>Repo Memory] -.-> P5
+    P13[Phase 13<br/>Delegation] -.-> P11
+    P14[Phase 14<br/>Self-Repair] -.-> P11
+    P15[Phase 15<br/>Research Workflows] -.-> P6 & P5 & P11
 ```
 
 ### Phase summary
@@ -139,6 +172,11 @@ flowchart LR
 | 8 | Evaluation | EvaluationAgent | 5 | 22 | `output/evaluations/<eval_id>/` |
 | 9 | Autonomous Loop | ResearchLoopAgent | 3 | 22 | `output/loops/<loop_id>/research_report.*` |
 | 10 | LLM Layer | — | 4 | 6 | `llm_config.yaml` + provider routing |
+| 11 | Terminal-First Coding | TaskAgent | 1 (7 ops) | 6 | `output/tasks/<task_id>/` |
+| 12 | Repository Memory | RepositoryMemory | 7 | 10 | `data/repo_memory/` symbol index |
+| 13 | Multi-Agent Delegation | DelegationFramework | 3 | 6 | Delegated task results |
+| 14 | Autonomous Self-Repair | SelfRepairFramework | 3 | 8 | Repair reports |
+| 15 | Research Workflows | ResearchOrchestrator | 9 | 14 | `output/research/<wf_id>/research_report.md` |
 
 ---
 
@@ -319,7 +357,7 @@ flowchart TD
     CFG["llm_config.yaml"] --> FAC["ProviderFactory<br/>builds + caches providers<br/>\${VAR} env expansion"]
     FAC --> ROUT["ModelRouter<br/>for_agent(name) → _BoundProvider"]
     ROUT --> PROV["OllamaCloudProvider<br/>POST /v1/chat/completions"]
-    AGENTS["9 agents<br/>resolve_llm(agent_name, llm)"] --> ROUT
+    AGENTS["23 agents<br/>resolve_llm(agent_name, llm)"] --> ROUT
     PROV --> RESP["LLMResponse<br/>content + usage + model"]
 ```
 
@@ -331,6 +369,112 @@ flowchart TD
 See [LLM Integration](llm_integration.md) for the full guide.
 
 ---
+
+## Phase 11 — Terminal-First Autonomous Coding
+
+```mermaid
+flowchart LR
+    TASK["Task goal"] --> TA["TaskAgent"]
+    TA --> TERM["TerminalTool<br/>(7 operations)"]
+    TERM -->|run_command| SYS["System commands"]
+    TERM -->|read/write| FILE["File I/O"]
+    TERM -->|search_code| SEARCH["Code search"]
+    TERM -->|apply_patch| PATCH["Unified diff"]
+    TERM -->|git_status/diff| GIT["Git operations"]
+    TA --> OUT["output/tasks/<task_id>/"]
+```
+
+**7 TerminalTool operations:** `run_command`, `read_file`, `write_file`, `search_code`, `apply_patch`, `git_status`, `git_diff`.
+
+**TaskAgent workflow:** analyze goal → plan steps → implement via TerminalTool → generate diff → (optionally) run tests.
+
+---
+
+## Phase 12 — Repository Memory
+
+```mermaid
+flowchart LR
+    REPO["Repository"] --> IDX["RepositoryIndexer<br/>(AST parsing)"]
+    IDX --> SYM["SymbolGraph<br/>(deps, callers, callees)"]
+    IDX --> EMB["HashingEmbedder<br/>(offline default)"]
+    IDX --> VEC["InMemoryVectorBackend"]
+    SYM & EMB & VEC --> RET["HybridRetriever<br/>(semantic + graph + metadata)"]
+    RET --> MEM["RepositoryMemory<br/>(facade)"]
+```
+
+**Components:** `RepositoryIndexer` (AST-based symbol extraction), `SymbolGraph` (dependency, caller/callee, related, test relations), `HashingEmbedder` (lightweight offline embeddings), `InMemoryVectorBackend` (no heavy deps), `HybridRetriever` (combines semantic + graph + metadata).
+
+**Persistent storage:** SQLite-backed `RepositoryMemoryStore` with incremental refresh support.
+
+---
+
+## Phase 13 — Multi-Agent Delegation
+
+```mermaid
+flowchart LR
+    TASK["TaskAgent"] --> DF["DelegationFramework"]
+    DF -->|architect| ARCH["ArchitectAgent<br/>(implementation plans)"]
+    DF -->|code| CODE["CodingAgent<br/>(patch generation)"]
+    DF -->|review| REVIEW["ReviewerAgent<br/>(structured feedback)"]
+    DF -->|test| TEST["TestAgent<br/>(pytest execution)"]
+    ARCH & CODE & REVIEW & TEST --> DF
+    DF --> RESULT["Delegated result"]
+```
+
+**Key types:** `AgentRole` (Architect, Reviewer, Tester), `AgentCapability` (CodeGeneration, CodeReview, TestExecution, etc.), `SharedTaskContext` for inter-agent communication.
+
+Delegation mode is enabled via `TaskAgent` with the `--delegate` flag.
+
+---
+
+## Phase 14 — Autonomous Self-Repair
+
+```mermaid
+flowchart LR
+    FAIL["Failure source<br/>(test/review/impl errors)"] --> FA["FailureAnalyzer"]
+    FA --> FR["FailureReport"]
+    FR --> RS["RepairStrategist"]
+    RS -->|strategy| REPAIR["Repair attempt"]
+    REPAIR --> CHECK{Termination?}
+    CHECK -->|SUCCESS| DONE([Done])
+    CHECK -->|BUDGET_EXHAUSTED| DONE
+    CHECK -->|NO_STRATEGIES| DONE
+    CHECK -->|STAGNATION| DONE
+    CHECK -->|retry| RS
+```
+
+**4 termination conditions:** `SUCCESS`, `BUDGET_EXHAUSTED`, `NO_STRATEGIES`, `STAGNATION`.
+
+**Components:** `FailureAnalyzer` (diagnoses failures → structured `FailureReport`), `RepairStrategist` (generates ranked repair strategies), `SelfRepairFramework` (coordinates the loop with configurable retry budget).
+
+---
+
+## Phase 15 — End-to-End Research Workflows
+
+```mermaid
+flowchart LR
+    GOAL["Research goal"] --> ORCH["ResearchOrchestrator"]
+    ORCH -->|skip?| LIT["LiteratureDiscoveryAgent"]
+    LIT -->|skip?| SYNTH["KnowledgeSynthesisAgent"]
+    SYNTH -->|skip?| HYP["HypothesisGeneratorAgent"]
+    HYP -->|skip?| PLAN["ResearchExperimentPlannerAgent"]
+    PLAN -->|skip?| EXEC["ExperimentExecutorAgent"]
+    EXEC -->|skip?| ANALYZE["ResultAnalyzerAgent"]
+    ANALYZE -->|skip?| REPORT["ReportGeneratorAgent"]
+    REPORT --> OUT["output/research/<wf_id>/research_report.md"]
+```
+
+**7 research stage agents**, each skippable via `ResearchConfig.skip_stages`:
+1. `LiteratureDiscoveryAgent` — discovers relevant papers and generates a literature review.
+2. `KnowledgeSynthesisAgent` — synthesizes key findings, gaps, and trends from discovered papers.
+3. `HypothesisGeneratorAgent` — generates testable hypotheses from knowledge synthesis.
+4. `ResearchExperimentPlannerAgent` — designs experiments to test hypotheses.
+5. `ExperimentExecutorAgent` — executes experiments (dry-run default for safety).
+6. `ResultAnalyzerAgent` — analyzes experiment results and updates hypothesis status.
+7. `ReportGeneratorAgent` — generates the final research report with evidence and conclusions.
+
+---
+
 
 ## Data flow
 
@@ -345,12 +489,17 @@ flowchart LR
         P7["Phase 7"] --> DB
         P8["Phase 8"] --> DB
         P9["Phase 9"] --> DB
+        P11["Phase 11"] --> FS[("File system")]
+        P12["Phase 12"] --> RM[("Repository Memory DB")]
+        P15["Phase 15"] --> DB
     end
     subgraph Read["Cross-run reads"]
         LOOP["Phase 9 loop"] --> MEM["MemoryAgent"]
         MEM --> DB
         MEM --> CHR
         MEM --> KG
+        TASK["Phase 11 TaskAgent"] --> RM
+        ORCH["Phase 15 Orchestrator"] --> MEM
     end
 ```
 
@@ -376,12 +525,13 @@ See [Storage Schema](storage_schema.md) for every table and column.
 
 ```
 src/research_engineer/
-├── agents/      # 9 agents + _llm_support.py
+├── agents/      # 23 agents + delegation + self-repair + research workflow + _llm_support.py
 ├── llm/          # Phase 10: base, ollama_provider, factory, router
-├── models/       # 207 Pydantic models across 13 modules
-├── tools/        # 51 typed tools
-└── cli/          # 49 Typer commands
-tests/            # 37 test files, 690 tests
+├── memory/       # Phase 12: indexer, symbol_graph, retriever, storage
+├── models/       # 186 Pydantic models across 18 modules
+├── tools/        # 61 typed tools
+└── cli/          # 56 Typer commands
+tests/            # 45+ test files, 878 tests
 llm_config.yaml   # provider + per-agent model config
 docs/             # this documentation set
 ```
@@ -398,13 +548,14 @@ flowchart BT
     INT --> E2E["End-to-end tests<br/>(CLI, full pipelines)"]
 ```
 
-- **690 tests** across 37 files.
+- **878 tests** across 45+ files.
 - Every phase has dedicated model, tool, agent, and CLI test files.
 - `test_integration.py` and `test_integration_phases.py` cover end-to-end pipelines.
 - `test_llm.py` (29 tests) covers the LLM layer with a mock httpx transport.
+- Phase-specific tests: 60 task/terminal, 51 repo memory, 31 delegation, 31 self-repair, 39 research workflow.
 
 ```bash
-uv run pytest -q          # 690 passed
+uv run pytest -q          # 878 passed
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check .       # lint
 ```
@@ -421,4 +572,4 @@ uv run ruff check .       # lint
 
 ---
 
-*Version: 1.0 · Phase 10 complete · 690 tests passing*
+*Version: 2.0 · Phase 15 complete · 878 tests passing*

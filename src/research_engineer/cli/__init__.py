@@ -16,9 +16,11 @@ from research_engineer.agents import (
     RepositoryAgent,
     ResearchAgent,
     ResearchLoopAgent,
+    TaskAgent,
 )
 from research_engineer.models.experiment import ExperimentStatus, ExperimentType
 from research_engineer.models.memory import MemoryFilters, MemoryType
+from research_engineer.models.task import TaskConfig, TaskStatus
 from research_engineer.tools.storage import StorageTool
 
 app = typer.Typer(
@@ -80,6 +82,7 @@ _literature_agent: LiteratureAgent | None = None
 _experiment_agent: ExperimentAgent | None = None
 _evaluation_agent: EvaluationAgent | None = None
 _loop_agent: ResearchLoopAgent | None = None
+_task_agent: TaskAgent | None = None
 
 
 def _get_agent() -> ResearchAgent:
@@ -164,6 +167,17 @@ def _get_loop_agent() -> ResearchLoopAgent:
             evaluation_agent=_get_evaluation_agent(),
         )
     return _loop_agent
+
+
+def _get_task_agent() -> TaskAgent:
+    """Get or create the terminal-first task agent instance."""
+    global _task_agent
+    if _task_agent is None:
+        _task_agent = TaskAgent(
+            repository_agent=_get_repo_agent(),
+            coding_agent=_get_coding_agent(),
+        )
+    return _task_agent
 
 
 def _dump_json_safe(obj: object) -> str:
@@ -1092,6 +1106,272 @@ def memory_archive(
         return 0
     except Exception as e:
         typer.echo(f"❌ Error archiving: {e}", err=True)
+        return 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 12 - Repository Memory CLI Commands
+# ---------------------------------------------------------------------------
+
+
+@memory_app.command("build")
+def memory_build(
+    repo: str = typer.Option(
+        ".", "--repo", help="Repository path to index"
+    ),
+    output_format: str = typer.Option(
+        "console", "--format", help="Output: console, json"
+    ),
+):
+    """Build a repository memory index (full index).
+
+    Indexes files, modules, classes, functions, methods, imports, configs,
+    and builds a symbol graph + vector index for hybrid retrieval.
+
+    Examples:
+        research-engineer memory build --repo ./my_repo
+        research-engineer memory build --repo . --format json
+    """
+    from research_engineer.memory import RepositoryMemory
+
+    try:
+        mem = RepositoryMemory(repo)
+        stats = mem.build()
+        if output_format == "json":
+            typer.echo(stats.model_dump_json(indent=2))
+        else:
+            typer.echo(f"\n🏗️  Repository memory built for: {repo}")
+            typer.echo(f"   Files indexed:    {stats.total_files}")
+            typer.echo(f"   Symbols indexed:  {stats.total_symbols}")
+            typer.echo(f"   Code chunks:      {stats.total_chunks}")
+            typer.echo(f"   Graph edges:      {stats.total_edges}")
+            typer.echo(f"   Index time:       {stats.index_time_seconds}s")
+            typer.echo(f"   Symbols by kind:")
+            for kind, count in sorted(stats.symbols_by_kind.items()):
+                typer.echo(f"     {kind}: {count}")
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error building memory: {e}", err=True)
+        return 1
+
+
+@memory_app.command("refresh")
+def memory_refresh(
+    repo: str = typer.Option(
+        ".", "--repo", help="Repository path to refresh"
+    ),
+    output_format: str = typer.Option(
+        "console", "--format", help="Output: console, json"
+    ),
+):
+    """Incrementally refresh the repository memory index.
+
+    Only re-indexes files whose content hash has changed since the last
+    build. Use this after editing files to keep the index up to date.
+
+    Examples:
+        research-engineer memory refresh --repo ./my_repo
+    """
+    from research_engineer.memory import RepositoryMemory
+
+    try:
+        mem = RepositoryMemory(repo)
+        if not mem.store.has_index(str(Path(repo).resolve())):
+            typer.echo("⚠️  No existing index. Run `memory build` first.")
+            return 1
+        stats, changed = mem.refresh()
+        if output_format == "json":
+            typer.echo(
+                json.dumps(
+                    {
+                        "stats": stats.model_dump(),
+                        "changed_files": changed,
+                    },
+                    indent=2,
+                    default=str,
+                )
+            )
+        else:
+            typer.echo(f"\n🔄 Repository memory refreshed for: {repo}")
+            typer.echo(f"   Changed files: {len(changed)}")
+            for f in changed[:10]:
+                typer.echo(f"     - {f}")
+            if len(changed) > 10:
+                typer.echo(f"     ... and {len(changed) - 10} more")
+            typer.echo(f"   Total symbols: {stats.total_symbols}")
+            typer.echo(f"   Total chunks:  {stats.total_chunks}")
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error refreshing memory: {e}", err=True)
+        return 1
+
+
+@memory_app.command("stats")
+def memory_stats_repo(
+    repo: str = typer.Option(
+        ".", "--repo", help="Repository path"
+    ),
+    output_format: str = typer.Option(
+        "console", "--format", help="Output: console, json"
+    ),
+):
+    """Show repository memory index statistics.
+
+    Examples:
+        research-engineer memory stats --repo ./my_repo
+    """
+    from research_engineer.memory import RepositoryMemory
+
+    try:
+        mem = RepositoryMemory(repo, auto_load=True)
+        stats = mem.stats()
+        if stats is None:
+            typer.echo("⚠️  No index found. Run `memory build` first.")
+            return 1
+        if output_format == "json":
+            typer.echo(stats.model_dump_json(indent=2))
+        else:
+            typer.echo(f"\n📊 Repository Memory Stats: {repo}")
+            typer.echo(f"   Files:     {stats.total_files}")
+            typer.echo(f"   Symbols:   {stats.total_symbols}")
+            typer.echo(f"   Chunks:    {stats.total_chunks}")
+            typer.echo(f"   Edges:     {stats.total_edges}")
+            typer.echo(f"   Indexed:   {stats.indexed_at}")
+            typer.echo(f"   By kind:")
+            for kind, count in sorted(stats.symbols_by_kind.items()):
+                typer.echo(f"     {kind}: {count}")
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error: {e}", err=True)
+        return 1
+
+
+@memory_app.command("query")
+def memory_query(
+    query: str = typer.Argument(..., help="Natural-language query"),
+    repo: str = typer.Option(
+        ".", "--repo", help="Repository path"
+    ),
+    limit: int = typer.Option(10, "--limit", help="Max results"),
+    output_format: str = typer.Option(
+        "console", "--format", help="Output: console, json"
+    ),
+):
+    """Query repository memory for relevant code + context.
+
+    Uses hybrid retrieval (semantic + graph + metadata) to find the most
+    relevant code chunks, symbols, dependencies, and tests.
+
+    Examples:
+        research-engineer memory query "EMA checkpoint support" --repo ./my_repo
+        research-engineer memory query "training loop" --limit 5 --format json
+    """
+    from research_engineer.memory import RepositoryMemory
+
+    try:
+        mem = RepositoryMemory(repo, auto_load=True)
+        if not mem.store.has_index(str(Path(repo).resolve())):
+            typer.echo("⚠️  No index found. Run `memory build` first.")
+            return 1
+        results = mem.query(query, limit=limit)
+        if output_format == "json":
+            typer.echo(
+                json.dumps([r.model_dump() for r in results], indent=2, default=str)
+            )
+        else:
+            typer.echo(f"\n🔍 Query: '{query}' ({len(results)} results)\n")
+            for i, r in enumerate(results, 1):
+                sym = r.symbol
+                typer.echo(
+                    f"{i}. [{r.combined_score:.3f}] "
+                    f"{sym.kind.value if sym else 'unknown'}:"
+                    f"{sym.qualified_name if sym else r.chunk.chunk_id}"
+                )
+                typer.echo(
+                    f"   📄 {r.chunk.file_path}:{r.chunk.line_start}-{r.chunk.line_end}"
+                )
+                typer.echo(
+                    f"   📊 sem={r.semantic_score:.2f} "
+                    f"graph={r.graph_score:.2f} "
+                    f"meta={r.metadata_score:.2f}"
+                )
+                if r.related_symbols:
+                    typer.echo(
+                        f"   🔗 related: {', '.join(s.name for s in r.related_symbols[:5])}"
+                    )
+                if sym and sym.docstring:
+                    typer.echo(f"   📝 {sym.docstring.splitlines()[0][:80]}")
+                typer.echo()
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error: {e}", err=True)
+        return 1
+
+
+@memory_app.command("symbol-graph")
+def memory_graph_cmd(
+    symbol: str = typer.Argument(..., help="Symbol name to explore"),
+    repo: str = typer.Option(
+        ".", "--repo", help="Repository path"
+    ),
+    output_format: str = typer.Option(
+        "console", "--format", help="Output: console, json"
+    ),
+):
+    """Show the symbol graph neighborhood for a symbol.
+
+    Displays dependencies, dependents, callers, callees, related symbols,
+    and associated tests.
+
+    Examples:
+        research-engineer memory graph "Trainer" --repo ./my_repo
+        research-engineer memory graph "save_checkpoint" --format json
+    """
+    from research_engineer.memory import RepositoryMemory
+
+    try:
+        mem = RepositoryMemory(repo, auto_load=True)
+        if not mem.store.has_index(str(Path(repo).resolve())):
+            typer.echo("⚠️  No index found. Run `memory build` first.")
+            return 1
+        result = mem.graph(symbol)
+        if output_format == "json":
+            typer.echo(json.dumps(result, indent=2, default=str))
+        else:
+            if not result.get("found"):
+                typer.echo(f"❌ Symbol not found: {symbol}")
+                return 1
+            sym = result["symbol"]
+            typer.echo(f"\n🕸️  Symbol: {sym['qualified_name']}")
+            typer.echo(f"   Kind: {sym['kind']}")
+            typer.echo(f"   File: {sym['file_path']}:{sym['line_start']}")
+            if result.get("dependencies"):
+                typer.echo(f"\n   ⬇️  Dependencies ({len(result['dependencies'])}):")
+                for d in result["dependencies"][:10]:
+                    typer.echo(f"      - {d['qualified_name']} ({d['file_path']})")
+            if result.get("dependents"):
+                typer.echo(f"\n   ⬆️  Dependents ({len(result['dependents'])}):")
+                for d in result["dependents"][:10]:
+                    typer.echo(f"      - {d['qualified_name']} ({d['file_path']})")
+            if result.get("callers"):
+                typer.echo(f"\n   📞 Callers ({len(result['callers'])}):")
+                for c in result["callers"][:10]:
+                    typer.echo(f"      - {c['qualified_name']}")
+            if result.get("callees"):
+                typer.echo(f"\n   📞 Callees ({len(result['callees'])}):")
+                for c in result["callees"][:10]:
+                    typer.echo(f"      - {c['qualified_name']}")
+            if result.get("tests"):
+                typer.echo(f"\n   🧪 Tests ({len(result['tests'])}):")
+                for t in result["tests"][:10]:
+                    typer.echo(f"      - {t['file_path']}")
+            if result.get("related"):
+                typer.echo(f"\n   🔗 Related ({len(result['related'])}):")
+                for r in result["related"][:10]:
+                    typer.echo(f"      - {r['qualified_name']}")
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error: {e}", err=True)
         return 1
 
 
@@ -2705,6 +2985,170 @@ def loop_report(
         return 1
 
 
+# ---------------------------------------------------------------------------
+# Phase 11 - Terminal-first autonomous coding agent (`task` command)
+# ---------------------------------------------------------------------------
+
+
+@app.command()
+def task(
+    goal: str = typer.Argument(
+        ...,
+        help='Natural-language coding goal, e.g. "Add Grouped Query Attention"',
+    ),
+    repo: str = typer.Option(
+        ".",
+        "--repo",
+        help="Path to target repository",
+    ),
+    paper: str | None = typer.Option(
+        None,
+        "--paper",
+        help="Optional paper ID/URL/PDF for research-grounded tasks",
+    ),
+    run_tests: bool = typer.Option(
+        False,
+        "--run-tests",
+        help="Execute the test suite after patching",
+    ),
+    test_command: str = typer.Option(
+        "uv run pytest",
+        "--test-command",
+        help="Test command to run when --run-tests is set",
+    ),
+    dry_run: bool = typer.Option(
+        True,
+        "--dry-run",
+        help="Generate patches without applying them",
+    ),
+    stream: bool = typer.Option(
+        True,
+        "--stream/--no-stream",
+        help="Stream LLM tokens to stdout during planning",
+    ),
+    output_dir: str = typer.Option(
+        "output/tasks",
+        "--output-dir",
+        help="Directory to save task artifacts",
+    ),
+    output_format: str = typer.Option(
+        "console",
+        "--format",
+        help="Output: console, json, markdown",
+    ),
+    delegate: bool = typer.Option(
+        False,
+        "--delegate",
+        help="Use multi-agent delegation pipeline (Phase 13): "
+        "research → architect → code → review → test → repair",
+    ),
+    max_repairs: int = typer.Option(
+        2,
+        "--max-repairs",
+        help="Max review/test repair iterations in delegation mode",
+    ),
+):
+    """Run a terminal-first autonomous coding turn.
+
+    Analyzes the repository, creates an implementation plan, generates a
+    patch, shows the diff, and optionally executes tests.
+
+    With --delegate, uses the multi-agent delegation pipeline: each phase
+    is handled by a specialized agent (Architect, Coder, Reviewer, Tester)
+    with automatic repair loops on review/test failures.
+
+    Examples:
+        research-engineer task "Add RMSNorm to the model"
+        research-engineer task "Refactor data loader" --repo ./my_repo
+        research-engineer task "Fix gradient clipping" --run-tests
+        research-engineer task "Implement LoRA" --paper 2503.12345 --repo .
+        research-engineer task "Add EMA checkpoint support" --delegate --max-repairs 3
+    """
+    agent = _get_task_agent()
+    config = TaskConfig(
+        goal=goal,
+        repo_path=repo,
+        paper_input=paper,
+        run_tests=run_tests,
+        test_command=test_command,
+        dry_run=dry_run,
+        stream=stream,
+        output_dir=output_dir,
+        delegate=delegate,
+        max_repair_iterations=max_repairs,
+    )
+    try:
+        result = asyncio.run(agent.run(goal, repo, config=config))
+
+        if output_format == "json":
+            typer.echo(result.model_dump_json(indent=2))
+        elif output_format == "markdown":
+            typer.echo(f"# Task: {result.task_id}\n")
+            typer.echo(f"**Goal**: {result.goal}\n")
+            typer.echo(f"**Status**: {result.status.value}\n")
+            typer.echo(f"**Patches**: {result.patches_generated}\n")
+            typer.echo(f"**Time**: {result.processing_time_seconds}s\n")
+            typer.echo("## Steps\n")
+            for s in result.steps:
+                typer.echo(
+                    f"- {s.step_type.value}: {s.status.value} "
+                    f"({s.duration_seconds}s) {s.summary}"
+                )
+            if result.diff:
+                typer.echo("\n## Diff\n\n```diff\n")
+                typer.echo(result.diff)
+                typer.echo("\n```")
+            if result.test_exit_code is not None:
+                typer.echo(
+                    f"\n## Tests (exit {result.test_exit_code})\n\n"
+                    f"```\n{result.test_stdout}\n```"
+                )
+        else:
+            typer.echo(f"\n🎯 Task: {result.task_id}")
+            typer.echo(f"   Goal: {result.goal}")
+            typer.echo(f"   Repo: {result.repo_path}")
+            typer.echo(f"   Status: {result.status.value}")
+            if result.delegated:
+                typer.echo(
+                    f"   🤖 Delegated: {result.repair_iterations} repair iteration(s)"
+                )
+            typer.echo(f"   Patches: {result.patches_generated}")
+            typer.echo(f"   Time: {result.processing_time_seconds}s")
+            typer.echo("\n📋 Steps:")
+            for s in result.steps:
+                mark = "✅" if s.status == TaskStatus.COMPLETED else "❌"
+                typer.echo(
+                    f"   {mark} {s.step_type.value}: {s.summary}"
+                )
+            if result.review_issues:
+                typer.echo(f"\n🔍 Review issues ({len(result.review_issues)}):")
+                for issue in result.review_issues[:5]:
+                    typer.echo(f"   - {issue}")
+            if result.test_failures:
+                typer.echo(f"\n🧪 Test failures ({len(result.test_failures)}):")
+                for fail in result.test_failures[:5]:
+                    typer.echo(f"   - {fail}")
+            if result.diff:
+                typer.echo("\n📝 Diff:")
+                typer.echo(result.diff[:4000])
+            if result.test_exit_code is not None:
+                typer.echo(
+                    f"\n🧪 Tests: exit={result.test_exit_code}"
+                )
+                if result.test_stdout:
+                    typer.echo(result.test_stdout[:2000])
+            if result.generated_files:
+                typer.echo("\n📁 Files:")
+                for f in result.generated_files:
+                    typer.echo(f"   - {f}")
+            if result.error:
+                typer.echo(f"\n❌ Error: {result.error}", err=True)
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error running task: {e}", err=True)
+        return 1
+
+
         return 0
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)
@@ -2769,6 +3213,121 @@ def llm_config(
         cfg = get_factory().config
     typer.echo(json.dumps(cfg, indent=2, default=str))
     return 0
+
+
+# ---------------------------------------------------------------------------
+# Phase 15 - Autonomous Research Workflows
+# ---------------------------------------------------------------------------
+
+
+def _get_research_orchestrator():
+    """Get or create the research orchestrator instance."""
+    from research_engineer.agents import ResearchOrchestrator
+
+    return ResearchOrchestrator(
+        literature_agent=_get_literature_agent(),
+    )
+
+
+@app.command()
+def research(
+    goal: str = typer.Argument(
+        ...,
+        help='Research goal, e.g. "Design a more efficient diffusion transformer"',
+    ),
+    repo: str = typer.Option(
+        ".",
+        "--repo",
+        help="Repository path for experiment execution",
+    ),
+    max_papers: int = typer.Option(
+        20,
+        "--max-papers",
+        help="Max papers to discover in literature review",
+    ),
+    max_hypotheses: int = typer.Option(
+        5,
+        "--max-hypotheses",
+        help="Max hypotheses to generate",
+    ),
+    dry_run: bool = typer.Option(
+        True,
+        "--dry-run",
+        help="Dry-run experiments (don't execute commands)",
+    ),
+    timeout: int = typer.Option(
+        3600,
+        "--timeout",
+        help="Experiment timeout in seconds",
+    ),
+    output_dir: str = typer.Option(
+        "output/research",
+        "--output-dir",
+        help="Directory to save research artifacts",
+    ),
+    output_format: str = typer.Option(
+        "console",
+        "--format",
+        help="Output: console, json, markdown",
+    ),
+):
+    """Run an autonomous research workflow.
+
+    Transforms a research goal into a complete research workflow:
+    literature review, knowledge synthesis, hypothesis generation,
+    experiment planning, experiment execution, result analysis, and
+    report generation.
+
+    Examples:
+        research-engineer research "Design a more efficient diffusion transformer"
+        research-engineer research "Improve attention efficiency" --max-papers 30
+        research-engineer research "Novel loss function" --no-dry-run --repo ./my_repo
+    """
+    from research_engineer.agents import ResearchConfig
+
+    orchestrator = _get_research_orchestrator()
+    config = ResearchConfig(
+        max_papers=max_papers,
+        max_hypotheses=max_hypotheses,
+        dry_run_experiments=dry_run,
+        experiment_timeout=timeout,
+        output_dir=output_dir,
+    )
+    try:
+        result = asyncio.run(orchestrator.run(goal, repo, config=config))
+
+        if output_format == "json":
+            typer.echo(result.model_dump_json(indent=2, default=str))
+        elif output_format == "markdown":
+            if result.final_report:
+                typer.echo(result.final_report)
+            else:
+                typer.echo(f"# Research: {result.research_goal}\n\nNo report generated.")
+        else:
+            typer.echo(f"\n🔬 Research Workflow: {result.workflow_id}")
+            typer.echo(f"   Goal: {result.research_goal}")
+            typer.echo(f"   Status: {result.status.value}")
+            typer.echo(f"   Papers found: {result.papers_found}")
+            typer.echo(f"   Hypotheses: {result.hypotheses_generated}")
+            typer.echo(f"   Experiments: {result.experiments_run}")
+            typer.echo(f"   Time: {result.processing_time_seconds}s")
+            typer.echo("\n📋 Stages:")
+            for s in result.stages:
+                mark = "✅" if s.status.value == "completed" else "⏭️" if s.status.value == "skipped" else "❌"
+                typer.echo(
+                    f"   {mark} {s.stage_type.value}: {s.summary} ({s.duration_seconds}s)"
+                )
+            if result.report_path:
+                typer.echo(f"\n📄 Report: {result.report_path}")
+            if result.final_report:
+                typer.echo(f"\n📝 Report preview ({len(result.final_report)} chars):")
+                typer.echo(result.final_report[:1000])
+            if result.error:
+                typer.echo(f"\n❌ Error: {result.error}", err=True)
+        return 0
+    except Exception as e:
+        typer.echo(f"❌ Error running research: {e}", err=True)
+        return 1
 
 
 if __name__ == "__main__":

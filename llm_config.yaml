@@ -10,13 +10,18 @@
 #
 # Switching a provider or model for an agent is a *config-only* change:
 # no source edits are required.
+#
+# Agent-specific model assignments (terminal-first autonomous coding agent):
+#   - qwen3-coder-next:cloud  -> coding (CodingAgent, TaskAgent impl phase)
+#   - glm-5.2:cloud           -> reasoning (Research/Planner/Literature/Eval)
+#   - minimax-m3:cloud        -> orchestration (TaskAgent, ResearchLoopAgent)
 # ---------------------------------------------------------------------------
 
 # Provider used when an agent config omits ``provider``.
 default_provider: ollama
 # Model used when an agent config omits ``model`` (and the provider does
 # not declare its own ``default_model``).
-default_model: llama3
+default_model: glm-5.2:cloud
 
 # --- Provider connection settings ----------------------------------------
 providers:
@@ -28,7 +33,7 @@ providers:
     # API key. Leave as ${OLLAMA_API_KEY} so the secret stays out of git.
     api_key: ${OLLAMA_API_KEY}
     # Model used when a request does not specify one.
-    default_model: llama3
+    default_model: glm-5.2:cloud
     # Per-request HTTP timeout, in seconds.
     timeout: 60
 
@@ -40,30 +45,83 @@ providers:
 #
 # The router resolves a model per agent via research_engineer.llm.router.
 agents:
+  # --- Reasoning agents (glm-5.2:cloud) ---------------------------------
   ResearchAgent:
     provider: ollama
-    model: llama3
-  RepositoryAgent:
-    provider: ollama
-    model: llama3
+    model: glm-5.2:cloud
   ExperimentPlannerAgent:
     provider: ollama
-    model: llama3
-  CodingAgent:
-    provider: ollama
-    model: llama3
-  MemoryAgent:
-    provider: ollama
-    model: llama3
+    model: glm-5.2:cloud
   LiteratureAgent:
     provider: ollama
-    model: llama3
-  ExperimentAgent:
-    provider: ollama
-    model: llama3
+    model: glm-5.2:cloud
   EvaluationAgent:
     provider: ollama
-    model: llama3
+    model: glm-5.2:cloud
+  MemoryAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  ArchitectAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  ReviewerAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  FailureAnalyzer:
+    provider: ollama
+    model: glm-5.2:cloud
+  RepairStrategist:
+    provider: ollama
+    model: glm-5.2:cloud
+
+  # --- Phase 15: Research workflow agents (glm-5.2:cloud for reasoning) ---
+  LiteratureDiscoveryAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  KnowledgeSynthesisAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  HypothesisGeneratorAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  ResearchExperimentPlannerAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  ResultAnalyzerAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+  ReportGeneratorAgent:
+    provider: ollama
+    model: glm-5.2:cloud
+
+  # --- Phase 15: Orchestration (minimax-m3:cloud) ---
+  ExperimentExecutorAgent:
+    provider: ollama
+    model: minimax-m3:cloud
+  ResearchOrchestrator:
+    provider: ollama
+    model: minimax-m3:cloud
+
+  # --- Coding agent (qwen3-coder-next:cloud) ----------------------------
+  CodingAgent:
+    provider: ollama
+    model: qwen3-coder-next:cloud
+
+  # --- Orchestration agents (minimax-m3:cloud) --------------------------
+  TaskAgent:
+    provider: ollama
+    model: minimax-m3:cloud
   ResearchLoopAgent:
     provider: ollama
-    model: llama3
+    model: minimax-m3:cloud
+  ExperimentAgent:
+    provider: ollama
+    model: minimax-m3:cloud
+  TestAgent:
+    provider: ollama
+    model: minimax-m3:cloud
+
+  # --- Repository analysis (rule-based by default; LLM optional) -------
+  RepositoryAgent:
+    provider: ollama
+    model: glm-5.2:cloud

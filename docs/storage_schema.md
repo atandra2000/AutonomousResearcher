@@ -282,4 +282,4 @@ agent = MemoryAgent(config=MemoryConfig(
 
 ---
 
-*Version: 1.0 · 10 SQLite tables · ChromaDB · knowledge graph*
+*Version: 2.0 · 12+ SQLite tables · ChromaDB · knowledge graph · repository memory*
