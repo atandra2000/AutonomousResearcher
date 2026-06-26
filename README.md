@@ -85,11 +85,139 @@ It is built for **ML engineers** who want to reproduce or extend papers against 
 
 ## 3. Architecture
 
-The platform is organized into **fifteen phases**, each a self-contained layer with agents, tools, and typed models. Phases 1–8 are individual capabilities; Phase 9 orchestrates them; Phase 10 is the LLM substrate; Phase 11 adds terminal-first coding; Phase 12 adds repository memory; Phase 13 adds multi-agent delegation; Phase 14 adds autonomous self-repair; Phase 15 adds end-to-end research workflows.
+The platform is organized into **fifteen phases**, each a self-contained layer with agents, tools, and typed models. Phases 1&ndash;8 are individual capabilities; Phase 9 orchestrates them; Phase 10 is the LLM substrate; Phase 11 adds terminal-first coding; Phase 12 adds repository memory; Phase 13 adds multi-agent delegation; Phase 14 adds autonomous self-repair; Phase 15 adds end-to-end research workflows.
+
+### High-Level System
+
+```mermaid
+flowchart TB
+    subgraph IN["Inputs"]
+        direction TB
+        I1["arXiv / PDF<br/>ML paper"]:::in
+        I2["ML repo"]:::in
+        I3["Research goal"]:::in
+    end
+    subgraph P1_8["Phases 1 – 8 · Individual Capabilities"]
+        direction TB
+        A1["ResearchAgent<br/>paper → summary"]:::a
+        A2["RepositoryAgent<br/>repo → structure"]:::a
+        A3["ExperimentPlannerAgent<br/>9-file plan"]:::a
+        A4["CodingAgent<br/>patches + tests"]:::a
+        A5["ExperimentAgent<br/>run + monitor"]:::a
+        A6["EvaluationAgent<br/>compare + stats"]:::a
+        A7["LiteratureAgent<br/>discover/review"]:::a
+        A8["MemoryAgent<br/>SQLite + ChromaDB + KG"]:::a
+    end
+    subgraph P9["Phase 9 · Research Orchestration"]
+        A9["ResearchLoopAgent<br/>recall → discover → plan →<br/>implement → run → evaluate → store"]:::orch
+    end
+    subgraph P10["Phase 10 · LLM Substrate"]
+        direction TB
+        L1["llm_config.yaml"]:::cfg
+        L2["ProviderFactory<br/>+ ModelRouter"]:::llm
+        L3["OllamaCloudProvider"]:::llm
+    end
+    subgraph P11_15["Phases 11 – 15 · Advanced"]
+        direction TB
+        A11["TaskAgent<br/>terminal-first coding"]:::adv
+        A12["Repository Memory<br/>symbol graph + retrieval"]:::adv
+        A13["DelegationFramework<br/>multi-agent routing"]:::adv
+        A14["SelfRepair<br/>failure analysis + repair"]:::adv
+        A15["ResearchOrchestrator<br/>end-to-end workflows"]:::adv
+    end
+    OUT["research_report.md / .json"]:::out
+
+    I1 --> A1
+    I2 --> A2
+    I3 --> A9
+    I3 --> A15
+    A1 --> A3
+    A2 --> A3
+    A3 --> A4 --> A5 --> A6 --> A8
+    A6 --> A9
+    A8 --> A9
+    A9 --> A15
+    P10 -. provider .-> A1
+    P10 -. provider .-> A2
+    P10 -. provider .-> A3
+    P10 -. provider .-> A4
+    P10 -. provider .-> A9
+    P10 -. provider .-> A15
+    A15 --> OUT
+    A11 -. extends .-> A4
+    A12 -. provides .-> A2
+    A13 -. routes .-> A9
+    A14 -. guards .-> A5
+
+    classDef in fill:#e0e7ff,stroke:#3730a3,color:#000
+    classDef a fill:#dbeafe,stroke:#1d4ed8,color:#000
+    classDef orch fill:#fce7f3,stroke:#9d174d,color:#000
+    classDef adv fill:#fed7aa,stroke:#9a3412,color:#000
+    classDef cfg fill:#fde68a,stroke:#b45309,color:#000
+    classDef llm fill:#fbcfe8,stroke:#831843,color:#000
+    classDef out fill:#bbf7d0,stroke:#15803d,color:#000
+```
+
+### 15-Phase Roadmap
+
+```mermaid
+flowchart LR
+    P1["P1<br/>Paper Analysis"]:::p --> P2["P2<br/>Repo Analysis"]:::p
+    P2 --> P3["P3<br/>Experiment Planning"]:::p
+    P3 --> P4["P4<br/>Code Implementation"]:::p
+    P4 --> P5["P5<br/>Experiment Execution"]:::p
+    P5 --> P6["P6<br/>Evaluation"]:::p
+    P6 --> P7["P7<br/>Literature Intel"]:::p
+    P7 --> P8["P8<br/>Memory"]:::p
+    P8 --> P9["P9<br/>Research Loop"]:::orch
+    P9 --> P10["P10<br/>LLM Layer"]:::llm
+    P10 --> P11["P11<br/>Terminal Coding"]:::adv
+    P11 --> P12["P12<br/>Repo Memory"]:::adv
+    P12 --> P13["P13<br/>Delegation"]:::adv
+    P13 --> P14["P14<br/>Self-Repair"]:::adv
+    P14 --> P15["P15<br/>Research Workflow"]:::adv
+
+    classDef p fill:#dbeafe,stroke:#1d4ed8,color:#000
+    classDef orch fill:#fce7f3,stroke:#9d174d,color:#000
+    classDef llm fill:#fbcfe8,stroke:#831843,color:#000
+    classDef adv fill:#fed7aa,stroke:#9a3412,color:#000
+```
+
+### Provider-Agnostic LLM Routing
+
+```mermaid
+flowchart LR
+    YAML["llm_config.yaml<br/>(per-agent model)"]:::cfg --> ROUTER["ModelRouter"]:::llm
+    ROUTER --> OLLAMA["OllamaCloudProvider"]:::llm
+    ROUTER --> OPENAI["OpenAIProvider"]:::llm
+    ROUTER --> CUSTOM["CustomProvider"]:::llm
+    OLLAMA --> RES["resolve_llm(agent_name)"]:::res
+    OPENAI --> RES
+    CUSTOM --> RES
+    RES --> A1["ResearchAgent"]:::a
+    RES --> A2["CodingAgent"]:::a
+    RES --> A3["LoopAgent"]:::a
+    RES -. "any of 23 agents" .-> AX["..."]:::a
+
+    classDef cfg fill:#fde68a,stroke:#b45309,color:#000
+    classDef llm fill:#fbcfe8,stroke:#831843,color:#000
+    classDef res fill:#bbf7d0,stroke:#15803d,color:#000
+    classDef a fill:#dbeafe,stroke:#1d4ed8,color:#000
+```
+
+> Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `qwen3-coder-next`, reasoning use `glm-5.2`, orchestration use `minimax-m3`.
+
+### Text Alternative (ASCII)
 
 ```
                     Inputs
                  ┌─────────────┐
+                 │ arXiv / PDF │
+                 │ ML repo     │
+                 │ Research    │
+                 │ goal        │
+                 └──────┬──────┘
+
                  │ arXiv / PDF │
                  │ ML repo     │
                  │ Research    │
@@ -246,6 +374,48 @@ Edges are added **automatically** — every agent that stores a memory also call
 ## 7. Memory System Architecture
 
 Memory is the platform's long-term brain. It persists across runs and powers cross-run learning in the autonomous loop.
+
+```mermaid
+flowchart TB
+    subgraph TYPES["9 Memory Types"]
+        direction TB
+        M1["PaperMemory"]:::t
+        M2["RepositoryMemory"]:::t
+        M3["ExperimentPlanMemory"]:::t
+        M4["PatchMemory"]:::t
+        M5["ArchitectureDecisionMemory"]:::t
+        M6["ResearchInsightMemory"]:::t
+        M7["FailedApproachMemory"]:::t
+        M8["SuccessfulApproachMemory"]:::t
+        M9["Pattern / AntiPattern / BestPractice"]:::t
+    end
+    subgraph BACKENDS["3 Storage Backends"]
+        direction TB
+        S1["SQLite<br/>structured records"]:::sql
+        S2["ChromaDB<br/>SPECTER-style embeddings<br/>all-mpnet-base-v2"]:::vec
+        S3["Knowledge Graph<br/>typed relationships"]:::kg
+    end
+    subgraph RETRIEVE["6 Retrieval Strategies"]
+        direction TB
+        R1["DirectLookup<br/>exact ID/tag match"]:::r
+        R2["SemanticSearch<br/>vector similarity"]:::r
+        R3["GraphTraversal<br/>relationship walk"]:::r
+        R4["TagBasedFilter<br/>tag intersection"]:::r
+        R5["TemporalQuery<br/>recency-weighted"]:::r
+        R6["HybridSearch<br/>vector + graph + tag"]:::r
+    end
+
+    TYPES --> BACKENDS
+    BACKENDS --> RETRIEVE
+    RETRIEVE --> OUT["MemoryAgent<br/>(used by 23 agents)"]:::out
+
+    classDef t fill:#dbeafe,stroke:#1d4ed8,color:#000
+    classDef sql fill:#fde68a,stroke:#b45309,color:#000
+    classDef vec fill:#fce7f3,stroke:#9d174d,color:#000
+    classDef kg fill:#fbcfe8,stroke:#831843,color:#000
+    classDef r fill:#fed7aa,stroke:#9a3412,color:#000
+    classDef out fill:#bbf7d0,stroke:#15803d,color:#000
+```
 
 **9 memory types:**
 - `PaperMemory`, `RepositoryMemory`, `ExperimentPlanMemory`, `PatchMemory`
