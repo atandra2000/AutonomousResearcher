@@ -136,29 +136,59 @@ The platform is organized into **fifteen phases**, each a self-contained layer w
 ```
 ### 15-Phase Roadmap
 
-```mermaid
-flowchart LR
-    P1["P1<br/>Paper Analysis"]:::p --> P2["P2<br/>Repo Analysis"]:::p
-    P2 --> P3["P3<br/>Experiment Planning"]:::p
-    P3 --> P4["P4<br/>Code Implementation"]:::p
-    P4 --> P5["P5<br/>Experiment Execution"]:::p
-    P5 --> P6["P6<br/>Evaluation"]:::p
-    P6 --> P7["P7<br/>Literature Intel"]:::p
-    P7 --> P8["P8<br/>Memory"]:::p
-    P8 --> P9["P9<br/>Research Loop"]:::orch
-    P9 --> P10["P10<br/>LLM Layer"]:::llm
-    P10 --> P11["P11<br/>Terminal Coding"]:::adv
-    P11 --> P12["P12<br/>Repo Memory"]:::adv
-    P12 --> P13["P13<br/>Delegation"]:::adv
-    P13 --> P14["P14<br/>Self-Repair"]:::adv
-    P14 --> P15["P15<br/>Research Workflow"]:::adv
-
-    classDef p fill:#dbeafe,stroke:#1d4ed8,color:#000
-    classDef orch fill:#fce7f3,stroke:#9d174d,color:#000
-    classDef llm fill:#fbcfe8,stroke:#831843,color:#000
-    classDef adv fill:#fed7aa,stroke:#9a3412,color:#000
+```
+   ┌──── CORE RESEARCH PIPELINE (P1–P7) ─────────────────────────────┐
+   │                                                                  │
+   │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐    │
+   │  │   P1   │─►│   P2   │─►│   P3   │─►│   P4   │─►│   P5   │    │
+   │  │ Paper  │  │  Repo  │  │  Exp.  │  │  Code  │  │  Exp.  │    │
+   │  │Analys. │  │Analys. │  │Planning│  │  Impl. │  │ Exec.  │    │
+   │  └───┬────┘  └────┬───┘  └───┬────┘  └────┬───┘  └────┬───┘    │
+   │      │            │          │             │            │         │
+   │      └────────────┴──────────┼─────────────┘            │         │
+   │                             ▼                          ▼         │
+   │                       ┌────────┐                  ┌────────┐     │
+   │                       │   P6   │                  │   P7   │     │
+   │                       │  Eval  │                  │  Lit.  │     │
+   │                       │ uation │                  │ Intel  │     │
+   │                       └───┬────┘                  └───┬────┘     │
+   │                           │                           │           │
+   └───────────────────────────┼───────────────────────────┼───────────┘
+                               ▼                           │
+   ┌── MEMORY & LOOP (P8–P9) ──┐                            │
+   │  ┌────────┐  ┌────────┐    │                            │
+   │  │   P8   │◄►│   P9   │◄───┴────────────────────────────┘
+   │  │ Memory │  │Research│
+   │  │ SQL/   │  │  Loop  │
+   │  │Chroma/ │  │(orch.) │
+   │  │  KG    │  │        │
+   │  └────────┘  └────┬───┘
+   │                  │
+   │                  ▼
+   │         ┌── LLM SUBSTRATE ──┐
+   │         │       P10          │
+   │         │ provider-agnostic  │
+   │         │ llm_config.yaml →  │
+   │         │  ModelRouter →     │
+   │         │  OllamaCloud      │
+   │         └─────────┬──────────┘
+   │                   │ (routes to ALL agents)
+   └───────────────────┼──────────────────────────────┐
+                       ▼                              │
+   ┌── ADVANCED (P11–P15) ─────────────────────────────┴────────────┐
+   │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐ │
+   │  │  P11   │─►│  P12   │─►│  P13   │─►│  P14   │─►│  P15   │ │
+   │  │Termin. │  │  Repo  │  │ Deleg- │  │ Self-  │  │Research│ │
+   │  │ Coding │  │ Memory │  │ ation  │  │ Repair │  │Workflw │ │
+   │  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘ │
+   └──────────────────────────────────────────────────────────────┘
 ```
 
+**Color legend** (matches original):
+- 🔵 **P1–P7** (blue) — core research pipeline, run independently or chained
+- 🌸 **P8–P9** (pink) — memory + research loop orchestrator
+- 🌹 **P10** (rose) — provider-agnostic LLM substrate (every agent routes through)
+- 🟠 **P11–P15** (orange) — advanced capabilities built on the core
 ### Provider-Agnostic LLM Routing
 
 ```mermaid
