@@ -89,75 +89,51 @@ The platform is organized into **fifteen phases**, each a self-contained layer w
 
 ### High-Level System
 
-```mermaid
-flowchart TB
-    subgraph IN["Inputs"]
-        direction TB
-        I1["arXiv / PDF<br/>ML paper"]:::in
-        I2["ML repo"]:::in
-        I3["Research goal"]:::in
-    end
-    subgraph P1_8["Phases 1 – 8 · Individual Capabilities"]
-        direction TB
-        A1["ResearchAgent<br/>paper → summary"]:::a
-        A2["RepositoryAgent<br/>repo → structure"]:::a
-        A3["ExperimentPlannerAgent<br/>9-file plan"]:::a
-        A4["CodingAgent<br/>patches + tests"]:::a
-        A5["ExperimentAgent<br/>run + monitor"]:::a
-        A6["EvaluationAgent<br/>compare + stats"]:::a
-        A7["LiteratureAgent<br/>discover/review"]:::a
-        A8["MemoryAgent<br/>SQLite + ChromaDB + KG"]:::a
-    end
-    subgraph P9["Phase 9 · Research Orchestration"]
-        A9["ResearchLoopAgent<br/>recall → discover → plan →<br/>implement → run → evaluate → store"]:::orch
-    end
-    subgraph P10["Phase 10 · LLM Substrate"]
-        direction TB
-        L1["llm_config.yaml"]:::cfg
-        L2["ProviderFactory<br/>+ ModelRouter"]:::llm
-        L3["OllamaCloudProvider"]:::llm
-    end
-    subgraph P11_15["Phases 11 – 15 · Advanced"]
-        direction TB
-        A11["TaskAgent<br/>terminal-first coding"]:::adv
-        A12["Repository Memory<br/>symbol graph + retrieval"]:::adv
-        A13["DelegationFramework<br/>multi-agent routing"]:::adv
-        A14["SelfRepair<br/>failure analysis + repair"]:::adv
-        A15["ResearchOrchestrator<br/>end-to-end workflows"]:::adv
-    end
-    OUT["research_report.md / .json"]:::out
-
-    I1 --> A1
-    I2 --> A2
-    I3 --> A9
-    I3 --> A15
-    A1 --> A3
-    A2 --> A3
-    A3 --> A4 --> A5 --> A6 --> A8
-    A6 --> A9
-    A8 --> A9
-    A9 --> A15
-    P10 -. provider .-> A1
-    P10 -. provider .-> A2
-    P10 -. provider .-> A3
-    P10 -. provider .-> A4
-    P10 -. provider .-> A9
-    P10 -. provider .-> A15
-    A15 --> OUT
-    A11 -. extends .-> A4
-    A12 -. provides .-> A2
-    A13 -. routes .-> A9
-    A14 -. guards .-> A5
-
-    classDef in fill:#e0e7ff,stroke:#3730a3,color:#000
-    classDef a fill:#dbeafe,stroke:#1d4ed8,color:#000
-    classDef orch fill:#fce7f3,stroke:#9d174d,color:#000
-    classDef adv fill:#fed7aa,stroke:#9a3412,color:#000
-    classDef cfg fill:#fde68a,stroke:#b45309,color:#000
-    classDef llm fill:#fbcfe8,stroke:#831843,color:#000
-    classDef out fill:#bbf7d0,stroke:#15803d,color:#000
 ```
+                 ┌─────────────┐
+                 │  arXiv/PDF  │
+                 │  ML repo    │
+                 │  Research   │
+                 │  goal       │
+                 └──────┬──────┘
+                        │
+        ┌───────────────┼───────────────┐
+        v               v               v
+  ResearchAgent  RepositoryAgent  ResearchLoopAgent
+  (paper→summary) (repo→struct)   (orchestrator)
+        │               │               │
+        └───────┬───────┘               │
+                v                       │
+        ExperimentPlannerAgent           │
+        (plan→9-file plan)              │
+                │                       │
+                v                       │
+          CodingAgent                   │
+        (patches + tests)               │
+                │                       │
+                v                       │
+        ExperimentAgent                 │
+        (run + monitor)                 │
+                │                       │
+                v                       │
+        EvaluationAgent                 │
+        (compare + stats)               │
+                │                       │
+                v                       v
+            MemoryAgent ◄── ResearchLoopAgent
+        (SQLite + ChromaDB               │
+         + Knowledge Graph)              │
+                │                       │
+                └───────────────────────┘
+                        │
+                        v
+              research_report.md / .json
 
+    LLM Layer (Phase 10)
+    llm_config.yaml → ProviderFactory
+    → ModelRouter → OllamaCloudProvider
+    → resolve_llm() on every agent
+```
 ### 15-Phase Roadmap
 
 ```mermaid
@@ -206,62 +182,6 @@ flowchart LR
 ```
 
 > Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `qwen3-coder-next`, reasoning use `glm-5.2`, orchestration use `minimax-m3`.
-
-### Text Alternative (ASCII)
-
-```
-                    Inputs
-                 ┌─────────────┐
-                 │ arXiv / PDF │
-                 │ ML repo     │
-                 │ Research    │
-                 │ goal        │
-                 └──────┬──────┘
-
-                 │ arXiv / PDF │
-                 │ ML repo     │
-                 │ Research    │
-                 │ goal        │
-                 └──────┬──────┘
-                        │
-        ┌───────────────┼───────────────┐
-        v               v               v
-  ResearchAgent  RepositoryAgent  ResearchLoopAgent
-  (paper→summary) (repo→struct)   (orchestrator)
-        │               │               │
-        └───────┬───────┘               │
-                v                       │
-        ExperimentPlannerAgent           │
-        (plan→9-file plan)              │
-                │                       │
-                v                       │
-          CodingAgent                   │
-        (patches + tests)               │
-                │                       │
-                v                       │
-        ExperimentAgent                 │
-        (run + monitor)                 │
-                │                       │
-                v                       │
-        EvaluationAgent                 │
-        (compare + stats)               │
-                │                       │
-                v                       v
-            MemoryAgent ◄── ResearchLoopAgent
-        (SQLite + ChromaDB               │
-         + Knowledge Graph)              │
-                │                       │
-                └───────────────────────┘
-                        │
-                        v
-              research_report.md / .json
-
-    LLM Layer (Phase 10)
-    llm_config.yaml → ProviderFactory
-    → ModelRouter → OllamaCloudProvider
-    → resolve_llm() on every agent
-```
-
 ### Phase pipeline
 
 ```

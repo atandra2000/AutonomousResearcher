@@ -24,87 +24,32 @@ The platform decomposes ML research work into **fifteen cooperating phases**, ea
 
 ## High-level architecture
 
-```mermaid
-flowchart TD
-    subgraph Input["Inputs"]
-        P["📄 arXiv / PDF paper"]
-        R["🗂️ ML repository"]
-        G["🎯 Research goal"]
-        T["💻 Coding task"]
-    end
+```
+  INPUTS                       AGENTS (16)                          LLM LAYER
+  ──────                       ───────────                          ──────────
+  📄 arXiv/PDF                  Phase 1–9 (8 agents)                 llm_config.yaml
+  🗂️ ML repository              Phase 11: TaskAgent                       │
+  🎯 Research goal              Phase 13: Architect/Reviewer/Test         ▼
+  💻 Coding task                Phase 14: FailureAnalyzer          ProviderFactory
+                                Phase 15: 7 ResearchStage +              │
+                                         ResearchOrchestrator             ▼
+                                          (orchestrator)             ModelRouter
+                                                                             │
+                                                                             ▼
+                                                                       OllamaCloudProvider
 
-    subgraph Agents["Agent Ecosystem (Phases 1–15)"]
-        A1["ResearchAgent"]
-        A2["RepositoryAgent"]
-        A3["ExperimentPlannerAgent"]
-        A4["CodingAgent"]
-        A5["MemoryAgent"]
-        A6["LiteratureAgent"]
-        A7["ExperimentAgent"]
-        A8["EvaluationAgent"]
-        A9["ResearchLoopAgent<br/>(orchestrator)"]
-        A10["TaskAgent<br/>(Phase 11)"]
-        A11["ArchitectAgent<br/>(Phase 13)"]
-        A12["ReviewerAgent<br/>(Phase 13)"]
-        A13["TestAgent<br/>(Phase 13)"]
-        A14["FailureAnalyzer<br/>(Phase 14)"]
-        A15["RepairStrategist<br/>(Phase 14)"]
-        A16["ResearchOrchestrator<br/>(Phase 15)"]
-    end
-
-    subgraph LLM["Phase 10 — LLM Layer"]
-        CFG["llm_config.yaml"]
-        FAC["ProviderFactory"]
-        ROUT["ModelRouter"]
-        PROV["OllamaCloudProvider"]
-    end
-
-    subgraph Store["Persistent State"]
-        SQL[("SQLite<br/>10+ tables")]
-        CHR[("ChromaDB<br/>vector store")]
-        KG[("Knowledge graph")]
-        RM[("Repository Memory<br/>(Phase 12)<br/>symbol graph + hybrid index")]
-    end
-
-    P --> A1
-    R --> A2
-    G --> A9
-    G --> A16
-    T --> A10
-    A10 --> A11 & A12 & A13
-    A10 --> A14 & A15
-    A9 --> A1 & A2 & A3 & A4 & A6 & A7 & A8
-    A1 & A2 & A3 & A4 & A6 & A7 & A8 --> A5
-    A5 <--> SQL
-    A5 <--> CHR
-    A5 <--> KG
-    A16 --> A6 & A5
-    A16 --> A10
-    A9 --> REP["📄 research_report.md / .json"]
-    A10 -.-> ROUT
-    A1 -.-> ROUT
-    A2 -.-> ROUT
-    A3 -.-> ROUT
-    A4 -.-> ROUT
-    A5 -.-> ROUT
-    A6 -.-> ROUT
-    A7 -.-> ROUT
-    A8 -.-> ROUT
-    A9 -.-> ROUT
-    A11 -.-> ROUT
-    A12 -.-> ROUT
-    A13 -.-> ROUT
-    A14 -.-> ROUT
-    A15 -.-> ROUT
-    A16 -.-> ROUT
-    CFG --> FAC --> ROUT --> PROV
+  PERSISTENT STATE                MEMORY FLOW
+  ────────────────                ───────────
+  🗄️ SQLite (10+ tables)         All agents → MemoryAgent → SQLite + ChromaDB + Knowledge graph
+  🧠 ChromaDB (vectors)          MemoryAgent ⇄ Repository Memory (Phase 12 symbol graph + hybrid index)
+  🕸️ Knowledge graph             ResearchLoopAgent → research_report.md / .json
+  📚 Repository Memory
 ```
 
----
-
-## Component layers
-
-```
+> All 16 agents call `_llm_support.resolve_llm()` at construction time, so
+> model switching happens at the `llm_config.yaml` level, not in agent code.
+> The dotted arrows in the original mermaid (every agent → ModelRouter)
+> are summarised here as the bottom-up call chain above.
 ┌─────────────────────────────────────────────────────────────────┐
 │  CLI Layer  (Typer — 56 commands across 7 sub-apps)             │
 ├─────────────────────────────────────────────────────────────────┤
