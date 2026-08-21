@@ -39,6 +39,7 @@ Icon
 # Local development artifacts
 .omo/
 .opencode/
+.codegraph/
 
 # Generated data
 data/*.db
