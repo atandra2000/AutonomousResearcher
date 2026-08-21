@@ -2,7 +2,7 @@
 
 Versioned roadmap for the Autonomous ML Research Engineer, from the v1.0 baseline through v2.0 and beyond.
 
-> **Current state (v2.0):** 15/15 phases complete · 23 agents · 61 tools · 186 models · 878 tests.
+> **Current state (v2.0):** 15/15 phases complete · 23 agents · 56 tools · 186 models · 878 tests.
 
 ---
 

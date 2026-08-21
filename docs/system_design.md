@@ -232,7 +232,7 @@ class Tool(ABC, Generic[InputType, OutputType]):
         return await self.execute(input)
 ```
 
-**61 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
+**56 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
 
 ### Caching & rate limiting
 

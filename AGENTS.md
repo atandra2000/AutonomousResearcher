@@ -6,7 +6,7 @@
 > `.agents/skills/ml-research-engineer/SKILL.md`.
 
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
-> multi-agent ML research platform · **Stats:** 23 agents · 61 tools ·
+> multi-agent ML research platform · **Stats:** 23 agents · 56 tools ·
 > 186 models · **878 passing tests** · **Stack:** Python 3.12, pydantic v2,
 > typer, httpx, arxiv, pymupdf, chromadb, sentence-transformers,
 > pytest-asyncio, ruff, mypy.
@@ -54,8 +54,9 @@ research-engineer llm {status|config [--config path]}
 research-engineer task <goal> --repo <path>      # Phase 11: terminal-first autonomous coding
 research-engineer research <goal>                # Phase 15: end-to-end paper→report
 
-# Dev
-uv run pytest
+# Dev — NOTE: bare `uv run pytest` resolves to Homebrew's Python 3.14
+# pytest on this machine and fails collection; always go through python -m.
+uv run python -m pytest
 uv run ruff check .
 uv run mypy .
 ```

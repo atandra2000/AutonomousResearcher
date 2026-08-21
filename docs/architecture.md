@@ -2,7 +2,7 @@
 
 Technical architecture for the Autonomous ML Research Engineer v2.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
 
-> **Status:** 15/15 phases complete · 23 agents · 61 tools · 186 Pydantic models · 56 CLI commands · 878 tests.
+> **Status:** 15/15 phases complete · 23 agents · 56 tools · 186 Pydantic models · 56 CLI commands · 878 tests.
 
 ---
 

@@ -44,7 +44,7 @@ uv run research-engineer task "Implement Grouped Query Attention in the GPT-2 bl
    using Typer.
 4. **Export in package:** Add to `src/research_engineer/agents/__init__.py`.
 5. **Write tests:** `tests/test_my_new_agent.py` (unit + integration).
-6. **Verify suite:** `uv run pytest tests/test_my_new_agent.py -v`.
+6. **Verify suite:** `uv run python -m pytest tests/test_my_new_agent.py -v`.
 
 ## Skill 4: Add a Custom Tool
 

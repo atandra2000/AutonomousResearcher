@@ -2,7 +2,7 @@
 
 Complete documentation for the **Autonomous ML Research Engineer** v2.0 — a multi-agent platform that automates the full ML research lifecycle.
 
-> **Current state:** 15/15 phases complete · 23 agents · 61 tools · 186 Pydantic models · 56 CLI commands · 878 tests passing.
+> **Current state:** 15/15 phases complete · 23 agents · 56 tools · 186 Pydantic models · 56 CLI commands · 878 tests passing.
 
 ---
 
