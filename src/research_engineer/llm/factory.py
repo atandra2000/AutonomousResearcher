@@ -20,7 +20,7 @@ Example ``llm_config.yaml``::
     providers:
       ollama:
         type: ollama
-        base_url: https://api.olama.cloud
+        base_url: https://ollama.com
         api_key: ${OLLAMA_API_KEY}
         default_model: llama3
         timeout: 60

@@ -267,7 +267,7 @@ LLM layer status
 
 Per-agent routing:
   ResearchAgent            -> ollama / glm-5.2:cloud
-  CodingAgent              -> ollama / qwen3-coder-next:cloud
+  CodingAgent              -> ollama / kimi-k2.7-code
   TaskAgent                -> ollama / minimax-m3:cloud
   ResearchOrchestrator     -> ollama / minimax-m3:cloud
   ...

@@ -36,7 +36,7 @@ The platform runs without an LLM for Phases 1–3 (rule-based extraction). To en
 ```bash
 export OLLAMA_API_KEY="your-key"
 # Optional overrides
-export OLLAMA_BASE_URL="https://api.olama.cloud"
+export OLLAMA_BASE_URL="https://ollama.com"
 export OLLAMA_MODEL="glm-5.2:cloud"
 
 # Verify routing

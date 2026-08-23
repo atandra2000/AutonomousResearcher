@@ -7,7 +7,7 @@ are sourced from constructor arguments with environment-variable fallbacks:
 ================ ============ =========================================
 Setting          Env var      Default
 ================ ============ =========================================
-``base_url``      ``OLLAMA_BASE_URL``      ``https://api.olama.cloud``
+``base_url``      ``OLLAMA_BASE_URL``      ``https://ollama.com``
 ``api_key``       ``OLLAMA_API_KEY``       (none)
 ``default_model`` ``OLLAMA_MODEL`` / ``OLLAMA_DEFAULT_MODEL``  ``"llama3"``
 ``timeout``       ``OLLAMA_TIMEOUT``       ``60``
@@ -38,7 +38,7 @@ class OllamaCloudProvider(LLMProvider):
 
     name = "ollama"
 
-    DEFAULT_BASE_URL = "https://api.olama.cloud"
+    DEFAULT_BASE_URL = "https://ollama.com"
 
     def __init__(
         self,

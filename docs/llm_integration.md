@@ -67,7 +67,7 @@ default_model: glm-5.2:cloud
 providers:
   ollama:
     type: ollama
-    base_url: https://api.olama.cloud
+    base_url: https://ollama.com
     api_key: ${OLLAMA_API_KEY}      # expanded from the environment
     default_model: glm-5.2:cloud
     timeout: 60
@@ -76,7 +76,7 @@ agents:
   ResearchAgent:          {provider: ollama, model: glm-5.2:cloud}
   RepositoryAgent:        {provider: ollama, model: glm-5.2:cloud}
   ExperimentPlannerAgent: {provider: ollama, model: glm-5.2:cloud}
-  CodingAgent:            {provider: ollama, model: qwen3-coder-next:cloud}
+  CodingAgent:            {provider: ollama, model: kimi-k2.7-code}
   MemoryAgent:            {provider: ollama, model: glm-5.2:cloud}
   LiteratureAgent:        {provider: ollama, model: glm-5.2:cloud}
   ExperimentAgent:        {provider: ollama, model: minimax-m3:cloud}
@@ -103,7 +103,7 @@ agents:
 | Variable | Used by | Default |
 |----------|---------|---------|
 | `RE_LLM_CONFIG` | factory | path to `llm_config.yaml` |
-| `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://api.olama.cloud` |
+| `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://ollama.com` |
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
@@ -115,7 +115,7 @@ environment, so secrets never need to be committed.
 
 The platform uses three specialized models:
 
-- **qwen3-coder-next:cloud** — coding (assigned to `CodingAgent`)
+- **kimi-k2.7-code** — coding (assigned to `CodingAgent`)
 - **glm-5.2:cloud** — reasoning (Research, Planning, Literature, Evaluation, Architecture, Review, Analysis agents)
 - **minimax-m3:cloud** — orchestration (TaskAgent, ResearchLoop, Experiment, Test, ResearchOrchestrator agents)
 
@@ -124,7 +124,7 @@ This is a config-only decision — switch any agent to any model by editing `llm
 ## Running on Ollama Cloud
 
 1. `export OLLAMA_API_KEY=<your-key>`
-2. (optional) `export OLLAMA_BASE_URL=https://api.olama.cloud`
+2. (optional) `export OLLAMA_BASE_URL=https://ollama.com`
 3. `research-engineer llm status` — verify routing per agent
 4. Any agent now resolves an Ollama Cloud provider automatically.
 
@@ -149,13 +149,13 @@ CodingAgent a different coder-tuned model:
 
 ```yaml
 agents:
-  CodingAgent: {provider: ollama, model: qwen3-coder-next:cloud}
+  CodingAgent: {provider: ollama, model: kimi-k2.7-code}
 ```
 
 Then `research-engineer llm status` shows:
 
 ```
-CodingAgent              -> ollama / qwen3-coder-next:cloud
+CodingAgent              -> ollama / kimi-k2.7-code
 ```
 
 All other agents keep their configured models. Reload is automatic on
@@ -192,7 +192,7 @@ keyword argument and exposes:
 | ResearchAgent | `ResearchAgent` | ollama / glm-5.2:cloud |
 | RepositoryAgent | `RepositoryAgent` | *(none unless `llm_enabled=True`)* |
 | ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.2:cloud |
-| CodingAgent | `CodingAgent` | ollama / qwen3-coder-next:cloud |
+| CodingAgent | `CodingAgent` | ollama / kimi-k2.7-code |
 | MemoryAgent | `MemoryAgent` | ollama / glm-5.2:cloud |
 | LiteratureAgent | `LiteratureAgent` | ollama / glm-5.2:cloud |
 | ExperimentAgent | `ExperimentAgent` | ollama / minimax-m3:cloud |

@@ -14,7 +14,7 @@
 
 ---
 
-> **v2.0 — Production-ready with autonomous research workflows.** 23 specialized agents, 61 typed tools, 186 Pydantic models, a persistent knowledge graph, a vector memory store, a symbol-graph repository memory, a multi-agent delegation framework, an autonomous self-repair engine, and an end-to-end research workflow orchestrator — wired through a single config-driven LLM layer with per-agent model routing (qwen3-coder-next:cloud for coding, glm-5.2:cloud for reasoning, minimax-m3:cloud for orchestration).
+> **v2.0 — Production-ready with autonomous research workflows.** 23 specialized agents, 61 typed tools, 186 Pydantic models, a persistent knowledge graph, a vector memory store, a symbol-graph repository memory, a multi-agent delegation framework, an autonomous self-repair engine, and an end-to-end research workflow orchestrator — wired through a single config-driven LLM layer with per-agent model routing (kimi-k2.7-code for coding, glm-5.2:cloud for reasoning, minimax-m3:cloud for orchestration).
 
 ---
 
@@ -211,7 +211,7 @@ flowchart LR
     classDef a fill:#dbeafe,stroke:#1d4ed8,color:#000
 ```
 
-> Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `qwen3-coder-next`, reasoning use `glm-5.2`, orchestration use `minimax-m3`.
+> Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `kimi-k2.7-code`, reasoning use `glm-5.2`, orchestration use `minimax-m3`.
 ### Phase pipeline
 
 ```
@@ -242,7 +242,7 @@ Paper Analysis → Experiment Planning ← Repo Analysis
 | 1 | `ResearchAgent` | 1 | Acquire paper (arXiv/PDF), parse, produce `ResearchSummary` + `EngineeringReport`, store. | glm-5.2:cloud |
 | 2 | `RepositoryAgent` | 2 | Scan repo, AST analysis, dependency graph, training pipeline, config analysis, knowledge graph, docs. | glm-5.2:cloud |
 | 3 | `ExperimentPlannerAgent` | 3 | Compatibility (7 dims), implementation plan, experiment matrix, validation, risk, compute, prediction. | glm-5.2:cloud |
-| 4 | `CodingAgent` | 4 | Code generation → patches → self-review → tests → migration → rollback → report. **Patch-first.** | qwen3-coder-next:cloud |
+| 4 | `CodingAgent` | 4 | Code generation → patches → self-review → tests → migration → rollback → report. **Patch-first.** | kimi-k2.7-code |
 | 5 | `MemoryAgent` | 5 | Store/recall 9 memory types, manage relationships, vector search, knowledge graph. | glm-5.2:cloud |
 | 6 | `LiteratureAgent` | 6 | Multi-source search, 7-dim comparison, reviews, trends, recommendations, relevance scoring. | glm-5.2:cloud |
 | 7 | `ExperimentAgent` | 7 | Launch (allowlisted, dry-run default), monitor, collect metrics + artifacts, detect failures. | minimax-m3:cloud |
@@ -416,7 +416,7 @@ llm_config.yaml ──→ ProviderFactory ──→ ModelRouter ──→ Ollama
 
 Each agent uses a **different model**, configured in one file. The platform uses three specialized models:
 
-- **qwen3-coder-next:cloud** — coding (CodingAgent)
+- **kimi-k2.7-code** — coding (CodingAgent)
 - **glm-5.2:cloud** — reasoning (Research, Planning, Literature, Evaluation, Architecture, Review, Analysis)
 - **minimax-m3:cloud** — orchestration (TaskAgent, ResearchLoop, Experiment, Test, ResearchOrchestrator)
 
@@ -427,12 +427,12 @@ default_model: glm-5.2:cloud
 providers:
   ollama:
     type: ollama
-    base_url: https://api.olama.cloud
+    base_url: https://ollama.com
     api_key: ${OLLAMA_API_KEY}      # expanded from the environment
     default_model: glm-5.2:cloud
     timeout: 60
 agents:
-  CodingAgent:            {provider: ollama, model: qwen3-coder-next:cloud}
+  CodingAgent:            {provider: ollama, model: kimi-k2.7-code}
   ResearchAgent:          {provider: ollama, model: glm-5.2:cloud}
   TaskAgent:              {provider: ollama, model: minimax-m3:cloud}
   ResearchOrchestrator:   {provider: ollama, model: minimax-m3:cloud}
@@ -446,7 +446,7 @@ agents:
 | Variable | Default |
 |----------|---------|
 | `RE_LLM_CONFIG` | `llm_config.yaml` at repo root |
-| `OLLAMA_BASE_URL` | `https://api.olama.cloud` |
+| `OLLAMA_BASE_URL` | `https://ollama.com` |
 | `OLLAMA_API_KEY` | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | `60` |
@@ -475,7 +475,7 @@ pip install -e .
 ```bash
 export OLLAMA_API_KEY="your-key"
 # Optionally override base URL / model
-export OLLAMA_BASE_URL="https://api.olama.cloud"
+export OLLAMA_BASE_URL="https://ollama.com"
 export OLLAMA_MODEL="llama3"
 ```
 

@@ -349,7 +349,7 @@ All tools follow `Tool[Input, Output]` ABC:
 | Variable | Used by | Default |
 |----------|---------|---------|
 | `RE_LLM_CONFIG` | factory | `llm_config.yaml` at repo root |
-| `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://api.olama.cloud` |
+| `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://ollama.com` |
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |

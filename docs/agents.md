@@ -709,7 +709,7 @@ output/research/<workflow_id>/
 | ResearchAgent | `ResearchAgent` | ollama / glm-5.2:cloud |
 | RepositoryAgent | `RepositoryAgent` | *(none unless `llm_enabled=True`)* |
 | ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.2:cloud |
-| CodingAgent | `CodingAgent` | ollama / qwen3-coder-next:cloud |
+| CodingAgent | `CodingAgent` | ollama / kimi-k2.7-code |
 | MemoryAgent | `MemoryAgent` | ollama / glm-5.2:cloud |
 | LiteratureAgent | `LiteratureAgent` | ollama / glm-5.2:cloud |
 | ExperimentAgent | `ExperimentAgent` | ollama / minimax-m3:cloud |
@@ -734,12 +734,12 @@ Override any agent's model in `llm_config.yaml` — no source changes required.
 
 ```yaml
 agents:
-  CodingAgent: {provider: ollama, model: qwen3-coder-next:cloud}
+  CodingAgent: {provider: ollama, model: kimi-k2.7-code}
   TaskAgent:   {provider: ollama, model: minimax-m3:cloud}
 ```
 
 The platform uses three specialized models:
-- **qwen3-coder-next:cloud** — coding
+- **kimi-k2.7-code** — coding
 - **glm-5.2:cloud** — reasoning
 - **minimax-m3:cloud** — orchestration
 

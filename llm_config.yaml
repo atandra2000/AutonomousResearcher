@@ -12,7 +12,7 @@
 # no source edits are required.
 #
 # Agent-specific model assignments (terminal-first autonomous coding agent):
-#   - qwen3-coder-next:cloud  -> coding (CodingAgent, TaskAgent impl phase)
+#   - kimi-k2.7-code  -> coding (CodingAgent, TaskAgent impl phase)
 #   - glm-5.2:cloud           -> reasoning (Research/Planner/Literature/Eval)
 #   - minimax-m3:cloud        -> orchestration (TaskAgent, ResearchLoopAgent)
 # ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ providers:
     # Maps to OllamaCloudProvider (see llm/ollama_provider.py).
     type: ollama
     # Ollama Cloud OpenAI-compatible base URL. Override with OLLAMA_BASE_URL.
-    base_url: https://api.olama.cloud
+    base_url: https://ollama.com
     # API key. Leave as ${OLLAMA_API_KEY} so the secret stays out of git.
     api_key: ${OLLAMA_API_KEY}
     # Model used when a request does not specify one.
@@ -102,10 +102,10 @@ agents:
     provider: ollama
     model: minimax-m3:cloud
 
-  # --- Coding agent (qwen3-coder-next:cloud) ----------------------------
+  # --- Coding agent (kimi-k2.7-code) ----------------------------
   CodingAgent:
     provider: ollama
-    model: qwen3-coder-next:cloud
+    model: kimi-k2.7-code
 
   # --- Orchestration agents (minimax-m3:cloud) --------------------------
   TaskAgent:
