@@ -7,6 +7,7 @@ ranks results by relevance to the query.
 
 from __future__ import annotations
 
+import math
 import re
 import time
 from difflib import SequenceMatcher
@@ -205,15 +206,26 @@ class PaperSearchTool(Tool[PaperSearchInput, PaperSearchOutput]):
                     seen[r.paper_id] = r
         return list(seen.values())
 
+    #: Tokens too generic to contribute to relevance.
+    _STOPWORDS = frozenset(
+        "a an and are as at by for from in into is of on or that the to with"
+        .split()
+    )
+
     def _rank_results(
         self, results: list[SearchResult], query: str, sort: str
     ) -> list[SearchResult]:
         """Rank results by relevance, citation count, or year."""
         query_lower = query.lower()
-        query_tokens = set(query_lower.split())
+        query_tokens = [
+            t for t in query_lower.split() if t not in self._STOPWORDS
+        ]
 
+        idf = self._compute_idf(results)
         for r in results:
-            r.relevance_score = self._compute_relevance(r, query_lower, query_tokens)
+            r.relevance_score = self._compute_relevance(
+                r, query_lower, query_tokens, idf
+            )
 
         if sort == "citationCount":
             results.sort(key=lambda x: x.citation_count, reverse=True)
@@ -224,21 +236,61 @@ class PaperSearchTool(Tool[PaperSearchInput, PaperSearchOutput]):
 
         return results
 
+    def _compute_idf(self, results: list[SearchResult]) -> dict[str, float]:
+        """Inverse document frequency of each query token across results."""
+        doc_freq: dict[str, int] = {}
+        total = max(len(results), 1)
+        for r in results:
+            text = f"{r.title.lower()} {r.abstract.lower()}"
+            tokens = set(text.split()) - self._STOPWORDS
+            for tok in set(tokens):
+                doc_freq[tok] = doc_freq.get(tok, 0) + 1
+        return {
+            tok: 1.0 + math.log(total / df)
+            for tok, df in doc_freq.items()
+        }
+
     def _compute_relevance(
-        self, result: SearchResult, query_lower: str, query_tokens: set[str]
+        self,
+        result: SearchResult,
+        query_lower: str,
+        query_tokens: list[str],
+        idf: dict[str, float],
     ) -> float:
-        """Compute relevance score based on keyword overlap."""
+        """Score a result by IDF-weighted query coverage plus phrase hits.
+
+        Coverage of the discriminating query terms dominates; exact-phrase
+        occurrences in title/abstract add bonuses; a small fuzzy term
+        guards against minor morphological variation.
+        """
         title_lower = result.title.lower()
         abstract_lower = result.abstract.lower()
-        combined = f"{title_lower} {abstract_lower}"
-        combined_tokens = set(combined.split())
 
-        if not query_tokens or not combined_tokens:
+        if not query_tokens:
             return 0.0
 
-        overlap = len(query_tokens & combined_tokens) / len(query_tokens | combined_tokens)
-        title_ratio = SequenceMatcher(None, query_lower, title_lower).ratio()
-        score = 0.5 * overlap + 0.5 * title_ratio
+        covered_weight = 0.0
+        total_weight = 0.0
+        for tok in query_tokens:
+            weight = idf.get(tok, 1.0)
+            total_weight += weight
+            if tok in title_lower or tok in abstract_lower:
+                covered_weight += weight * (1.5 if tok in title_lower else 1.0)
+
+        if total_weight == 0:
+            return 0.0
+
+        score = covered_weight / total_weight
+
+        # Exact phrase bonuses.
+        if query_lower in title_lower:
+            score += 0.25
+        elif query_lower in abstract_lower:
+            score += 0.15
+
+        # Small fuzzy term for near-miss titles.
+        score += 0.1 * SequenceMatcher(None, query_lower, title_lower).ratio()
+
         return round(min(1.0, score), 3)
 
     async def close(self) -> None:
