@@ -170,7 +170,12 @@ class RepositoryScannerTool(Tool[RepoScanInput, RepoScanOutput]):
         return list(frameworks)
 
     async def _detect_repository_type(self, python_files: list[str], frameworks: list[str]) -> str:
-        """Detect type of repository based on code analysis."""
+        """Detect type of repository based on code analysis.
+
+        Scores every candidate type by weighted keyword hits instead of
+        first-match-wins, so generic substrings like ``eval`` cannot
+        shadow stronger training-framework signals.
+        """
         types = {
             'LLMTrainingFramework': ['transformers', 'AutoModel', 'AutoTokenizer', 'TrainingArguments'],
             'CVTrainingPipeline': ['torchvision', 'nn.Conv2d', 'nn.MaxPool2d', 'transforms'],
@@ -178,11 +183,22 @@ class RepositoryScannerTool(Tool[RepoScanInput, RepoScanOutput]):
             'RAGSystem': ['RAG', 'Retriever', 'VectorStore', 'FAISS', 'Chroma'],
             'AgentFramework': ['Agent', 'Tool', 'ReAct', 'Chain'],
             'FineTuningSystem': ['peft', 'LoraConfig', 'peft_models'],
-            'EvaluationFramework': ['eval', 'evaluate', 'metrics', 'benchmark'],
-            'MultimodalSystem': ['multimodal', 'Vision', 'CLIP', 'Blip'],
+            'EvaluationFramework': ['eval_loss', 'eval_loss=', 'benchmark', 'Evaluator'],
+            'MultimodalSystem': ['multimodal', 'CLIP', 'Blip'],
             'DiffusionModel': ['diffusion', 'UNet', 'Denoise', 'StableDiffusion'],
-            'ReinforcementLearning': ['RL', 'DQN', 'PPO', 'Agent'],
+            'ReinforcementLearning': ['gymnasium', 'DQN', 'PPO', 'policy_network'],
         }
+
+        # Strong training-loop signals shared by real ML repos; a hit here
+        # should outweigh generic vocabulary like "metrics" or "evaluate".
+        training_signals = [
+            'nn.Module',
+            'DataLoader',
+            'optimizer.step',
+            'loss.backward',
+            'torch.save',
+            'state_dict',
+        ]
 
         # Read content from all Python files
         combined_content = ""
@@ -194,13 +210,28 @@ class RepositoryScannerTool(Tool[RepoScanInput, RepoScanOutput]):
             except Exception:
                 pass
 
-        # Check for type indicators
-        for repo_type, patterns in types.items():
-            for pattern in patterns:
-                if pattern in combined_content:
-                    return repo_type
+        if not combined_content.strip():
+            return 'Unknown'
 
-        return 'Unknown'
+        best_type = 'Unknown'
+        best_score = 0
+        for repo_type, patterns in types.items():
+            score = sum(
+                1 for pattern in patterns if pattern in combined_content
+            )
+            if score > best_score:
+                best_score = score
+                best_type = repo_type
+
+        # A repo with an actual training loop is a training framework of
+        # some kind even when no framework-specific keyword matched.
+        training_hits = sum(
+            1 for signal in training_signals if signal in combined_content
+        )
+        if best_score <= 1 and training_hits >= 2:
+            return 'LLMTrainingFramework' if 'embedding' in combined_content or 'attention' in combined_content else 'CustomTrainingPipeline'
+
+        return best_type
 
     async def _scan_directory_recursive(
         self,

@@ -1,5 +1,6 @@
 """Repository agent for orchestrating repository analysis."""
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -8,8 +9,8 @@ from pydantic import BaseModel, Field
 from research_engineer.models import (
     ArchitectureOverview,
     FileImportance,
-    ImplementationTarget,
     RepositorySummary,
+    RepoImplementationTarget,
 )
 from research_engineer.llm import LLMProvider
 from research_engineer.tools import (
@@ -21,6 +22,8 @@ from research_engineer.tools import (
     RepositoryScannerTool,
     TrainingPipelineTool,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RepositoryAnalysisResult(BaseModel):
@@ -191,7 +194,8 @@ class RepositoryAgent:
                 )
                 ast_result = await self.ast.execute(ast_input)
                 ast_results.append(ast_result)
-            except Exception:
+            except Exception as e:
+                logger.warning("AST analysis failed for %s: %s", file_path, e)
                 continue
 
         # Step 3: Build dependency graph
@@ -527,7 +531,7 @@ class RepositoryAgent:
 
         for result in ast_results:
             for cls in result.classes:
-                target = ImplementationTarget(
+                target = RepoImplementationTarget(
                     file_path=result.file_path,
                     class_name=cls.name,
                     target_type="class",
@@ -538,7 +542,7 @@ class RepositoryAgent:
                 targets.append(target)
 
             for func in result.functions:
-                target = ImplementationTarget(
+                target = RepoImplementationTarget(
                     file_path=result.file_path,
                     method_name=func.name,
                     target_type="function",

@@ -145,9 +145,7 @@ class ASTAnalysisTool(Tool[ASTInput, ASTOutput]):
         if node.returns:
             return_type = ast.unparse(node.returns) if hasattr(ast, 'unparse') else str(node.returns)
 
-        docstring = None
-        if node.docstring:
-            docstring = ast.get_docstring(node)
+        docstring = ast.get_docstring(node)
 
         return FunctionInfo(
             name=node.name,
@@ -191,9 +189,7 @@ class ASTAnalysisTool(Tool[ASTInput, ASTOutput]):
             elif isinstance(base, ast.Attribute):
                 inherits.append(base.attr)
 
-        docstring = None
-        if node.docstring:
-            docstring = ast.get_docstring(node)
+        docstring = ast.get_docstring(node)
 
         # Check for dataclass decorator
         decorators = self._extract_decorators(node)
@@ -229,7 +225,7 @@ class ASTAnalysisTool(Tool[ASTInput, ASTOutput]):
         if isinstance(node, ast.Import):
             names = [alias.name for alias in node.names]
             return ImportInfo(
-                module=None,
+                module=names[0] if names else "",
                 names=names,
                 line_number=self._extract_node_line(node),
                 is_relative=False,

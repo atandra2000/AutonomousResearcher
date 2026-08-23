@@ -114,10 +114,6 @@ class TrainingPipelineTool(Tool[TrainingPipelineInput, TrainingPipelineOutput]):
                 if 'epochs' in func_name or 'epoch' in func_name:
                     pattern_info['found'] = True
 
-                # Check for optimizer.step() calls
-                for method in func.methods:
-                    if 'step' in method.name.lower():
-                        pattern_info['optimizer_step'] = True
 
         return pattern_info
 
@@ -135,11 +131,11 @@ class TrainingPipelineTool(Tool[TrainingPipelineInput, TrainingPipelineOutput]):
 
         # Check for forward/backward calls
         for func in ast_output.functions:
-            for method in func.methods:
-                if 'forward' in method.name.lower():
-                    info.forward_pass = f"Forward pass in {func.name}"
-                if 'backward' in method.name.lower() or 'loss' in method.name.lower():
-                    info.backward_pass = f"Backward pass in {func.name}"
+            body = func.name.lower()
+            if 'forward' in body:
+                info.forward_pass = f"Forward pass in {func.name}"
+            if 'backward' in body or 'loss' in body:
+                info.backward_pass = f"Backward pass in {func.name}"
 
         return info
 
