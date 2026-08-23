@@ -17,6 +17,7 @@ Stages:
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -319,6 +320,9 @@ class HypothesisGeneratorAgent:
             hypotheses = self._parse_hypotheses(resp.content, ctx)
             for h in hypotheses:
                 ctx.add_hypothesis(h)
+            if not hypotheses:
+                # Model output didn't match the expected format.
+                return self._rule_based_hypotheses(ctx)
             return {
                 "summary": f"Generated {len(hypotheses)} hypotheses",
                 "hypotheses": [h.model_dump() for h in hypotheses],
@@ -332,23 +336,22 @@ class HypothesisGeneratorAgent:
     ) -> list[Hypothesis]:
         """Parse LLM output into Hypothesis objects."""
         hypotheses: list[Hypothesis] = []
+        pattern = re.compile(
+            r"H:\s*(?P<statement>.+?)\s*\|\s*R:\s*(?P<rationale>.*?)"
+            r"(?:\s*\|\s*E:\s*(?P<expected>.*))?$"
+        )
         for line in content.splitlines():
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            # Parse "H: ... | R: ... | E: ..." format.
-            parts = stripped.split("|")
-            statement = ""
-            rationale = ""
-            expected = ""
-            for part in parts:
-                p = part.strip()
-                if p.startswith("H:"):
-                    statement = p[2:].strip()
-                elif p.startswith("R:"):
-                    rationale = p[2:].strip()
-                elif p.startswith("E:"):
-                    expected = p[2:].strip()
+            # Parse "H: ... | R: ... [| E: ...]" format, tolerating
+            # list markers such as "- H: ..." or "1. H: ...".
+            match = pattern.search(stripped)
+            if not match:
+                continue
+            statement = match.group("statement").strip()
+            rationale = (match.group("rationale") or "").strip()
+            expected = (match.group("expected") or "").strip()
             if statement:
                 hypotheses.append(
                     Hypothesis(
