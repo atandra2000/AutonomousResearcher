@@ -12,8 +12,12 @@ agent calls a model directly.
 
 from __future__ import annotations
 
+import logging
+
 from research_engineer.llm.base import LLMProvider
 from research_engineer.llm.router import ModelRouter, get_router
+
+logger = logging.getLogger(__name__)
 
 #: Sentinel used by agents that genuinely have no LLM requirement.
 LLM_DISABLED = "disabled"
@@ -38,11 +42,25 @@ def resolve_llm(
         return None
     try:
         r = router or get_router()
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            "LLM router unavailable for %s (%s: %s); "
+            "falling back to rule-based mode",
+            agent_name,
+            type(e).__name__,
+            e,
+        )
         return None
     try:
         return r.for_agent(agent_name)
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            "No LLM provider resolved for %s (%s: %s); "
+            "falling back to rule-based mode",
+            agent_name,
+            type(e).__name__,
+            e,
+        )
         return None
 
 

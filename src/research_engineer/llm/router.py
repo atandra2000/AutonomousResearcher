@@ -34,7 +34,13 @@ class _BoundProvider(LLMProvider):
     async def complete(self, request: LLMRequest) -> LLMResponse:
         if request.model is None and self._model is not None:
             request = request.model_copy(update={"model": self._model})
-        return await self._delegate.complete(request)
+        from research_engineer.llm.resilience import complete_with_retry
+
+        return await complete_with_retry(
+            self._delegate,
+            request,
+            agent_name=f"{self._delegate.name}/{self._model or 'default'}",
+        )
 
     async def stream(self, request: LLMRequest) -> Any:
         if request.model is None and self._model is not None:
