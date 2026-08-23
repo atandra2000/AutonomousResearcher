@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from research_engineer.agents.evaluation_agent import EvaluationAgent
+from research_engineer.tools.evaluation_storage import EvaluationStorageTool
 from research_engineer.models.evaluation import (
     EvaluationConfig,
 )
@@ -81,6 +82,7 @@ def evaluation_agent(mock_memory_agent, mock_literature_agent, tmp_path):
     return EvaluationAgent(
         memory_agent=mock_memory_agent,
         literature_agent=mock_literature_agent,
+        storage_tool=EvaluationStorageTool(db_path=str(tmp_path / "evaluations.db")),
         config=config,
     )
 
@@ -90,7 +92,10 @@ def evaluation_agent_no_deps(tmp_path):
     config = EvaluationConfig(
         output_dir=str(tmp_path / "evaluations"),
     )
-    return EvaluationAgent(config=config)
+    return EvaluationAgent(
+        storage_tool=EvaluationStorageTool(db_path=str(tmp_path / "evaluations.db")),
+        config=config,
+    )
 
 
 class TestEvaluationAgentInit:
@@ -316,6 +321,7 @@ class TestPaperSuggestions:
         ]
         lit.search_papers = AsyncMock(return_value=search_out)
         agent = EvaluationAgent(
+            storage_tool=EvaluationStorageTool(db_path=str(tmp_path / "evaluations.db")),
             memory_agent=mock_memory_agent,
             literature_agent=lit,
             config=EvaluationConfig(

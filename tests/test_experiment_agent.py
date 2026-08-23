@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from research_engineer.agents.experiment_agent import ExperimentAgent
+from research_engineer.tools.experiment_storage import ExperimentStorageTool
 from research_engineer.models.experiment import (
     ExperimentConfig,
     ExperimentQueryInput,
@@ -39,6 +40,7 @@ def experiment_agent(mock_memory_agent, tmp_path):
     )
     return ExperimentAgent(
         memory_agent=mock_memory_agent,
+        storage_tool=ExperimentStorageTool(db_path=str(tmp_path / "experiments.db")),
         config=config,
     )
 
