@@ -3,6 +3,8 @@
 Generates structured diffs and patch files from code changes.
 """
 
+import difflib
+import logging
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -10,6 +12,8 @@ from pydantic import BaseModel, Field
 from research_engineer.models.coding import ChangeType, GeneratedPatch, PatchStatus
 from research_engineer.tools.base import Tool, ToolError
 from research_engineer.tools.code_generation import CodeChange
+
+logger = logging.getLogger(__name__)
 
 
 class PatchGenerationInput(BaseModel):
@@ -167,27 +171,28 @@ class PatchGenerationTool(Tool[PatchGenerationInput, PatchGenerationOutput]):
 
         # Check if file already exists
         if file_path.exists():
-            # Read existing content
-            content = file_path.read_text(encoding="utf-8")
-            lines = content.splitlines()
-            line_count = len(lines)
-        else:
-            lines = []
-            line_count = change.estimated_lines_added
+            return await self._create_modification_diff(change, repo_path)
 
+        if change.proposed_content:
+            diff = difflib.unified_diff(
+                [],
+                change.proposed_content.splitlines(),
+                fromfile="/dev/null",
+                tofile=f"b/{change.file_path}",
+                lineterm="",
+            )
+            return "\n".join(diff)
+
+        line_count = max(change.estimated_lines_added, 1)
         diff_lines = [
             "--- /dev/null",
             f"+++ b/{change.file_path}",
             f"@@ -0,0 +1,{line_count} @@",
-        ]
-
-        # Add file header comment
-        diff_lines.extend([
             f"+# File: {change.file_path}",
             f"+# Change: {change.description}",
             f"+# Reason: {change.reason}",
             "+",
-        ])
+        ]
 
         # Placeholder for actual content
         if change.estimated_lines_added > 0:
@@ -205,11 +210,26 @@ class PatchGenerationTool(Tool[PatchGenerationInput, PatchGenerationOutput]):
 
         # Read existing content
         content = file_path.read_text(encoding="utf-8")
-        lines = content.splitlines()
-        original_line_count = len(lines)
+        original_lines = content.splitlines()
+
+        if change.proposed_content:
+            diff = difflib.unified_diff(
+                original_lines,
+                change.proposed_content.splitlines(),
+                fromfile=f"a/{change.file_path}",
+                tofile=f"b/{change.file_path}",
+                lineterm="",
+            )
+            return "\n".join(diff)
+
+        original_line_count = len(original_lines)
 
         # Calculate new line count
-        new_line_count = original_line_count + change.estimated_lines_added - change.estimated_lines_removed
+        new_line_count = (
+            original_line_count
+            + change.estimated_lines_added
+            - change.estimated_lines_removed
+        )
 
         diff_lines = [
             f"--- a/{change.file_path}",

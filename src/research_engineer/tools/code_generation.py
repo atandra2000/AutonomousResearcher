@@ -3,11 +3,18 @@
 Generates code changes based on implementation plans and repository context.
 """
 
-import asyncio
+import ast
+import logging
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from research_engineer.llm import (
+    LLMMessage,
+    LLMProvider,
+    LLMRequest,
+    LLMRole,
+)
 from research_engineer.models.coding import (
     ChangeType,
     CodeChange,
@@ -18,6 +25,35 @@ from research_engineer.models.planner import ImplementationPlan, ImplementationS
 from research_engineer.models.repo import RepositorySummary
 from research_engineer.models.summary import ResearchSummary
 from research_engineer.tools.base import Tool, ToolError
+
+logger = logging.getLogger(__name__)
+
+
+def _is_valid_python(file_path: str, content: str) -> bool:
+    """True when *content* parses as Python (non-.py files pass through)."""
+    if not file_path.endswith(".py"):
+        return True
+    try:
+        ast.parse(content)
+    except SyntaxError as e:
+        logger.debug("Syntax check failed for %s: %s", file_path, e)
+        return False
+    return True
+
+
+def _strip_code_fences(text: str) -> str:
+    """Strip a single surrounding markdown code fence, if present."""
+    stripped = text.strip()
+    if not stripped.startswith("```"):
+        return text
+    first_newline = stripped.find("\n")
+    if first_newline == -1:
+        return text
+    body = stripped[first_newline + 1 :]
+    end = body.rfind("```")
+    if end != -1:
+        body = body[:end]
+    return body.rstrip() + "\n"
 
 
 class CodeGenerationInput(BaseModel):
@@ -88,10 +124,17 @@ class CodeGenerationTool(Tool[CodeGenerationInput, CodeGenerationOutput]):
     This tool:
     1. Analyzes implementation requirements
     2. Identifies modification targets
-    3. Generates code changes
+    3. Generates code changes (LLM-backed when a provider is available,
+       rule-based target identification otherwise)
     4. Creates patch proposals
     5. Never directly modifies files (patch-first philosophy)
     """
+
+    #: Maximum characters of existing file content sent as LLM context.
+    MAX_CONTEXT_CHARS = 12_000
+
+    def __init__(self, llm: LLMProvider | None = None) -> None:
+        self.llm = llm
 
     async def execute(self, input: CodeGenerationInput) -> CodeGenerationOutput:
         """Generate code changes based on implementation requirements."""
@@ -106,6 +149,10 @@ class CodeGenerationTool(Tool[CodeGenerationInput, CodeGenerationOutput]):
 
             # Generate code changes
             changes = await self._generate_changes(input)
+
+            # Refine changes with concrete file content via the LLM
+            if self.llm is not None:
+                await self._refine_changes_with_llm(input, changes)
 
             # Generate patches
             patches = await self._generate_patches(input, changes)
@@ -386,3 +433,184 @@ class CodeGenerationTool(Tool[CodeGenerationInput, CodeGenerationOutput]):
             ComplexityLevel.VERY_COMPLEX: RiskLevel.CRITICAL,
         }
         return mapping.get(complexity, RiskLevel.MEDIUM)
+
+    async def _refine_changes_with_llm(
+        self, input: CodeGenerationInput, changes: list[CodeChange]
+    ) -> None:
+        """Fill in ``proposed_content`` for each change via the LLM.
+
+        The LLM produces *what* the resulting file should look like and,
+        when the rule-based target does not exist in the repo, also
+        picks a real target file from the repository listing. Failures
+        degrade per-change to placeholder diffs and are logged, never
+        raised.
+        """
+        assert self.llm is not None
+        repo_path = Path(input.repo_path)
+        candidates = self._candidate_files(repo_path)
+        for change in changes:
+            file_path = repo_path / change.file_path
+            if change.change_type == ChangeType.MODIFICATION and not file_path.exists():
+                resolved = await self._resolve_target_file(
+                    input, change, candidates, repo_path
+                )
+                if resolved is None:
+                    continue
+                file_path = repo_path / resolved
+                change.file_path = resolved
+            existing = ""
+            if file_path.exists():
+                try:
+                    existing = file_path.read_text(encoding="utf-8")
+                except OSError as e:
+                    logger.warning(
+                        "Cannot read %s for LLM refinement: %s",
+                        change.file_path,
+                        e,
+                    )
+                    continue
+
+            if len(existing) > self.MAX_CONTEXT_CHARS:
+                head = existing[: self.MAX_CONTEXT_CHARS]
+                existing = (
+                    f"{head}\n\n# ... [truncated, "
+                    f"{len(existing) - self.MAX_CONTEXT_CHARS} more chars]"
+                )
+            prompt = self._build_refinement_prompt(input, change, existing)
+            request = LLMRequest(
+                messages=[
+                    LLMMessage(
+                        role=LLMRole.SYSTEM,
+                        content=(
+                            "You are an expert ML engineer. Return ONLY the "
+                            "complete final content of the target file as raw "
+                            "source code. No markdown fences, no commentary."
+                        ),
+                    ),
+                    LLMMessage(role=LLMRole.USER, content=prompt),
+                ],
+                temperature=0.2,
+                max_tokens=4096,
+            )
+            try:
+                resp = await self.llm.complete(request)
+            except Exception as e:
+                logger.warning(
+                    "LLM code generation failed for %s: %s",
+                    change.file_path,
+                    e,
+                )
+                continue
+            content = _strip_code_fences(resp.content)
+            if not content.strip():
+                continue
+            if not _is_valid_python(change.file_path, content):
+                logger.warning(
+                    "Rejected LLM proposal for %s: generated content "
+                    "does not parse as Python",
+                    change.file_path,
+                )
+                continue
+            change.proposed_content = content
+
+    def _build_refinement_prompt(
+        self,
+        input: CodeGenerationInput,
+        change: CodeChange,
+        existing: str,
+    ) -> str:
+        """Build the user prompt for one file's proposed content."""
+        parts = [
+            f"Task: {input.task_description}",
+            f"Target file: {change.file_path}",
+            f"Change type: {change.change_type.value}",
+            f"Description: {change.description}",
+        ]
+        if input.constraints:
+            parts.append(f"Constraints: {'; '.join(input.constraints)}")
+        if input.implementation_plan is not None:
+            plan_summary = getattr(
+                input.implementation_plan, "overview", ""
+            ) or ""
+            if plan_summary:
+                parts.append(f"Plan overview: {plan_summary}")
+        if existing:
+            parts.append(
+                f"\n## Current file content\n```\n{existing}\n```"
+            )
+        else:
+            parts.append(
+                "\nThe file does not exist yet; create it from scratch "
+                "following the repository's conventions."
+            )
+        return "\n".join(parts)
+
+    @staticmethod
+    def _candidate_files(repo_path: Path, limit: int = 60) -> list[str]:
+        """List repository Python files (relative paths) as LLM candidates."""
+        candidates: list[str] = []
+        for p in sorted(repo_path.rglob("*.py")):
+            if any(part in {".git", "__pycache__", ".venv", "node_modules"} for part in p.parts):
+                continue
+            candidates.append(str(p.relative_to(repo_path)))
+            if len(candidates) >= limit:
+                break
+        return candidates
+
+    async def _resolve_target_file(
+        self,
+        input: CodeGenerationInput,
+        change: CodeChange,
+        candidates: list[str],
+        repo_path: Path,
+    ) -> str | None:
+        """Ask the LLM to pick a real existing file for a modification.
+
+        Returns the resolved repo-relative path, or None when resolution
+        fails (the change is then skipped with a warning).
+        """
+        assert self.llm is not None
+        listing = "\n".join(f"- {c}" for c in candidates)
+        request = LLMRequest(
+            messages=[
+                LLMMessage(
+                    role=LLMRole.SYSTEM,
+                    content=(
+                        "You are a software engineering assistant. Reply "
+                        "with EXACTLY one line containing a single file "
+                        "path chosen from the provided list and nothing else."
+                    ),
+                ),
+                LLMMessage(
+                    role=LLMRole.USER,
+                    content=(
+                        f"Task: {input.task_description}\n\n"
+                        f"Proposed (nonexistent) target: {change.file_path}\n"
+                        f"Description: {change.description}\n\n"
+                        f"Choose the best existing file to modify:\n{listing}"
+                    ),
+                ),
+            ],
+            temperature=0.0,
+            max_tokens=512,
+        )
+        try:
+            resp = await self.llm.complete(request)
+        except Exception as e:
+            logger.warning(
+                "LLM target resolution failed for %s: %s",
+                change.file_path,
+                e,
+            )
+            return None
+        lines = resp.content.strip().strip("`'\"").splitlines()
+        candidate = lines[0].strip() if lines else ""
+        if candidate in candidates and (repo_path / candidate).exists():
+            logger.info(
+                "Resolved change target %s -> %s", change.file_path, candidate
+            )
+            return candidate
+        logger.warning(
+            "LLM resolved target %r is not an existing repo file", candidate
+        )
+        return None

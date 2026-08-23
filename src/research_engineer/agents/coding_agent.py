@@ -13,6 +13,7 @@ from research_engineer.agents.repository_agent import RepositoryAgent
 from research_engineer.agents.research_agent import ResearchAgent
 from research_engineer.llm import LLMProvider
 from research_engineer.models.coding import (
+    GeneratedPatch,
     ImplementationRequest,
     ImplementationResult,
     PatchStatus,
@@ -67,6 +68,10 @@ class CodingAgentResult(BaseModel):
     task_description: str = Field(..., description="What was implemented")
     status: str = Field(default="completed", description="Implementation status")
     patches_generated: int = Field(default=0, description="Number of patches generated")
+    patches: list[GeneratedPatch] = Field(
+        default_factory=list,
+        description="Generated patches",
+    )
     tests_generated: int = Field(default=0, description="Number of tests generated")
     review_status: str = Field(default="pending", description="Review status")
     generated_files: list[str] = Field(default_factory=list, description="Generated files")
@@ -106,15 +111,17 @@ class CodingAgent:
         self.agent_name: str = "CodingAgent"
         self.research_agent = research_agent or ResearchAgent()
         self.repository_agent = repository_agent or RepositoryAgent()
-        self.code_gen = code_generation_tool or CodeGenerationTool()
+        from research_engineer.agents._llm_support import resolve_llm
+        self.llm_provider = resolve_llm(self.agent_name, llm)
+        self.code_gen = code_generation_tool or CodeGenerationTool(
+            llm=self.llm_provider
+        )
         self.patch_gen = patch_generation_tool or PatchGenerationTool()
         self.self_review = self_review_tool or SelfReviewTool()
         self.test_gen = test_generation_tool or TestGenerationTool()
         self.migration_planner = migration_planner_tool or MigrationPlannerTool()
         self.rollback_planner = rollback_planner_tool or RollbackPlannerTool()
         self.report_gen = implementation_report_tool or ImplementationReportTool()
-        from research_engineer.agents._llm_support import resolve_llm
-        self.llm_provider = resolve_llm(self.agent_name, llm)
 
     async def implement(
         self,
@@ -276,8 +283,8 @@ class CodingAgent:
             paper_id=request.paper_id,
             repo_path=repo_path,
             task_description=task_description,
-            status="completed",
             patches_generated=len(patch_output.patches),
+            patches=patch_output.patches,
             tests_generated=test_output.total_tests,
             review_status=review_output.review_result.status.value,
             generated_files=report_output.generated_files,

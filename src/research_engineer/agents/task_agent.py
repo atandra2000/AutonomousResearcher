@@ -46,6 +46,7 @@ from research_engineer.agents.repository_agent import RepositoryAgent
 from research_engineer.agents.reviewer_agent import ReviewerAgent
 from research_engineer.agents.test_agent import TestAgent
 from research_engineer.llm import LLMMessage, LLMProvider, LLMRequest, LLMRole
+from research_engineer.models.coding import GeneratedPatch
 from research_engineer.models.delegation import (
     AgentCapability,
     AgentRole,
@@ -58,6 +59,10 @@ from research_engineer.models.task import (
     TaskStep,
     TaskStepType,
     new_task_id,
+)
+from research_engineer.tools.patch_application import (
+    PatchApplicationInput,
+    PatchApplicationTool,
 )
 from research_engineer.tools.terminal import TerminalInput, TerminalTool
 
@@ -106,6 +111,7 @@ class TaskAgent:
             llm_enabled=False
         )
         self.coding_agent = coding_agent or CodingAgent()
+        self.patch_applicator = PatchApplicationTool()
         self.terminal = terminal_tool or TerminalTool()
         self.llm_provider = resolve_llm(self.agent_name, llm)
         # Phase 12: Repository memory (optional; auto-built if None and
@@ -187,10 +193,7 @@ class TaskAgent:
             step = await self._step_plan(goal, cfg, stream_sink, memory_context)
             steps.append(step)
             generated_files.extend(step.artifacts)
-
-            # Step 3: Implement (generate patches) ----------------------
-            status = TaskStatus.IMPLEMENTING
-            step, impl_id, patches_count = await self._step_implement(
+            step, impl_id, patches_count, patches = await self._step_implement(
                 goal, cfg, stream_sink
             )
             steps.append(step)
@@ -202,7 +205,7 @@ class TaskAgent:
             # Step 4: Show diff -----------------------------------------
             if step.status != TaskStatus.FAILED:
                 status = TaskStatus.DIFFING
-                step, diff = await self._step_diff(cfg)
+                step, diff = await self._step_diff(cfg, patches)
                 steps.append(step)
 
             # Step 5: Optionally run tests ------------------------------
@@ -778,8 +781,8 @@ class TaskAgent:
         goal: str,
         cfg: TaskConfig,
         stream_sink: Any | None,
-    ) -> tuple[TaskStep, str | None, int]:
-        """Step 3: generate patches via CodingAgent."""
+    ) -> tuple[TaskStep, str | None, int, list[GeneratedPatch]]:
+        """Step 3: generate patches via CodingAgent (and apply unless dry-run)."""
         t0 = datetime.now()
         try:
             result = await self.coding_agent.implement(
@@ -788,6 +791,37 @@ class TaskAgent:
                 paper_input=cfg.paper_input,
                 output_dir=cfg.output_dir,
             )
+            summary = (
+                f"Generated {result.patches_generated} patch(es); "
+                f"review={result.review_status}"
+            )
+            patches = list(result.patches)
+
+            # Apply patches when the user explicitly opted out of dry-run.
+            if not cfg.dry_run and patches:
+                apply_out = await self.patch_applicator.execute(
+                    PatchApplicationInput(
+                        patches=patches,
+                        repo_path=cfg.repo_path,
+                        dry_run=False,
+                        require_approval=False,
+                        approved=True,
+                    )
+                )
+                applied = len(apply_out.applied_patches)
+                failed = len(apply_out.failed_patches)
+                summary += f"; applied={applied}, failed={failed}"
+                if applied and not cfg.run_tests:
+                    summary += (
+                        "; WARNING: applied without test verification "
+                        "(use --run-tests)"
+                    )
+                if apply_out.error_messages:
+                    summary += (
+                        "; errors="
+                        + " | ".join(apply_out.error_messages[:3])
+                    )
+
             return (
                 TaskStep(
                     step_type=TaskStepType.IMPLEMENT,
@@ -797,14 +831,12 @@ class TaskAgent:
                     duration_seconds=round(
                         (datetime.now() - t0).total_seconds(), 3
                     ),
-                    summary=(
-                        f"Generated {result.patches_generated} patch(es); "
-                        f"review={result.review_status}"
-                    ),
+                    summary=summary,
                     artifacts=result.generated_files,
                 ),
                 result.implementation_id,
                 result.patches_generated,
+                patches,
             )
         except Exception as e:
             return (
@@ -820,10 +852,20 @@ class TaskAgent:
                 ),
                 None,
                 0,
+                [],
             )
 
-    async def _step_diff(self, cfg: TaskConfig) -> tuple[TaskStep, str]:
-        """Step 4: show the git diff of the working tree."""
+    async def _step_diff(
+        self,
+        cfg: TaskConfig,
+        patches: list[GeneratedPatch] | None = None,
+    ) -> tuple[TaskStep, str]:
+        """Step 4: show the git diff of the working tree.
+
+        Falls back to the generated patch content when git is
+        unavailable (e.g. non-git working tree) or reports no changes
+        because patches were generated in dry-run mode.
+        """
         t0 = datetime.now()
         out = await self.terminal.execute(
             TerminalInput(
@@ -832,15 +874,24 @@ class TaskAgent:
             )
         )
         diff = out.content or out.stdout or ""
+        status = TaskStatus.COMPLETED if out.success else TaskStatus.FAILED
+        error = out.error
+        if not diff and patches:
+            diff = "\n\n".join(
+                p.diff for p in patches if p.diff
+            )
+            if diff:
+                status = TaskStatus.COMPLETED
+                error = None
         return (
             TaskStep(
                 step_type=TaskStepType.DIFF,
-                status=TaskStatus.COMPLETED if out.success else TaskStatus.FAILED,
+                status=status,
                 started_at=t0,
                 finished_at=datetime.now(),
                 duration_seconds=out.duration_seconds,
                 summary=f"{len(diff)} chars of diff",
-                error=out.error,
+                error=error,
             ),
             diff,
         )

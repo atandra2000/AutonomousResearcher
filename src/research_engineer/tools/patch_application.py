@@ -2,7 +2,9 @@
 
 Applies generated patches to repository with approval workflow.
 """
-
+import ast
+import logging
+import re
 import subprocess
 import time
 from datetime import datetime
@@ -12,6 +14,19 @@ from pydantic import BaseModel, Field
 
 from research_engineer.models.coding import GeneratedPatch, PatchStatus
 from research_engineer.tools.base import Tool, ToolError
+
+logger = logging.getLogger(__name__)
+
+
+def _is_valid_python(file_path: str, content: str) -> bool:
+    """True when *content* parses as Python (non-.py files pass through)."""
+    if not file_path.endswith(".py"):
+        return True
+    try:
+        ast.parse(content)
+    except SyntaxError:
+        return False
+    return True
 
 
 class PatchApplicationInput(BaseModel):
@@ -282,14 +297,20 @@ class PatchApplicationTool(Tool[PatchApplicationInput, PatchApplicationOutput]):
                 return False
 
         except Exception as e:
-            print(f"Error applying patch {patch.patch_id}: {e}")
+            logger.error("Error applying patch %s: %s", patch.patch_id, e)
             return False
 
     async def _apply_new_file(self, patch: GeneratedPatch, repo_path: Path) -> bool:
         """Apply new file patch."""
         file_path = repo_path / patch.file_path
-        file_path.parent.mkdir(parents=True, exist_ok=True)
         content = self._extract_content_from_diff(patch.diff)
+        if not _is_valid_python(patch.file_path, content):
+            logger.warning(
+                "Rejected new-file patch for %s: content does not parse",
+                patch.file_path,
+            )
+            return False
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content, encoding="utf-8")
         return True
 
@@ -299,6 +320,8 @@ class PatchApplicationTool(Tool[PatchApplicationInput, PatchApplicationOutput]):
 
         if not file_path.exists():
             return await self._apply_new_file(patch, repo_path)
+
+        original = file_path.read_text(encoding="utf-8")
 
         if patch.diff.startswith("diff --git"):
             result = subprocess.run(
@@ -316,9 +339,25 @@ class PatchApplicationTool(Tool[PatchApplicationInput, PatchApplicationOutput]):
                     if conflicts:
                         raise ToolError(f"Patch conflicts detected in {patch.file_path}: {conflicts}", None)
                 return False
+            # Defense in depth: an external `patch(1)` run may still
+            # produce non-parsing Python; roll back when it does.
+            applied = file_path.read_text(encoding="utf-8")
+            if not _is_valid_python(patch.file_path, applied):
+                logger.warning(
+                    "Rolled back %s: patched content does not parse",
+                    patch.file_path,
+                )
+                file_path.write_text(original, encoding="utf-8")
+                return False
         else:
             content = file_path.read_text(encoding="utf-8")
             modified_content = self._apply_diff_to_content(content, patch.diff)
+            if not _is_valid_python(patch.file_path, modified_content):
+                logger.warning(
+                    "Rejected patch for %s: resulting content does not parse",
+                    patch.file_path,
+                )
+                return False
             file_path.write_text(modified_content, encoding="utf-8")
 
         return True
@@ -348,18 +387,56 @@ class PatchApplicationTool(Tool[PatchApplicationInput, PatchApplicationOutput]):
         return "\n".join(content_lines) if content_lines else "# Generated file\n"
 
     def _apply_diff_to_content(self, content: str, diff: str) -> str:
-        """Apply diff to content (line-based)."""
-        content_lines = content.splitlines(keepends=True)
-        diff_lines = diff.splitlines()
+        """Apply a unified diff to *content* (hunk-based).
 
-        additions = []
-        for line in diff_lines:
-            if line.startswith("+") and not line.startswith("+++"):
-                additions.append(line[1:] + "\n")
+        Honors ``@@ -start,count +start,count @@`` headers so changes
+        land at their intended positions instead of being appended to
+        the end of the file. Context lines must match; on mismatch the
+        diff is treated as non-applicable and *content* is returned
+        unchanged (callers reject/roll back via syntax validation or
+        explicit failure handling).
+        """
+        original = content.splitlines(keepends=True)
 
-        if additions:
-            return content + "\n".join(additions)
-        return content
+        def _with_eol(line: str) -> str:
+            return line if line.endswith("\n") else line + "\n"
+
+        result: list[str] = []
+        src_idx = 0  # 0-based cursor into `original`
+        saw_change = False
+
+        for tag, payload, old_start in _parse_diff_ops(diff):
+            if tag == "hunk":
+                # Copy untouched lines before this hunk.
+                result.extend(
+                    original[src_idx : max(old_start - 1, src_idx)]
+                )
+                src_idx = max(old_start - 1, src_idx)
+                continue
+            if tag in ("context", "del"):
+                if not self._line_matches(original, src_idx, payload):
+                    return content  # mismatch — refuse the diff
+                if tag == "context":
+                    result.append(original[src_idx])
+                else:
+                    saw_change = True
+                src_idx += 1
+            elif tag == "add":
+                result.append(_with_eol(payload))
+                saw_change = True
+        result.extend(original[src_idx:])
+        if not saw_change:
+            return content
+        return "".join(result)
+
+    @staticmethod
+    def _line_matches(
+        original: list[str], src_idx: int, payload: str
+    ) -> bool:
+        """True when original[src_idx] equals the diff line payload."""
+        if src_idx >= len(original):
+            return False
+        return original[src_idx].rstrip("\n") == payload.rstrip("\n")
 
     def _parse_conflicts(self, output: str) -> list[str]:
         """Parse patch output for conflict information."""
@@ -377,3 +454,36 @@ class PatchApplicationTool(Tool[PatchApplicationInput, PatchApplicationOutput]):
             "patches_to_revert": application_output.applied_patches,
             "timestamp": application_output.application_time_seconds,
         }
+
+
+def _parse_diff_ops(diff: str) -> list[tuple[str, str, int]]:
+    """Tokenize a unified diff into (tag, payload, old_start) ops.
+
+    Tags: ``hunk`` (payload "", old_start = 1-based source line),
+    ``context``/``del``/``add`` (payload = line text), and
+    ``blank_context`` for empty context lines. Parsing stops at any
+    unrecognized line (e.g. the next file header).
+    """
+    ops: list[tuple[str, str, int]] = []
+    in_hunk = False
+    for line in diff.splitlines():
+        if line.startswith("@@"):
+            match = re.match(r"@@ -(\d+)(?:,\d+)? \+\d+(?:,\d+)? @@", line)
+            if not match:
+                break
+            ops.append(("hunk", "", int(match.group(1))))
+            in_hunk = True
+            continue
+        if not in_hunk:
+            continue
+        if line.startswith("\\"):  # "\ No newline at end of file"
+            continue
+        if line.startswith(" "):
+            ops.append(("context", line[1:], 0))
+        elif line.startswith("-") and not line.startswith("---"):
+            ops.append(("del", line[1:], 0))
+        elif line.startswith("+") and not line.startswith("+++"):
+            ops.append(("add", line[1:], 0))
+        else:
+            break  # end of hunks
+    return ops

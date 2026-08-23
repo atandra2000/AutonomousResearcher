@@ -104,6 +104,13 @@ class CodeChange(BaseModel):
         default=ComplexityLevel.MODERATE,
         description="Complexity level",
     )
+    proposed_content: str | None = Field(
+        default=None,
+        description=(
+            "Complete final file content proposed by generation "
+            "(LLM-backed); None means no concrete content was produced"
+        ),
+    )
 
 
 class GeneratedPatch(BaseModel):
