@@ -236,7 +236,7 @@ def analyze(
 
         # JSON output
         elif output_format == "json":
-            typer.echo(json.dumps(result, indent=2))
+            typer.echo(_dump_json_safe(result))
 
         # Markdown output
         elif output_format == "markdown":
@@ -1055,7 +1055,7 @@ def memory_import(
 def memory_archive(
     older_than_days: int = typer.Option(90, "--older-than", help="Archive memories older than N days"),
     memory_type: str | None = typer.Option(None, "--type", help="Only archive memories of this type"),
-    dry_run: bool = typer.Option(True, "--dry-run", help="Preview without making changes"),
+    dry_run: bool = typer.Option(True, "--dry-run/--no-dry-run", help="Preview without making changes"),
 ):
     """Archive memories older than a given number of days.
 
@@ -1770,7 +1770,7 @@ def experiment_run(
         "output/experiments", "--output-dir", help="Output directory"
     ),
     dry_run: bool = typer.Option(
-        True, "--dry-run", help="Dry run (do not execute command)"
+        True, "--dry-run/--no-dry-run", help="Dry run (do not execute command)"
     ),
     output_format: str = typer.Option(
         "console", "--format", help="Output: console, json"
@@ -1815,34 +1815,39 @@ def experiment_run(
         if output_format == "json":
             typer.echo(result.model_dump_json(indent=2))
         else:
-            typer.echo(f"\n🧪 Experiment: {result.experiment_id}")
-            typer.echo(f"   Repository: {result.repo_path}")
-            if result.run:
-                typer.echo(f"   Status: {result.run.status.value}")
-                typer.echo(f"   Exit code: {result.run.exit_code}")
-                typer.echo(f"   Duration: {result.run.duration_seconds}s")
-            if result.metrics:
-                typer.echo(
-                    f"   Metrics: {len(result.metrics.summary_metrics)} collected"
-                )
-            if result.artifacts:
-                typer.echo(f"   Artifacts: {len(result.artifacts.artifacts)}")
-            if result.failure and result.failure.detected_failure:
-                typer.echo(
-                    f"   Failure: {result.failure.failure_mode} "
-                    f"({result.failure.severity.value})"
-                )
-            if result.memory_ids:
-                typer.echo(f"   Memory IDs: {len(result.memory_ids)}")
-            typer.echo(f"   Time: {result.processing_time_seconds}s")
-            if result.generated_files:
-                typer.echo("\n   Files generated:")
-                for f in result.generated_files:
-                    typer.echo(f"     - {f}")
+            _print_experiment_result(result, dry_run)
         return 0
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)
         return 1
+
+
+def _print_experiment_result(result: Any, dry_run: bool) -> None:
+    """Render an ExperimentResult for the console."""
+    typer.echo(f"\n🧪 Experiment: {result.experiment_id}")
+    if dry_run:
+        typer.echo("   (dry run — not persisted)")
+    typer.echo(f"   Repository: {result.repo_path}")
+    if result.run:
+        typer.echo(f"   Status: {result.run.status.value}")
+        typer.echo(f"   Exit code: {result.run.exit_code}")
+        typer.echo(f"   Duration: {result.run.duration_seconds}s")
+    if result.metrics:
+        typer.echo(f"   Metrics: {len(result.metrics.summary_metrics)} collected")
+    if result.artifacts:
+        typer.echo(f"   Artifacts: {len(result.artifacts.artifacts)}")
+    if result.failure and result.failure.detected_failure:
+        typer.echo(
+            f"   Failure: {result.failure.failure_mode} "
+            f"({result.failure.severity.value})"
+        )
+    if result.memory_ids:
+        typer.echo(f"   Memory IDs: {len(result.memory_ids)}")
+    typer.echo(f"   Time: {result.processing_time_seconds}s")
+    if result.generated_files:
+        typer.echo("\n   Files generated:")
+        for f in result.generated_files:
+            typer.echo(f"     - {f}")
 
 
 @experiment_app.command("monitor")
@@ -2663,7 +2668,7 @@ def loop_run(
         False, "--approval", help="Enable human-approval mode"
     ),
     dry_run: bool = typer.Option(
-        True, "--dry-run", help="Dry-run experiments (no execution)"
+        True, "--dry-run/--no-dry-run", help="Dry-run experiments (no execution)"
     ),
     skip_literature: bool = typer.Option(
         True, "--skip-literature",
@@ -3018,7 +3023,7 @@ def task(
     ),
     dry_run: bool = typer.Option(
         True,
-        "--dry-run",
+        "--dry-run/--no-dry-run",
         help="Generate patches without applying them",
     ),
     stream: bool = typer.Option(
@@ -3252,7 +3257,7 @@ def research(
     ),
     dry_run: bool = typer.Option(
         True,
-        "--dry-run",
+        "--dry-run/--no-dry-run",
         help="Dry-run experiments (don't execute commands)",
     ),
     timeout: int = typer.Option(
