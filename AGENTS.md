@@ -2,8 +2,9 @@
 
 > Read root `AGENTS.md` and `self.md` first. Workspace rules are
 > authoritative; this file adds project-specific rules only. Cross-cutting
-> platform guidance lives in
-> `.agents/skills/ml-research-engineer/SKILL.md`.
+> platform guidance lives in the workspace-level skill
+> `../.agents/skills/ml-research-engineer/SKILL.md` (relative to this repo,
+> i.e. `<CoreProjects>/.agents/skills/ml-research-engineer/SKILL.md`).
 
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
 > multi-agent ML research platform · **Stats:** 23 agents · 56 tools ·
