@@ -9,6 +9,9 @@ Production failure modes covered:
   "length"``) are retried once with a doubled ``max_tokens`` budget;
   reasoning-style models routinely spend the entire budget before
   emitting visible content.
+- Non-empty responses that are still truncated (``finish_reason ==
+  "length"``) are also retried once with a doubled ``max_tokens`` budget,
+  so answers cut off mid-generation get a chance to complete.
 - Exhausting all attempts raises :class:`ProviderError` so callers'
   existing fallback paths engage instead of silently degrading.
 """
@@ -45,6 +48,62 @@ def is_permanent_provider_error(error: BaseException) -> bool:
     return False
 
 
+def _handle_truncation(
+    response: LLMResponse,
+    request: LLMRequest,
+    *,
+    escalated_tokens: bool,
+    agent_name: str,
+    attempt: int,
+    max_attempts: int,
+) -> tuple[LLMRequest, bool]:
+    """Handle a truncated or empty response, escalating the budget once.
+
+    Truncated responses (``finish_reason == 'length'``, empty or non-empty)
+    trigger a one-time ``max_tokens`` escalation. Non-truncated empty
+    responses are logged but never escalated.
+
+    Returns the (possibly updated) request and the new ``escalated_tokens``
+    flag.
+    """
+    if response.truncated and not escalated_tokens and request.max_tokens:
+        doubled = min(request.max_tokens * 2, _MAX_TOKENS_CAP)
+        if doubled > request.max_tokens:
+            logger.warning(
+                "LLM returned truncated content (finish_reason='length', "
+                "content_len=%d) for %s; retrying with max_tokens=%d",
+                len(response.content),
+                agent_name,
+                doubled,
+            )
+            return request.model_copy(update={"max_tokens": doubled}), True
+        logger.warning(
+            "LLM returned truncated content for %s but max_tokens is "
+            "already at the cap (%d); not escalating further",
+            agent_name,
+            _MAX_TOKENS_CAP,
+        )
+    elif response.truncated:
+        logger.warning(
+            "LLM returned truncated content for %s (attempt %d/%d, "
+            "content_len=%d); escalation already applied",
+            agent_name,
+            attempt,
+            max_attempts,
+            len(response.content),
+        )
+    else:
+        logger.warning(
+            "LLM returned empty content for %s (attempt %d/%d, "
+            "finish_reason=%s)",
+            agent_name,
+            attempt,
+            max_attempts,
+            response.finish_reason,
+        )
+    return request, escalated_tokens
+
+
 async def complete_with_retry(
     provider: LLMProvider,
     request: LLMRequest,
@@ -54,10 +113,15 @@ async def complete_with_retry(
     agent_name: str = "",
     tools: list[ToolDefinition] | None = None,
 ) -> LLMResponse:
-    """Call ``provider.complete`` with retries and empty-content handling.
+    """Call ``provider.complete`` with retries and truncation handling.
 
     When ``tools`` is provided, the call is routed through
     ``provider.complete_with_tools`` so the model may request tool calls.
+
+    Responses whose ``finish_reason == 'length'`` (whether empty or
+    non-empty) are retried once with a doubled ``max_tokens`` budget, up
+    to ``_MAX_TOKENS_CAP``. Non-truncated, non-empty responses are
+    returned immediately.
 
     Raises the last observed error when all attempts are exhausted.
     """
@@ -81,37 +145,20 @@ async def complete_with_retry(
                 e,
             )
         else:
-            if response.content.strip():
+            # Normal completion: non-empty content and not truncated.
+            if response.content.strip() and not response.truncated:
                 return response
             last_response = response
-            # Truncated before any content: reasoning models spend the
-            # whole budget invisibly. Escalate once, then give up.
-            if (
-                response.finish_reason == "length"
-                and not escalated_tokens
-                and request.max_tokens
-            ):
-                doubled = min(request.max_tokens * 2, _MAX_TOKENS_CAP)
-                if doubled > request.max_tokens:
-                    request = request.model_copy(
-                        update={"max_tokens": doubled}
-                    )
-                    escalated_tokens = True
-                    logger.warning(
-                        "LLM returned empty content with finish_reason="
-                        "'length' for %s; retrying with max_tokens=%d",
-                        agent_name or type(provider).__name__,
-                        doubled,
-                    )
-            else:
-                logger.warning(
-                    "LLM returned empty content for %s "
-                    "(attempt %d/%d, finish_reason=%s)",
-                    agent_name or type(provider).__name__,
-                    attempt,
-                    max_attempts,
-                    response.finish_reason,
-                )
+            # Truncated (empty or non-empty) or empty: escalate the budget
+            # once, then keep retrying until max_attempts is exhausted.
+            request, escalated_tokens = _handle_truncation(
+                response,
+                request,
+                escalated_tokens=escalated_tokens,
+                agent_name=agent_name or type(provider).__name__,
+                attempt=attempt,
+                max_attempts=max_attempts,
+            )
 
         if attempt < max_attempts:
             await asyncio.sleep(base_delay * (2 ** (attempt - 1)))

@@ -145,6 +145,16 @@ class LLMResponse(BaseModel):
         description="Raw provider payload (opaque passthrough)",
     )
 
+    @property
+    def truncated(self) -> bool:
+        """True when generation stopped because the token budget was exhausted.
+
+        Mirrors ``finish_reason == 'length'``. Callers can use this to decide
+        whether to retry with a larger ``max_tokens`` budget or surface a
+        clear "output was cut off" signal to the user.
+        """
+        return self.finish_reason == "length"
+
 
 class ProviderError(RuntimeError):
     """Raised when an LLM provider fails to fulfil a request."""
