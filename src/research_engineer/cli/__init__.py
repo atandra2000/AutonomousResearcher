@@ -3,6 +3,7 @@
 import asyncio
 import json
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -3275,6 +3276,11 @@ def research(
         "--format",
         help="Output: console, json, markdown",
     ),
+    llm_enabled: bool = typer.Option(
+        True,
+        "--llm/--no-llm",
+        help="Use LLM for synthesis/hypothesis/report stages (disable for offline rule-based mode)",
+    ),
 ):
     """Run an autonomous research workflow.
 
@@ -3287,6 +3293,7 @@ def research(
         research-engineer research "Design a more efficient diffusion transformer"
         research-engineer research "Improve attention efficiency" --max-papers 30
         research-engineer research "Novel loss function" --no-dry-run --repo ./my_repo
+        research-engineer research "Topic" --no-llm   # offline rule-based mode
     """
     from research_engineer.agents import ResearchConfig
 
@@ -3297,6 +3304,7 @@ def research(
         dry_run_experiments=dry_run,
         experiment_timeout=timeout,
         output_dir=output_dir,
+        llm_enabled=llm_enabled,
     )
     try:
         result = asyncio.run(orchestrator.run(goal, repo, config=config))

@@ -65,6 +65,7 @@ class ResearchConfig:
         skip_stages: list[ResearchStageType] | None = None,
         stream: bool = True,
         output_dir: str = "output/research",
+        llm_enabled: bool = True,
     ) -> None:
         self.max_papers = max_papers
         self.max_hypotheses = max_hypotheses
@@ -73,6 +74,7 @@ class ResearchConfig:
         self.skip_stages = skip_stages or []
         self.stream = stream
         self.output_dir = output_dir
+        self.llm_enabled = llm_enabled
 
 
 class ResearchWorkflowFramework:
@@ -128,6 +130,10 @@ class ResearchWorkflowFramework:
         }
         for stage_type, agent in defaults.items():
             if stage_type not in self._stage_agents:
+                # When LLM is disabled, force rule-based mode so the
+                # workflow never blocks on an unreachable provider.
+                if not self.config.llm_enabled:
+                    agent.llm_provider = None
                 self._stage_agents[stage_type] = agent
 
     # ------------------------------------------------------------------

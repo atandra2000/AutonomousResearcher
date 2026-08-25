@@ -444,6 +444,7 @@ class TestResearchWorkflowFramework:
                 max_hypotheses=3,
                 dry_run_experiments=True,
                 output_dir=str(tmp_path / "out"),
+                llm_enabled=False,
             ),
         )
         result = await framework.run(
@@ -472,6 +473,7 @@ class TestResearchWorkflowFramework:
                     ResearchStageType.RESULT_ANALYSIS,
                 ],
                 output_dir=str(tmp_path / "out"),
+                llm_enabled=False,
             ),
         )
         result = await framework.run(
@@ -538,6 +540,7 @@ class TestResearchOrchestrator:
             max_hypotheses=2,
             dry_run_experiments=True,
             output_dir=str(tmp_path / "out"),
+            llm_enabled=False,
         )
         result = await orch.run(
             research_goal="Efficient attention",

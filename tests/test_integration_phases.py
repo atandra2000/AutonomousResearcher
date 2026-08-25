@@ -17,8 +17,8 @@ class TestPhase1ToPhase3Integration:
     @pytest.mark.asyncio
     async def test_phase1_to_phase3_full_pipeline(self, tmp_path):
         """Test full pipeline from paper analysis to experiment planning."""
-        research_agent = ResearchAgent()
-        planner_agent = ExperimentPlannerAgent()
+        research_agent = ResearchAgent(llm_enabled=False)
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -77,8 +77,8 @@ class AttentionModel(nn.Module):
     @pytest.mark.asyncio
     async def test_phase1_to_phase3_compatibility_check(self, tmp_path):
         """Test that Phase 1 output feeds into Phase 3 compatibility analysis."""
-        research_agent = ResearchAgent()
-        planner_agent = ExperimentPlannerAgent()
+        research_agent = ResearchAgent(llm_enabled=False)
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -112,8 +112,8 @@ training:
     @pytest.mark.asyncio
     async def test_phase1_to_phase3_risk_assessment(self, tmp_path):
         """Test that Phase 1 analysis informs Phase 3 risk assessment."""
-        research_agent = ResearchAgent()
-        planner_agent = ExperimentPlannerAgent()
+        research_agent = ResearchAgent(llm_enabled=False)
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "test_repo"
         repo_dir.mkdir()
@@ -138,7 +138,7 @@ class TestPhase2ToPhase3Integration:
     async def test_phase2_to_phase3_full_pipeline(self, tmp_path):
         """Test full pipeline from repository analysis to experiment planning."""
         repo_agent = RepositoryAgent()
-        planner_agent = ExperimentPlannerAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "ml_project"
         repo_dir.mkdir()
@@ -209,7 +209,7 @@ training:
     async def test_phase2_to_phase3_architecture_compatibility(self, tmp_path):
         """Test repository architecture analysis feeds into compatibility check."""
         repo_agent = RepositoryAgent()
-        planner_agent = ExperimentPlannerAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "attention_repo"
         repo_dir.mkdir()
@@ -271,7 +271,7 @@ class MultiHeadAttention(nn.Module):
     async def test_phase2_to_phase3_training_pipeline_integration(self, tmp_path):
         """Test training pipeline analysis informs experiment design."""
         repo_agent = RepositoryAgent()
-        planner_agent = ExperimentPlannerAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "training_repo"
         repo_dir.mkdir()
@@ -317,8 +317,8 @@ class TestPhase3ToPhase4Integration:
     @pytest.mark.asyncio
     async def test_phase3_to_phase4_full_pipeline(self, tmp_path):
         """Test full pipeline from experiment planning to code implementation."""
-        planner_agent = ExperimentPlannerAgent()
-        coding_agent = CodingAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
+        coding_agent = CodingAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "implementation_repo"
         repo_dir.mkdir()
@@ -365,8 +365,8 @@ class BaseModel(nn.Module):
     @pytest.mark.asyncio
     async def test_phase3_to_phase4_patch_generation(self, tmp_path):
         """Test Phase 3 plan generates patches in Phase 4."""
-        planner_agent = ExperimentPlannerAgent()
-        coding_agent = CodingAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
+        coding_agent = CodingAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "patch_repo"
         repo_dir.mkdir()
@@ -392,8 +392,8 @@ class BaseModel(nn.Module):
     @pytest.mark.asyncio
     async def test_phase3_to_phase4_test_generation(self, tmp_path):
         """Test Phase 3 validation plan informs Phase 4 test generation."""
-        planner_agent = ExperimentPlannerAgent()
-        coding_agent = CodingAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
+        coding_agent = CodingAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "test_repo"
         repo_dir.mkdir()
@@ -422,8 +422,8 @@ def add(a, b):
     @pytest.mark.asyncio
     async def test_phase3_to_phase4_rollback_planning(self, tmp_path):
         """Test Phase 3 risk assessment informs Phase 4 rollback planning."""
-        planner_agent = ExperimentPlannerAgent()
-        coding_agent = CodingAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
+        coding_agent = CodingAgent(llm_enabled=False)
         
         repo_dir = tmp_path / "rollback_repo"
         repo_dir.mkdir()
@@ -454,10 +454,10 @@ class TestFullEndToEndIntegration:
     @pytest.mark.asyncio
     async def test_phase1_to_phase4_complete_pipeline(self, tmp_path):
         """Test complete pipeline from paper analysis to code implementation."""
-        research_agent = ResearchAgent()
+        research_agent = ResearchAgent(llm_enabled=False)
         repo_agent = RepositoryAgent()
-        planner_agent = ExperimentPlannerAgent()
-        coding_agent = CodingAgent()
+        planner_agent = ExperimentPlannerAgent(llm_enabled=False)
+        coding_agent = CodingAgent(llm_enabled=False)
         
         output_dir = tmp_path / "output"
         output_dir.mkdir()

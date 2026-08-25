@@ -55,6 +55,7 @@ class ResearchAgent:
         parser_tool: PaperParserTool | None = None,
         storage_tool: StorageTool | None = None,
         llm: LLMProvider | None = None,
+        llm_enabled: bool = True,
     ):
         self.agent_name: str = "ResearchAgent"
         self.arxiv = arxiv_tool or ArxivTool()
@@ -62,7 +63,7 @@ class ResearchAgent:
         self.parser = parser_tool or PaperParserTool()
         self.storage = storage_tool or StorageTool()
         from research_engineer.agents._llm_support import resolve_llm
-        self.llm_provider = resolve_llm(self.agent_name, llm)
+        self.llm_provider = resolve_llm(self.agent_name, llm, llm_enabled=llm_enabled)
 
     def _detect_input_type(self, input_str: str) -> str:
         """Detect the type of paper input."""

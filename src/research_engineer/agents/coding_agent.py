@@ -107,12 +107,13 @@ class CodingAgent:
         rollback_planner_tool: RollbackPlannerTool | None = None,
         implementation_report_tool: ImplementationReportTool | None = None,
         llm: LLMProvider | None = None,
+        llm_enabled: bool = True,
     ):
         self.agent_name: str = "CodingAgent"
         self.research_agent = research_agent or ResearchAgent()
         self.repository_agent = repository_agent or RepositoryAgent()
         from research_engineer.agents._llm_support import resolve_llm
-        self.llm_provider = resolve_llm(self.agent_name, llm)
+        self.llm_provider = resolve_llm(self.agent_name, llm, llm_enabled=llm_enabled)
         self.code_gen = code_generation_tool or CodeGenerationTool(
             llm=self.llm_provider
         )

@@ -118,6 +118,7 @@ class ExperimentPlannerAgent:
         compute_tool: ComputeEstimatorTool | None = None,
         prediction_tool: ResultPredictionTool | None = None,
         llm: LLMProvider | None = None,
+        llm_enabled: bool = True,
     ):
         self.agent_name: str = "ExperimentPlannerAgent"
         self.research_agent = research_agent or ResearchAgent()
@@ -131,7 +132,7 @@ class ExperimentPlannerAgent:
         self.compute = compute_tool or ComputeEstimatorTool()
         self.prediction = prediction_tool or ResultPredictionTool()
         from research_engineer.agents._llm_support import resolve_llm
-        self.llm_provider = resolve_llm(self.agent_name, llm)
+        self.llm_provider = resolve_llm(self.agent_name, llm, llm_enabled=llm_enabled)
 
     async def plan(
         self,
