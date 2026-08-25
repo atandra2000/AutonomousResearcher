@@ -84,6 +84,7 @@ class PlannerResult(BaseModel):
     engineering_report_md: str = Field(..., description="Full engineering report in markdown")
     planning_time_seconds: float = Field(..., description="Planning duration")
     generated_files: list[str] = Field(default_factory=list, description="Generated output files")
+    memory_context: str = Field(default="", description="Recalled memory context used to inform planning")
 
 
 class ExperimentPlannerAgent:
@@ -139,6 +140,7 @@ class ExperimentPlannerAgent:
         paper_input: str,
         repo_path: str,
         output_dir: str = "output",
+        memory_context: str | None = None,
     ) -> PlannerResult:
         """
         Main entry point for experiment planning.
@@ -147,11 +149,14 @@ class ExperimentPlannerAgent:
             paper_input: arXiv ID, arXiv URL, or PDF file path
             repo_path: Path to the target repository
             output_dir: Directory to save output files
+            memory_context: Optional recalled memory context (insights,
+                successes, failures) to inform planning
 
         Returns:
             PlannerResult with all planning artifacts
         """
         start_time = time.time()
+        memory_context = memory_context or ""
 
         # Step 1: Understand paper
         paper_result = await self.research_agent.analyze(paper_input, output_dir=output_dir)
@@ -327,6 +332,13 @@ class ExperimentPlannerAgent:
 
         elapsed = time.time() - start_time
 
+        engineering_report = plan_result.to_engineering_report()
+        if memory_context:
+            engineering_report += (
+                "\n\n## Recalled Memory Context\n\n"
+                f"{memory_context}\n"
+            )
+
         return PlannerResult(
             plan_id=plan_result.plan_id,
             paper_id=paper_id,
@@ -339,9 +351,10 @@ class ExperimentPlannerAgent:
             risk_assessment=risk_output.assessment.model_dump(),
             compute_estimate=compute_output.estimate.model_dump(),
             result_prediction=pred_output.prediction.model_dump(),
-            engineering_report_md=plan_result.to_engineering_report(),
+            engineering_report_md=engineering_report,
             planning_time_seconds=round(elapsed, 2),
             generated_files=generated_files,
+            memory_context=memory_context,
         )
 
     def _format_compatibility_md(self, report: CompatibilityReport) -> str:

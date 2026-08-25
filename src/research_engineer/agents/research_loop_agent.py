@@ -39,6 +39,7 @@ from research_engineer.models.loop import (
 )
 from research_engineer.models.memory import (
     MemoryRelationship,
+    MemoryResult,
     RelationshipType,
 )
 from research_engineer.tools.loop_storage import LoopStorageTool
@@ -48,6 +49,70 @@ from research_engineer.tools.stopping_condition import (
 )
 
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[bool]]
+
+
+def _format_memory_context(memories: list[MemoryResult]) -> str:
+    """Format recalled memories into a compact, readable context string.
+
+    Each ``MemoryResult`` is reduced to its memory type, tags, and a short
+    content summary so the planner and coding agent can act on prior
+    insights, successes, and failures without dumping raw model dumps.
+    """
+    if not memories:
+        return ""
+    lines: list[str] = []
+    for i, result in enumerate(memories, start=1):
+        memory = getattr(result, "memory", None)
+        if isinstance(memory, dict):
+            mem_type = memory.get("memory_type", "unknown")
+            tags = memory.get("tags", [])
+            content = _memory_content_summary(memory)
+        else:
+            mem_type = getattr(memory, "memory_type", "unknown")
+            tags = list(getattr(memory, "tags", []) or [])
+            content = _memory_content_summary(memory)
+        tag_str = ", ".join(str(t) for t in tags) if tags else "none"
+        lines.append(
+            f"{i}. [{mem_type}] (tags: {tag_str}) {content}"
+        )
+    return "\n".join(lines)
+
+
+def _memory_content_summary(memory: Any) -> str:
+    """Extract a short content summary from a memory object or dict."""
+    if isinstance(memory, dict):
+        for key in (
+            "description",
+            "approach_description",
+            "context",
+            "decision",
+            "title",
+            "abstract",
+            "architecture_summary",
+            "lessons_learned",
+        ):
+            value = memory.get(key)
+            if value:
+                if isinstance(value, list):
+                    return "; ".join(str(v) for v in value)
+                return str(value)
+        return ""
+    for key in (
+        "description",
+        "approach_description",
+        "context",
+        "decision",
+        "title",
+        "abstract",
+        "architecture_summary",
+        "lessons_learned",
+    ):
+        value = getattr(memory, key, None)
+        if value:
+            if isinstance(value, list):
+                return "; ".join(str(v) for v in value)
+            return str(value)
+    return ""
 
 
 class _IterationContext:
@@ -318,7 +383,7 @@ class ResearchLoopAgent:
         # Phase 2: Planning
         ctx.phase = IterationPhase.PLANNING
         if self.planner:
-            await self._run_planning(ctx, cfg)
+            await self._run_planning(ctx, cfg, context)
 
         if cfg.approval_mode:
             if not await self._gate(
@@ -334,7 +399,7 @@ class ResearchLoopAgent:
         # Phase 3: Implementation
         ctx.phase = IterationPhase.IMPLEMENTATION
         if self.coding:
-            await self._run_implementation(ctx, cfg)
+            await self._run_implementation(ctx, cfg, context)
 
         if cfg.approval_mode:
             if not await self._gate(
@@ -408,14 +473,19 @@ class ResearchLoopAgent:
             pass
 
     async def _run_planning(
-        self, ctx: _IterationContext, cfg: LoopConfig
+        self,
+        ctx: _IterationContext,
+        cfg: LoopConfig,
+        context: list[Any],
     ) -> None:
         """Run experiment planning phase."""
         try:
             plan_input = ctx.paper_id or cfg.goal
+            memory_context = _format_memory_context(context)
             plan_result = await self.planner.plan(
                 paper_input=plan_input,
                 repo_path=cfg.repo_path,
+                memory_context=memory_context,
             )
             if isinstance(plan_result.plan_id, str):
                 ctx.plan_id = plan_result.plan_id
@@ -427,17 +497,22 @@ class ResearchLoopAgent:
             pass
 
     async def _run_implementation(
-        self, ctx: _IterationContext, cfg: LoopConfig
+        self,
+        ctx: _IterationContext,
+        cfg: LoopConfig,
+        context: list[Any],
     ) -> None:
         """Run code implementation phase."""
         try:
             task_desc = (
                 f"Implement approach from paper {ctx.paper_id or cfg.goal}"
             )
+            memory_context = _format_memory_context(context)
             impl_result = await self.coding.implement(
                 task_description=task_desc,
                 repo_path=cfg.repo_path,
                 paper_input=ctx.paper_id,
+                memory_context=memory_context,
             )
             if isinstance(impl_result.implementation_id, str):
                 ctx.impl_id = impl_result.implementation_id

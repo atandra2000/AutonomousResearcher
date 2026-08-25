@@ -264,6 +264,25 @@ successes, failures) to inform planning and implementation.
 
 **Effort:** 1 day. **Dependency:** B1.
 
+**Status (complete):**
+- Added module-level `_format_memory_context(memories)` helper in
+  `research_loop_agent.py` that reduces each recalled `MemoryResult` to its
+  memory type, tags, and a short content summary (description,
+  approach_description, context, decision, title, abstract, etc.).
+- Threaded the recalled `context` (from `_recall_context` → `get_context`)
+  through `_run_iteration` into `_run_planning` and `_run_implementation`,
+  formatting it once and passing it as `memory_context` to both
+  `planner.plan()` and `coding.implement()` on every iteration.
+- `experiment_planner_agent.py`: added `memory_context` parameter to `plan()`,
+  a `memory_context` field to `PlannerResult`, and appended a
+  "Recalled Memory Context" section to the engineering report markdown.
+- `coding_agent.py`: added `memory_context` parameter to `implement()`, a
+  `memory_context` field to `ImplementationRequest` and `CodeGenerationInput`,
+  and surfaced it in the code-generation refinement prompt.
+- Added 4 tests (`TestMemoryIntegration`): memory context flows to planner,
+  memory context flows to coder, and `_format_memory_context` empty/renders.
+  Full suite: **976 passing** (up from 972). Zero new ruff/mypy errors.
+
 ---
 
 ### 4.3 Workstream B3 — Research-output evaluation

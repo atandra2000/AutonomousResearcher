@@ -133,6 +133,7 @@ class CodingAgent:
         output_dir: str = "output",
         constraints: list[str] | None = None,
         requirements: list[str] | None = None,
+        memory_context: str | None = None,
     ) -> CodingAgentResult:
         """
         Main entry point for implementation.
@@ -145,11 +146,14 @@ class CodingAgent:
             output_dir: Directory to save outputs
             constraints: Implementation constraints
             requirements: Specific requirements
+            memory_context: Optional recalled memory context (insights,
+                successes, failures) to inform implementation
 
         Returns:
             CodingAgentResult with all implementation artifacts
         """
         start_time = time.time()
+        memory_context = memory_context or ""
 
         # Create implementation request
         request_id = f"req_{int(time.time())}"
@@ -161,6 +165,7 @@ class CodingAgent:
             implementation_plan_path=str(implementation_plan) if implementation_plan else None,
             constraints=constraints or [],
             requirements=requirements or [],
+            memory_context=memory_context,
         )
 
         # Step 1: Understand paper (if provided)
@@ -194,6 +199,7 @@ class CodingAgent:
             implementation_plan=implementation_plan,
             task_description=task_description,
             constraints=constraints or [],
+            memory_context=memory_context,
         )
         code_output: CodeGenerationOutput = await self.code_gen.execute(code_input)
 

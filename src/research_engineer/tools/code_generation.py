@@ -86,6 +86,10 @@ class CodeGenerationInput(BaseModel):
         default_factory=list,
         description="Implementation constraints",
     )
+    memory_context: str = Field(
+        default="",
+        description="Recalled memory context (insights, successes, failures)",
+    )
 
 
 class CodeGenerationOutput(BaseModel):
@@ -528,6 +532,10 @@ class CodeGenerationTool(Tool[CodeGenerationInput, CodeGenerationOutput]):
         ]
         if input.constraints:
             parts.append(f"Constraints: {'; '.join(input.constraints)}")
+        if input.memory_context:
+            parts.append(
+                f"Recalled memory context:\n{input.memory_context}"
+            )
         if input.implementation_plan is not None:
             plan_summary = getattr(
                 input.implementation_plan, "overview", ""

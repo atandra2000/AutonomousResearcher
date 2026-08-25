@@ -6,23 +6,27 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from research_engineer.agents.research_loop_agent import ResearchLoopAgent
+from research_engineer.agents.research_loop_agent import (
+    ResearchLoopAgent,
+    _format_memory_context,
+)
 from research_engineer.models.loop import (
-    ApprovalGate,
-    ApprovalRequest,
-    IterationPhase,
     LoopConfig,
     LoopIteration,
     LoopStatus,
     NextAction,
     StoppingCondition,
 )
+from research_engineer.models.memory import (
+    InsightType,
+    MemoryResult,
+    ResearchInsightMemory,
+)
 from research_engineer.tools.loop_storage import LoopStorageTool
 from research_engineer.tools.report_generator import ReportGeneratorTool
 from research_engineer.tools.stopping_condition import (
     StoppingConditionChecker,
 )
-
 
 # --- Helpers ---
 
@@ -430,6 +434,86 @@ class TestMemoryIntegration:
         assert mock_memory_agent.store_success.called
         assert mock_memory_agent.graph.add_node.called
         assert mock_memory_agent.graph.add_relationship.called
+
+    @pytest.mark.asyncio
+    async def test_memory_context_flows_to_planner(
+        self,
+        loop_agent,
+        mock_memory_agent,
+        mock_planner_agent,
+        tmp_path,
+    ):
+        """Recalled memory context is passed to the planner on each iteration."""
+        mock_memory_agent.get_context = AsyncMock(
+            return_value=[
+                MemoryResult(
+                    memory=ResearchInsightMemory(
+                        insight_type=InsightType.BEST_PRACTICE,
+                        domain="attention",
+                        description="Use layer norm before attention",
+                    ),
+                    score=0.9,
+                )
+            ]
+        )
+        cfg = _config(
+            max_iterations=1, output_dir=str(tmp_path / "loops")
+        )
+        await loop_agent.run("memory test", "/repo", config=cfg)
+        assert mock_planner_agent.plan.called
+        _, kwargs = mock_planner_agent.plan.call_args
+        assert "memory_context" in kwargs
+        assert "Use layer norm before attention" in kwargs["memory_context"]
+
+    @pytest.mark.asyncio
+    async def test_memory_context_flows_to_coder(
+        self,
+        loop_agent,
+        mock_memory_agent,
+        mock_coding_agent,
+        tmp_path,
+    ):
+        """Recalled memory context is passed to the coding agent."""
+        mock_memory_agent.get_context = AsyncMock(
+            return_value=[
+                MemoryResult(
+                    memory=ResearchInsightMemory(
+                        insight_type=InsightType.OPTIMIZATION,
+                        domain="optimizer",
+                        description="AdamW with lr 1e-4 converges faster",
+                    ),
+                    score=0.85,
+                )
+            ]
+        )
+        cfg = _config(
+            max_iterations=1, output_dir=str(tmp_path / "loops")
+        )
+        await loop_agent.run("memory test", "/repo", config=cfg)
+        assert mock_coding_agent.implement.called
+        _, kwargs = mock_coding_agent.implement.call_args
+        assert "memory_context" in kwargs
+        assert "AdamW with lr 1e-4" in kwargs["memory_context"]
+
+    def test_format_memory_context_empty(self):
+        assert _format_memory_context([]) == ""
+
+    def test_format_memory_context_renders(self):
+        memories = [
+            MemoryResult(
+                memory=ResearchInsightMemory(
+                    insight_type=InsightType.PATTERN,
+                    domain="attention",
+                    description="Multi-head attention works best",
+                    tags=["attention"],
+                ),
+                score=0.9,
+            )
+        ]
+        text = _format_memory_context(memories)
+        assert "research_insight" in text
+        assert "attention" in text
+        assert "Multi-head attention works best" in text
 
 
 class TestDeriveNextCommand:

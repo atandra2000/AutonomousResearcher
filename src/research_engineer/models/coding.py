@@ -441,6 +441,10 @@ class ImplementationRequest(BaseModel):
         default_factory=list,
         description="Specific requirements",
     )
+    memory_context: str = Field(
+        default="",
+        description="Recalled memory context (insights, successes, failures)",
+    )
     created_at: datetime = Field(
         default_factory=datetime.now,
         description="Request creation timestamp",
