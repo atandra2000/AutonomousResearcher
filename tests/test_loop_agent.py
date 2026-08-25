@@ -14,6 +14,7 @@ from research_engineer.models.loop import (
     LoopConfig,
     LoopIteration,
     LoopStatus,
+    NextAction,
     StoppingCondition,
 )
 from research_engineer.tools.loop_storage import LoopStorageTool
@@ -429,6 +430,122 @@ class TestMemoryIntegration:
         assert mock_memory_agent.store_success.called
         assert mock_memory_agent.graph.add_node.called
         assert mock_memory_agent.graph.add_relationship.called
+
+
+class TestDeriveNextCommand:
+    """Unit tests for each decision branch of _derive_next_command."""
+
+    def _iteration(
+        self,
+        number: int = 1,
+        primary_metric_value: float | None = 0.5,
+        best_metric_value: float | None = 0.5,
+        improvement: float | None = None,
+        primary_metric_name: str | None = "loss",
+    ) -> LoopIteration:
+        return LoopIteration(
+            loop_id="loop_1",
+            iteration_number=number,
+            primary_metric_name=primary_metric_name,
+            primary_metric_value=primary_metric_value,
+            best_metric_value=best_metric_value,
+            improvement=improvement,
+        )
+
+    def test_no_target_metric(self):
+        cfg = _config(target_metric_name=None)
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(), cfg, []
+        )
+        assert cmd.action == NextAction.NONE
+        assert cmd.iteration_number == 1
+
+    def test_no_primary_metric_value(self):
+        cfg = _config()
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(primary_metric_value=None), cfg, []
+        )
+        assert cmd.action == NextAction.NONE
+        assert cmd.target_metric == "loss"
+
+    def test_improved_continues(self):
+        cfg = _config()
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(
+                primary_metric_value=0.3,
+                best_metric_value=0.3,
+                improvement=0.2,
+            ),
+            cfg,
+            [],
+        )
+        assert cmd.action == NextAction.CONTINUE
+        assert "improved" in cmd.rationale
+        assert cmd.target_metric == "loss"
+
+    def test_regressed_corrects(self):
+        cfg = _config()
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(
+                primary_metric_value=0.8,
+                best_metric_value=0.5,
+                improvement=None,
+            ),
+            cfg,
+            [],
+        )
+        assert cmd.action == NextAction.CORRECT
+        assert "regressed" in cmd.rationale
+        assert any("hyperparameters" in c for c in cmd.suggested_changes)
+
+    def test_regressed_higher_is_better(self):
+        cfg = _config(higher_is_better=True)
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(
+                primary_metric_value=0.4,
+                best_metric_value=0.9,
+                improvement=None,
+            ),
+            cfg,
+            [],
+        )
+        assert cmd.action == NextAction.CORRECT
+
+    def test_no_improvement_over_window_rediscovers(self):
+        cfg = _config(stagnation_window=3)
+        history = [
+            self._iteration(number=1, improvement=None),
+            self._iteration(number=2, improvement=None),
+            self._iteration(number=3, improvement=None),
+        ]
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(number=4, improvement=None), cfg, history
+        )
+        assert cmd.action == NextAction.REDISCOVER
+        assert "re-discovery" in cmd.rationale
+
+    def test_stagnant_within_window_continues(self):
+        cfg = _config(stagnation_window=3)
+        history = [
+            self._iteration(number=1, improvement=None),
+        ]
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(number=2, improvement=None), cfg, history
+        )
+        assert cmd.action == NextAction.CONTINUE
+        assert "cautiously" in cmd.rationale
+
+    def test_improvement_breaks_stagnation(self):
+        cfg = _config(stagnation_window=3)
+        history = [
+            self._iteration(number=1, improvement=None),
+            self._iteration(number=2, improvement=None),
+            self._iteration(number=3, improvement=0.1),
+        ]
+        cmd = ResearchLoopAgent._derive_next_command(
+            self._iteration(number=4, improvement=None), cfg, history
+        )
+        assert cmd.action == NextAction.CONTINUE
 
 
 class TestQueryMethods:

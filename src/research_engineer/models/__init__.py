@@ -154,6 +154,8 @@ from .loop import (
     LoopStatus,
     LoopStorageInput,
     LoopStorageOutput,
+    NextAction,
+    NextCommand,
     ReportInput,
     ReportOutput,
     StoppingCheckInput,
@@ -495,6 +497,8 @@ __all__ = [
     "ReportInput",
     "ReportOutput",
     "LoopResult",
+    "NextAction",
+    "NextCommand",
     # Phase 11 - Terminal-first autonomous coding agent
     "TaskStatus",
     "TaskStepType",

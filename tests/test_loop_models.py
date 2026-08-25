@@ -23,6 +23,8 @@ from research_engineer.models.loop import (
     LoopStatus,
     LoopStorageInput,
     LoopStorageOutput,
+    NextAction,
+    NextCommand,
     ReportInput,
     ReportOutput,
     StoppingCheckInput,
@@ -68,6 +70,47 @@ class TestApprovalGate:
         assert ApprovalGate.PLAN == "plan"
         assert ApprovalGate.IMPLEMENTATION == "implementation"
         assert ApprovalGate.NEXT_ITERATION == "next_iteration"
+
+
+class TestNextAction:
+    def test_values(self):
+        assert NextAction.CONTINUE == "continue"
+        assert NextAction.CORRECT == "correct"
+        assert NextAction.REDISCOVER == "rediscover"
+        assert NextAction.STOP == "stop"
+        assert NextAction.NONE == "none"
+
+
+class TestNextCommand:
+    def test_defaults(self):
+        cmd = NextCommand()
+        assert cmd.action == NextAction.NONE
+        assert cmd.rationale == ""
+        assert cmd.suggested_changes == []
+        assert cmd.target_metric is None
+        assert cmd.iteration_number == 0
+
+    def test_serialization(self):
+        cmd = NextCommand(
+            action=NextAction.CORRECT,
+            rationale="regressed",
+            suggested_changes=["Change hyperparameters"],
+            target_metric="loss",
+            iteration_number=2,
+        )
+        json_str = cmd.model_dump_json()
+        restored = NextCommand.model_validate_json(json_str)
+        assert restored.action == NextAction.CORRECT
+        assert restored.rationale == "regressed"
+        assert restored.suggested_changes == ["Change hyperparameters"]
+        assert restored.target_metric == "loss"
+        assert restored.iteration_number == 2
+
+    def test_loop_state_next_command(self):
+        state = LoopState(loop_id="l", goal="g")
+        assert state.next_command is None
+        state.next_command = NextCommand(action=NextAction.CONTINUE)
+        assert state.next_command.action == NextAction.CONTINUE
 
 
 class TestLoopConfig:

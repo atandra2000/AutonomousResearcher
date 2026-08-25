@@ -56,6 +56,16 @@ class ApprovalGate(StrEnum):
     NEXT_ITERATION = "next_iteration"
 
 
+class NextAction(StrEnum):
+    """Action the loop should take next, derived from evaluation."""
+
+    CONTINUE = "continue"
+    CORRECT = "correct"
+    REDISCOVER = "rediscover"
+    STOP = "stop"
+    NONE = "none"
+
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -172,7 +182,7 @@ class LoopState(BaseModel):
     pending_approval: ApprovalRequest | None = Field(
         None, description="Pending approval request, if paused"
     )
-    next_command: str | None = Field(
+    next_command: "NextCommand | None" = Field(
         None, description="Next experiment command derived from evaluation"
     )
     started_at: datetime = Field(
@@ -245,6 +255,32 @@ class LoopIteration(BaseModel):
     def is_success(self) -> bool:
         """Return True if the iteration completed without error."""
         return self.error is None and self.status != LoopStatus.FAILED
+
+
+class NextCommand(BaseModel):
+    """Structured next-action decision derived from evaluation.
+
+    Produced by ``ResearchLoopAgent._derive_next_command()`` to tell the loop
+    what to do next: continue in the same direction, run a corrective
+    experiment, re-discover literature, or stop.
+    """
+
+    action: NextAction = Field(
+        NextAction.NONE, description="Action the loop should take next"
+    )
+    rationale: str = Field(
+        "", description="Human-readable reasoning behind the decision"
+    )
+    suggested_changes: list[str] = Field(
+        default_factory=list,
+        description="Concrete changes to try in the next iteration",
+    )
+    target_metric: str | None = Field(
+        None, description="Metric the decision is based on"
+    )
+    iteration_number: int = Field(
+        0, ge=0, description="Iteration the decision was made on"
+    )
 
 
 # ---------------------------------------------------------------------------

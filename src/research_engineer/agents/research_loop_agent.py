@@ -31,6 +31,8 @@ from research_engineer.models.loop import (
     LoopState,
     LoopStatus,
     LoopStorageInput,
+    NextAction,
+    NextCommand,
     ReportInput,
     ReportOutput,
     StoppingCheckInput,
@@ -227,7 +229,9 @@ class ResearchLoopAgent:
                 state.status = LoopStatus.RUNNING
 
                 # Derive next experiment command from evaluation
-                next_cmd = self._derive_next_command(iteration)
+                next_cmd = self._derive_next_command(
+                    iteration, cfg, state.iterations
+                )
                 state.next_command = next_cmd
 
         except Exception as e:
@@ -818,9 +822,118 @@ class ResearchLoopAgent:
         return 0.5
 
     @staticmethod
-    def _derive_next_command(iteration: LoopIteration) -> str | None:
-        """Derive the next experiment command from evaluation recommendations."""
-        return None
+    def _derive_next_command(
+        iteration: LoopIteration,
+        cfg: LoopConfig,
+        history: list[LoopIteration],
+    ) -> NextCommand:
+        """Derive the next experiment command from evaluation recommendations.
+
+        Decision rules (rule-based, no LLM):
+
+        1. If the last iteration **improved** the target metric → continue in
+           the same direction.
+        2. If it **regressed** (metric moved away from the best) → propose a
+           corrective experiment (change hyperparameters, architecture, or data).
+        3. If there has been **no improvement over the last ``stagnation_window``
+           iterations** → trigger a literature re-discovery or stop.
+        4. Otherwise (stagnant but within the window) → continue cautiously.
+        """
+        if not cfg.target_metric_name:
+            return NextCommand(
+                action=NextAction.NONE,
+                rationale=(
+                    "No target metric configured; cannot derive a next command."
+                ),
+                iteration_number=iteration.iteration_number,
+            )
+
+        if iteration.primary_metric_value is None:
+            return NextCommand(
+                action=NextAction.NONE,
+                rationale=(
+                    "No primary metric value recorded; cannot judge improvement."
+                ),
+                target_metric=cfg.target_metric_name,
+                iteration_number=iteration.iteration_number,
+            )
+
+        # 1) Improved → continue in the same direction
+        if iteration.improvement is not None and iteration.improvement > 0:
+            return NextCommand(
+                action=NextAction.CONTINUE,
+                rationale=(
+                    f"Metric improved by {iteration.improvement:.6g} "
+                    f"({iteration.primary_metric_name}). Continue in the same "
+                    "direction."
+                ),
+                suggested_changes=[
+                    "Keep the current approach",
+                    "Push further in the same direction "
+                    "(more epochs, larger model)",
+                ],
+                target_metric=iteration.primary_metric_name,
+                iteration_number=iteration.iteration_number,
+            )
+
+        # 2) Regressed → corrective experiment
+        if iteration.best_metric_value is not None:
+            val = iteration.primary_metric_value
+            best = iteration.best_metric_value
+            regressed = (
+                val < best if cfg.higher_is_better else val > best
+            )
+            if regressed:
+                return NextCommand(
+                    action=NextAction.CORRECT,
+                    rationale=(
+                        f"Metric regressed to {val:.6g} vs best {best:.6g} "
+                        f"({iteration.primary_metric_name}). Propose a "
+                        "corrective experiment."
+                    ),
+                    suggested_changes=[
+                        "Change hyperparameters (learning rate, batch size)",
+                        "Change architecture",
+                        "Change data",
+                    ],
+                    target_metric=iteration.primary_metric_name,
+                    iteration_number=iteration.iteration_number,
+                )
+
+        # 3) No improvement over N iterations → literature re-discovery or stop
+        recent = history[-cfg.stagnation_window :] if history else []
+        if len(recent) >= cfg.stagnation_window and all(
+            it.improvement is None or it.improvement <= 0 for it in recent
+        ):
+            return NextCommand(
+                action=NextAction.REDISCOVER,
+                rationale=(
+                    f"No improvement over the last {cfg.stagnation_window} "
+                    "iterations. Trigger literature re-discovery or stop."
+                ),
+                suggested_changes=[
+                    "Re-discover literature for new directions",
+                    "Consider stopping if no new direction emerges",
+                ],
+                target_metric=iteration.primary_metric_name,
+                iteration_number=iteration.iteration_number,
+            )
+
+        # 4) Stagnant but within the window → continue cautiously
+        return NextCommand(
+            action=NextAction.CONTINUE,
+            rationale=(
+                f"No improvement this iteration "
+                f"({iteration.primary_metric_name}). Continue cautiously "
+                "within the stagnation window."
+            ),
+            suggested_changes=[
+                "Keep the current approach",
+                "Monitor for stagnation across iterations",
+            ],
+            target_metric=iteration.primary_metric_name,
+            iteration_number=iteration.iteration_number,
+        )
 
     # ------------------------------------------------------------------
     # Query methods

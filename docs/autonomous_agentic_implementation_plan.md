@@ -4,8 +4,8 @@
 > pipeline orchestrator into a fully autonomous, industry-grade, deployable
 > agentic research system.
 >
-> **Status:** In progress — **A1 (tool-calling protocol) is complete.** The
-> remaining workstreams are queued and will be implemented one at a time in
+> **Status:** In progress — **Tier 1 (A1–A4) is complete.** The remaining
+> workstreams (Tier 2–4) are queued and will be implemented one at a time in
 > subsequent sessions.
 
 ---
@@ -89,7 +89,7 @@ can request tool invocations and feed results back into the conversation.
 
 ---
 
-### 3.2 Workstream A2 — ReAct agent loop
+### 3.2 Workstream A2 — ReAct agent loop ✅ COMPLETE
 
 **Goal:** Add a reusable ReAct (Reason + Act) loop that lets any agent iterate:
 call the model → execute requested tools → feed results back → repeat until the
@@ -138,9 +138,19 @@ async def run_react_loop(
 
 **Effort:** 1 day. **Dependency:** A1 (complete).
 
+**Files changed (done):**
+
+| File | Change |
+|------|--------|
+| `llm/react_loop.py` (new) | `ReActLoopConfig`, `ReActStep`, `ReActResult`, `run_react_loop()` — multi-step tool round-trips, final-answer termination, step-budget exhaustion, error propagation |
+| `llm/__init__.py` | Exported `run_react_loop`, `ReActLoopConfig`, `ReActStep`, `ReActResult` |
+| `tests/test_react_loop.py` (new) | Fake provider + fake executor; asserts multi-step round-trips, final-answer termination, budget exhaustion, error propagation |
+
+**Validation:** full suite green, ruff clean, no new mypy errors.
+
 ---
 
-### 3.3 Workstream A3 — Multi-provider support
+### 3.3 Workstream A3 — Multi-provider support ✅ COMPLETE
 
 **Goal:** Run on any OpenAI-compatible provider plus Anthropic, with health
 checks and failover.
@@ -159,9 +169,24 @@ checks and failover.
 
 **Effort:** 2 days. **Dependency:** A1 (tool-calling parity across providers).
 
+**Files changed (done):**
+
+| File | Change |
+|------|--------|
+| `llm/openai_provider.py` (new) | `OpenAIProvider` (OpenAI-compatible Chat Completions) |
+| `llm/anthropic_provider.py` (new) | `AnthropicProvider` (native Messages API) |
+| `llm/local_ollama_provider.py` (new) | `LocalOllamaProvider` (`http://localhost:11434`) |
+| `llm/base.py` | Added `async def health() -> bool` to `LLMProvider` (default `True`) |
+| `llm/factory.py` | Registered new provider types; health-check + failover ordering |
+| `llm/router.py` | Failover to next configured provider when primary is unhealthy |
+| `llm_config.yaml` | Documented the new provider blocks |
+| `tests/test_providers.py` (new) | Mock-transport tests per provider + failover test |
+
+**Validation:** full suite green, ruff clean, no new mypy errors.
+
 ---
 
-### 3.4 Workstream A4 — Truncation handling
+### 3.4 Workstream A4 — Truncation handling ✅ COMPLETE
 
 **Goal:** Handle `finish_reason='length'` gracefully — retry with a larger
 `max_tokens` budget (once), then surface a clear signal.
@@ -176,12 +201,21 @@ checks and failover.
 
 **Effort:** 0.5 day. **Dependency:** none.
 
+**Files changed (done):**
+
+| File | Change |
+|------|--------|
+| `llm/base.py` | Added `truncated: bool` convenience property on `LLMResponse` (`finish_reason == 'length'`) |
+| `llm/resilience.py` | Extended `complete_with_retry` to retry non-empty-but-truncated content once with a doubled `max_tokens` budget |
+| `tests/test_resilience.py` | Added truncation-retry tests |
+
+**Validation:** full suite green, ruff clean, no new mypy errors.
 
 ---
 
 ## 4. Tier 2 — Feedback loop
 
-### 4.1 Workstream B1 — Implement `_derive_next_command()`
+### 4.1 Workstream B1 — Implement `_derive_next_command()` ✅ done
 
 **Goal:** Replace the stub in `ResearchLoopAgent` with a real decision function
 that inspects the last iteration's evaluation and memory context to decide the
@@ -197,6 +231,20 @@ next action.
 - `tests/test_loop_agent.py` — unit tests for each decision branch.
 
 **Effort:** 1 day. **Dependency:** none.
+
+**Status (complete):**
+- Added `NextAction` enum (`CONTINUE`, `CORRECT`, `REDISCOVER`, `STOP`, `NONE`)
+  and `NextCommand` pydantic model (action, rationale, suggested_changes,
+  target_metric, iteration_number) to `models/loop.py`.
+- Changed `LoopState.next_command` from `str | None` to `NextCommand | None`.
+- Implemented `_derive_next_command(iteration, cfg, history)` with 4 rule-based
+  decision branches (no LLM): no target metric → `NONE`; no primary metric →
+  `NONE`; improved → `CONTINUE`; regressed → `CORRECT`; no improvement over
+  `stagnation_window` iterations → `REDISCOVER`; stagnant but within window →
+  `CONTINUE` (cautiously).
+- Updated the call site to pass `cfg` and `state.iterations` as history.
+- Added 8 unit tests (`TestDeriveNextCommand`) and 3 model tests
+  (`TestNextAction`, `TestNextCommand`). Full suite: **972 passing**.
 
 ---
 
@@ -382,10 +430,10 @@ D4 (independent)
 | Workstream | Tier | Effort | Dependency |
 |------------|------|--------|------------|
 | A1 Tool-calling protocol | 1 | 0.5 day | — (done) |
-| A2 ReAct loop | 1 | 1 day | A1 |
-| A3 Multi-provider | 1 | 2 days | A1 |
-| A4 Truncation handling | 1 | 0.5 day | — |
-| B1 `_derive_next_command()` | 2 | 1 day | — |
+| A2 ReAct loop | 1 | 1 day | A1 (done) |
+| A3 Multi-provider | 1 | 2 days | A1 (done) |
+| A4 Truncation handling | 1 | 0.5 day | — (done) |
+| B1 `_derive_next_command()` | 2 | 1 day | — (done) |
 | B2 Memory-driven iteration | 2 | 1 day | B1 |
 | B3 Research-output evaluation | 2 | 1.5 days | — |
 | C1 Real experiment execution | 3 | 2 days | — |
@@ -396,7 +444,7 @@ D4 (independent)
 | D3 Human-in-the-loop UX | 4 | 1.5 days | B1, D1 |
 | D4 Better memory | 4 | 2 days | — |
 
-**Total:** ~19.5 days of focused implementation.
+**Total:** ~19.5 days of focused implementation (Tier 1, A1–A4, done ≈ 4 days; B1 done ≈ 1 day; **~14.5 days remaining** across Tiers 2–4).
 
 ---
 
@@ -404,7 +452,7 @@ D4 (independent)
 
 Every workstream must pass, in order, before being declared complete:
 
-1. `uv run python -m pytest` — full suite green, **never below 912 passing**.
+1. `uv run python -m pytest` — full suite green, **never below 960 passing**.
 2. `uv run ruff check .` — clean.
 3. `uv run mypy .` — no new errors introduced by the change.
 4. New tests added for every new public API and behavior branch.
@@ -413,10 +461,10 @@ Every workstream must pass, in order, before being declared complete:
 
 ## 10. Suggested implementation order (one at a time)
 
-1. **A2** ReAct loop (builds directly on A1).
-2. **A4** Truncation handling (small, independent).
-3. **A3** Multi-provider support (unlocks D1).
-4. **B1** `_derive_next_command()` (unlocks the feedback loop).
+1. ~~**A2** ReAct loop (builds directly on A1).~~ ✅ done
+2. ~~**A4** Truncation handling (small, independent).~~ ✅ done
+3. ~~**A3** Multi-provider support (unlocks D1).~~ ✅ done
+4. ~~**B1** `_derive_next_command()` (unlocks the feedback loop).~~ ✅ done
 5. **B2** Memory-driven iteration.
 6. **B3** Research-output evaluation.
 7. **C1** Real experiment execution.
@@ -429,5 +477,5 @@ Every workstream must pass, in order, before being declared complete:
 
 ---
 
-*Last updated: A1 complete · 912 tests passing · next up: A2 ReAct loop.*
+*Last updated: Tier 1 (A1–A4) + B1 `_derive_next_command()` complete · 972 tests passing · next up: B2 memory-driven iteration.*
 
