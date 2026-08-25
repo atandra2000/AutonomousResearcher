@@ -14,6 +14,9 @@ Public surface::
         ToolResult,
         ProviderError,
         OllamaCloudProvider,
+        OpenAIProvider,
+        AnthropicProvider,
+        LocalOllamaProvider,
         ModelRouter,
         ProviderFactory,
         get_factory,
@@ -30,6 +33,7 @@ Public surface::
     )
 """
 
+from research_engineer.llm.anthropic_provider import AnthropicProvider
 from research_engineer.llm.base import (
     LLMMessage,
     LLMProvider,
@@ -50,7 +54,9 @@ from research_engineer.llm.factory import (
     register_provider_type,
     reset_factory,
 )
+from research_engineer.llm.local_ollama_provider import LocalOllamaProvider
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
+from research_engineer.llm.openai_provider import OpenAIProvider
 from research_engineer.llm.react_loop import (
     ReActLoopConfig,
     ReActResult,
@@ -74,6 +80,9 @@ __all__ = [
     "ProviderError",
     # Providers
     "OllamaCloudProvider",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "LocalOllamaProvider",
     # Factory
     "ProviderFactory",
     "AgentModelSpec",

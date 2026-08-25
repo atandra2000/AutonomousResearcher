@@ -40,12 +40,18 @@ import re
 from pathlib import Path
 from typing import Any
 
+from research_engineer.llm.anthropic_provider import AnthropicProvider
 from research_engineer.llm.base import LLMProvider, ProviderError
+from research_engineer.llm.local_ollama_provider import LocalOllamaProvider
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
+from research_engineer.llm.openai_provider import OpenAIProvider
 
 #: Mapping of provider ``type`` strings -> provider classes.
 _PROVIDER_REGISTRY: dict[str, type[LLMProvider]] = {
     "ollama": OllamaCloudProvider,
+    "openai": OpenAIProvider,
+    "anthropic": AnthropicProvider,
+    "local_ollama": LocalOllamaProvider,
 }
 
 
@@ -175,6 +181,47 @@ class ProviderFactory:
         spec = AgentModelSpec(agent_name, str(default_provider), default_model)
         self._specs[agent_name] = spec
         return spec
+
+    def provider_names(self) -> list[str]:
+        """Return the configured provider names in config order."""
+        if not self._initialized:
+            self.initialize()
+        return list(self._providers.keys())
+
+    async def health_check(self, name: str | None = None) -> bool:
+        """Probe a provider's health, defaulting to the default provider.
+
+        Returns ``True`` when the provider is reachable/healthy. A missing
+        provider name falls back to the default provider; if none is
+        configured, returns ``False``.
+        """
+        if not self._initialized:
+            self.initialize()
+        provider = self.get_provider(name)
+        try:
+            return await provider.health()
+        except Exception:
+            return False
+
+    async def healthy_provider_order(self) -> list[str]:
+        """Return provider names ordered healthy-first for failover.
+
+        Providers whose :meth:`LLMProvider.health` probe returns ``True``
+        are listed first (in config order), followed by unhealthy providers
+        (also in config order) so callers can still attempt them as a
+        last resort.
+        """
+        if not self._initialized:
+            self.initialize()
+        names = self.provider_names()
+        healthy: list[str] = []
+        unhealthy: list[str] = []
+        for name in names:
+            if await self.health_check(name):
+                healthy.append(name)
+            else:
+                unhealthy.append(name)
+        return healthy + unhealthy
 
     def reset(self) -> None:
         """Discard built providers and specs (used by tests)."""

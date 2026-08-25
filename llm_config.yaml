@@ -37,6 +37,36 @@ providers:
     # Per-request HTTP timeout, in seconds.
     timeout: 60
 
+  # --- OpenAI / OpenAI-compatible (see llm/openai_provider.py) ----------
+  # Maps to OpenAIProvider. Works with the official OpenAI API (GPT-4o, o1)
+  # or any self-hosted gateway that mirrors the OpenAI wire format.
+  # openai:
+  #   type: openai
+  #   base_url: https://api.openai.com
+  #   api_key: ${OPENAI_API_KEY}
+  #   default_model: gpt-4o
+  #   timeout: 60
+
+  # --- Anthropic (see llm/anthropic_provider.py) ------------------------
+  # Maps to AnthropicProvider. Native Anthropic Messages API (Claude 3.5/3.7
+  # Sonnet, Opus). Note: the Messages API requires an explicit max_tokens;
+  # the provider applies a default when a request omits it.
+  # anthropic:
+  #   type: anthropic
+  #   base_url: https://api.anthropic.com
+  #   api_key: ${ANTHROPIC_API_KEY}
+  #   default_model: claude-3-5-sonnet-latest
+  #   timeout: 60
+
+  # --- Local Ollama (see llm/local_ollama_provider.py) ------------------
+  # Maps to LocalOllamaProvider. Points at a locally-running Ollama server
+  # (http://localhost:11434). No API key is required by default.
+  # local_ollama:
+  #   type: local_ollama
+  #   base_url: http://localhost:11434
+  #   default_model: llama3
+  #   timeout: 60
+
 # --- Per-agent model assignments -----------------------------------------
 #
 # Each entry maps an agent class name to a (provider, model) pair.

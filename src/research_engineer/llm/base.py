@@ -201,6 +201,17 @@ class LLMProvider(ABC):
         """Lightweight request validation."""
         return bool(request.messages) and all(bool(m.content) for m in request.messages)
 
+    async def health(self) -> bool:
+        """Probe whether this provider is currently reachable/healthy.
+
+        Providers MAY override this to perform a lightweight liveness check
+        (e.g. a ``/v1/models`` or ``/v1/messages`` ping). The default
+        implementation returns ``True`` so that providers without a health
+        probe are always considered available; the router's failover logic
+        relies on this to decide whether to fall back to a secondary provider.
+        """
+        return True
+
     @property
     def models(self) -> list[str]:
         """Optional list of model ids served by this provider."""

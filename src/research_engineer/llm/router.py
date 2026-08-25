@@ -15,7 +15,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from research_engineer.llm.base import LLMProvider, LLMRequest, LLMResponse
+from research_engineer.llm.base import (
+    LLMProvider,
+    LLMRequest,
+    LLMResponse,
+    ToolDefinition,
+)
 from research_engineer.llm.factory import ProviderFactory, get_factory
 
 
@@ -40,6 +45,22 @@ class _BoundProvider(LLMProvider):
             self._delegate,
             request,
             agent_name=f"{self._delegate.name}/{self._model or 'default'}",
+        )
+
+    async def complete_with_tools(
+        self,
+        request: LLMRequest,
+        tools: list[ToolDefinition],
+    ) -> LLMResponse:
+        if request.model is None and self._model is not None:
+            request = request.model_copy(update={"model": self._model})
+        from research_engineer.llm.resilience import complete_with_retry
+
+        return await complete_with_retry(
+            self._delegate,
+            request,
+            agent_name=f"{self._delegate.name}/{self._model or 'default'}",
+            tools=tools,
         )
 
     async def stream(self, request: LLMRequest) -> Any:
@@ -114,6 +135,32 @@ class ModelRouter:
         bound = _BoundProvider(provider, spec.model)
         self._cache[agent_name] = bound
         return bound
+
+    async def for_agent_with_failover(self, agent_name: str) -> LLMProvider:
+        """Return a model-bound provider, preferring healthy providers.
+
+        Probes the configured providers via the factory's health check and
+        binds the first healthy provider (in config order). If no provider
+        reports healthy, falls back to the agent's configured provider so
+        the request can still be attempted. The result is cached per agent.
+        """
+        if agent_name in self._cache:
+            return self._cache[agent_name]
+        spec = self._factory.get_spec(agent_name)
+        order = await self._factory.healthy_provider_order()
+        # ``order`` lists healthy providers first (config order), then
+        # unhealthy ones. Prefer the first healthy provider; if none are
+        # healthy, fall back to the agent's configured provider.
+        chosen = order[0] if order else spec.provider_name
+        provider = self._factory.get_provider(chosen)
+        bound = _BoundProvider(provider, spec.model)
+        self._cache[agent_name] = bound
+        return bound
+
+    async def health_check(self, agent_name: str) -> bool:
+        """Probe the health of the provider bound to ``agent_name``."""
+        spec = self._factory.get_spec(agent_name)
+        return await self._factory.health_check(spec.provider_name)
 
     def model_for(self, agent_name: str) -> str | None:
         """Return the configured model id for ``agent_name`` (or None)."""
