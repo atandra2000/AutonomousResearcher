@@ -24,6 +24,7 @@ from research_engineer.llm.base import (
     LLMRequest,
     LLMResponse,
     ProviderError,
+    ToolDefinition,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,8 +52,12 @@ async def complete_with_retry(
     max_attempts: int = 3,
     base_delay: float = 1.0,
     agent_name: str = "",
+    tools: list[ToolDefinition] | None = None,
 ) -> LLMResponse:
     """Call ``provider.complete`` with retries and empty-content handling.
+
+    When ``tools`` is provided, the call is routed through
+    ``provider.complete_with_tools`` so the model may request tool calls.
 
     Raises the last observed error when all attempts are exhausted.
     """
@@ -62,7 +67,7 @@ async def complete_with_retry(
 
     for attempt in range(1, max_attempts + 1):
         try:
-            response = await provider.complete(request)
+            response = await _call_once(provider, request, tools)
         except Exception as e:  # noqa: BLE001 - deliberate broad retry gate
             if is_permanent_provider_error(e):
                 raise
@@ -120,3 +125,14 @@ async def complete_with_retry(
         f"{agent_name or type(provider).__name__}: {last_error}",
         cause=last_error if isinstance(last_error, Exception) else None,
     )
+
+
+async def _call_once(
+    provider: LLMProvider,
+    request: LLMRequest,
+    tools: list[ToolDefinition] | None,
+) -> LLMResponse:
+    """Perform a single completion, routing to tool calling when requested."""
+    if tools:
+        return await provider.complete_with_tools(request, tools)
+    return await provider.complete(request)

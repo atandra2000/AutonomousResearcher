@@ -26,6 +26,53 @@ class LLMRole(StrEnum):
     TOOL = "tool"
 
 
+class ToolDefinition(BaseModel):
+    """A tool the model may call during a completion.
+
+    Mirrors the OpenAI ``tools`` array entry: ``type`` is always ``"function"``
+    and ``function`` carries the name, description, and a JSON-Schema
+    ``parameters`` object describing the expected arguments.
+    """
+
+    name: str = Field(..., description="Unique tool name")
+    description: str = Field(default="", description="Human-readable tool description")
+    parameters: dict[str, Any] = Field(
+        default_factory=dict,
+        description="JSON-Schema describing the tool's arguments",
+    )
+
+    def to_openai(self) -> dict[str, Any]:
+        """Return the OpenAI-compatible ``tools`` entry for this tool."""
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.parameters,
+            },
+        }
+
+
+class ToolCall(BaseModel):
+    """A single tool invocation requested by the model."""
+
+    id: str = Field(..., description="Tool call id (echoed back in tool results)")
+    name: str = Field(..., description="Name of the tool to invoke")
+    arguments: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Arguments for the tool (parsed from JSON)",
+    )
+
+
+class ToolResult(BaseModel):
+    """The outcome of executing a tool call, fed back to the model."""
+
+    tool_call_id: str = Field(..., description="Id of the originating tool call")
+    name: str = Field(..., description="Name of the tool that was executed")
+    content: str = Field(..., description="Serialized tool output")
+    is_error: bool = Field(default=False, description="True when the tool failed")
+
+
 class LLMMessage(BaseModel):
     """A single chat-completion message."""
 
@@ -35,6 +82,10 @@ class LLMMessage(BaseModel):
     tool_call_id: str | None = Field(
         default=None,
         description="Optional tool call id (for tool-role messages)",
+    )
+    tool_calls: list[ToolCall] | None = Field(
+        default=None,
+        description="Tool calls requested by the assistant (assistant-role only)",
     )
 
 
@@ -85,6 +136,10 @@ class LLMResponse(BaseModel):
     provider: str = Field(..., description="Provider name that produced this")
     usage: LLMUsage = Field(default_factory=LLMUsage)
     finish_reason: str | None = Field(default=None, description="Why generation stopped")
+    tool_calls: list[ToolCall] | None = Field(
+        default=None,
+        description="Tool calls requested by the model (when tool calling is used)",
+    )
     raw: dict[str, Any] = Field(
         default_factory=dict,
         description="Raw provider payload (opaque passthrough)",
@@ -117,6 +172,22 @@ class LLMProvider(ABC):
     @abstractmethod
     async def complete(self, request: LLMRequest) -> LLMResponse:
         """Generate a completion for ``request``."""
+
+    async def complete_with_tools(
+        self,
+        request: LLMRequest,
+        tools: list[ToolDefinition],
+    ) -> LLMResponse:
+        """Generate a completion that may request tool calls.
+
+        Providers MAY override this to expose native function-calling. The
+        default implementation raises :class:`NotImplementedError` so callers
+        can detect that tool calling is unsupported and fall back to plain
+        :meth:`complete`.
+        """
+        raise NotImplementedError(
+            f"{self.name} does not support tool calling"
+        )
 
     async def stream(self, request: LLMRequest) -> Any:
         """Yield streamed completion chunks.

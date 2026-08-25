@@ -18,6 +18,9 @@ from research_engineer.llm import (
     OllamaCloudProvider,
     ProviderError,
     ProviderFactory,
+    ToolCall,
+    ToolDefinition,
+    ToolResult,
     get_factory,
     get_router,
     load_config,
@@ -61,6 +64,46 @@ class TestLLMModels:
         r = LLMResponse(content="x", model="m", provider="p", usage=LLMUsage(prompt_tokens=4, completion_tokens=6))
         assert r.usage.total_tokens == 0  # explicitly not auto-computed
         assert r.provider == "p"
+
+    def test_tool_definition_to_openai(self):
+        t = ToolDefinition(
+            name="search_papers",
+            description="Search the literature",
+            parameters={"type": "object", "properties": {"q": {"type": "string"}}},
+        )
+        entry = t.to_openai()
+        assert entry["type"] == "function"
+        assert entry["function"]["name"] == "search_papers"
+        assert entry["function"]["parameters"]["properties"]["q"]["type"] == "string"
+
+    def test_tool_call_roundtrip(self):
+        tc = ToolCall(id="call_1", name="search_papers", arguments={"q": "attention"})
+        d = tc.model_dump()
+        assert d == {"id": "call_1", "name": "search_papers", "arguments": {"q": "attention"}}
+
+    def test_tool_result_roundtrip(self):
+        tr = ToolResult(tool_call_id="call_1", name="search_papers", content="[]")
+        assert tr.is_error is False
+        assert tr.tool_call_id == "call_1"
+
+    def test_llm_message_tool_calls(self):
+        m = LLMMessage(
+            role=LLMRole.ASSISTANT,
+            content="",
+            tool_calls=[ToolCall(id="c1", name="f", arguments={})],
+        )
+        assert m.tool_calls is not None
+        assert m.tool_calls[0].name == "f"
+
+    def test_llm_response_tool_calls(self):
+        r = LLMResponse(
+            content="",
+            model="m",
+            provider="p",
+            tool_calls=[ToolCall(id="c1", name="f", arguments={"x": 1})],
+        )
+        assert r.tool_calls is not None
+        assert r.tool_calls[0].arguments == {"x": 1}
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +233,88 @@ class TestOllamaCloudProvider:
         sent: httpx.Request | None = getattr(transport, "last", None)
         assert sent is not None
         assert sent.headers.get("Authorization") == "Bearer test-key"
+        await prov.aclose()
+
+    @pytest.mark.asyncio
+    async def test_complete_with_tools_sends_tools_array(self):
+        payload = {"choices": [{"message": {"content": "ok"}}]}
+        prov = self._make(payload)
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        tools = [ToolDefinition(name="search_papers", description="Search", parameters={"type": "object"})]
+        await prov.complete_with_tools(req, tools)
+        transport = prov._client._transport  # type: ignore[attr-defined]
+        sent: httpx.Request | None = getattr(transport, "last", None)
+        assert sent is not None
+        body = sent.read()
+        import json
+
+        data = json.loads(body)
+        assert data["tools"] == [
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_papers",
+                    "description": "Search",
+                    "parameters": {"type": "object"},
+                },
+            }
+        ]
+        await prov.aclose()
+
+    @pytest.mark.asyncio
+    async def test_complete_with_tools_parses_tool_calls(self):
+        payload = {
+            "model": "llama3",
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "",
+                        "tool_calls": [
+                            {
+                                "id": "call_abc",
+                                "type": "function",
+                                "function": {
+                                    "name": "search_papers",
+                                    "arguments": '{"q": "attention"}',
+                                },
+                            }
+                        ],
+                    },
+                    "finish_reason": "tool_calls",
+                }
+            ],
+            "usage": {"prompt_tokens": 4, "completion_tokens": 2, "total_tokens": 6},
+        }
+        prov = self._make(payload)
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        tools = [ToolDefinition(name="search_papers", description="Search", parameters={"type": "object"})]
+        resp = await prov.complete_with_tools(req, tools)
+        assert resp.tool_calls is not None
+        assert len(resp.tool_calls) == 1
+        assert resp.tool_calls[0].id == "call_abc"
+        assert resp.tool_calls[0].name == "search_papers"
+        assert resp.tool_calls[0].arguments == {"q": "attention"}
+        assert resp.finish_reason == "tool_calls"
+        await prov.aclose()
+
+    @pytest.mark.asyncio
+    async def test_complete_with_tools_no_tool_calls_returns_none(self):
+        payload = {"choices": [{"message": {"content": "plain answer"}}]}
+        prov = self._make(payload)
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        tools = [ToolDefinition(name="search_papers", description="Search", parameters={"type": "object"})]
+        resp = await prov.complete_with_tools(req, tools)
+        assert resp.tool_calls is None
+        assert resp.content == "plain answer"
+        await prov.aclose()
+
+    @pytest.mark.asyncio
+    async def test_complete_with_tools_invalid_messages_raises(self):
+        prov = self._make({})
+        req = LLMRequest(messages=[])
+        with pytest.raises(ProviderError):
+            await prov.complete_with_tools(req, [])
         await prov.aclose()
 
     def test_env_fallbacks(self, monkeypatch):
@@ -360,6 +485,34 @@ class TestModelRouter:
         r1 = get_router()
         r2 = get_router()
         assert r1 is r2
+
+    @pytest.mark.asyncio
+    async def test_default_complete_with_tools_raises_not_implemented(self):
+        # A provider that does not override complete_with_tools must raise.
+        prov = _FakeProvider()
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        with pytest.raises(NotImplementedError):
+            await prov.complete_with_tools(req, [])
+
+    @pytest.mark.asyncio
+    async def test_bound_provider_delegates_complete_with_tools(self):
+        register_provider_type("fake", _FakeProvider)
+        cfg = {
+            "default_provider": "fake",
+            "default_model": "base-model",
+            "providers": {"fake": {"type": "fake"}},
+            "agents": {"CodingAgent": {"provider": "fake", "model": "coder"}},
+        }
+        f = ProviderFactory(cfg)
+        router = ModelRouter(f)
+        prov = router.for_agent("CodingAgent")
+        tools = [ToolDefinition(name="f", description="", parameters={"type": "object"})]
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        # _FakeProvider does not override complete_with_tools, so the bound
+        # provider surfaces the delegate's NotImplementedError, which the retry
+        # wrapper converts into a ProviderError after exhausting attempts.
+        with pytest.raises(ProviderError):
+            await prov.complete_with_tools(req, tools)
 
 
 # ---------------------------------------------------------------------------

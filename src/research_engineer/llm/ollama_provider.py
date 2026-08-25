@@ -30,6 +30,8 @@ from research_engineer.llm.base import (
     LLMResponse,
     LLMUsage,
     ProviderError,
+    ToolCall,
+    ToolDefinition,
 )
 
 
@@ -112,6 +114,60 @@ class OllamaCloudProvider(LLMProvider):
             ) from exc
 
         return self._parse_response(data, model)
+
+    async def complete_with_tools(
+        self,
+        request: LLMRequest,
+        tools: list[ToolDefinition],
+    ) -> LLMResponse:
+        """Generate a completion that may request tool calls.
+
+        Sends the OpenAI-compatible ``tools`` array to Ollama Cloud and parses
+        any ``tool_calls`` the model emits into :class:`ToolCall` objects on the
+        returned :class:`LLMResponse`.
+        """
+        if not await self.validate(request):
+            raise ProviderError(
+                "Invalid request: messages must be non-empty with content",
+                provider=self.name,
+            )
+        model = request.model or self.default_model
+        payload = self._build_payload(request, model)
+        payload["tools"] = [t.to_openai() for t in tools]
+
+        client = await self._get_client()
+        try:
+            resp = await client.post(
+                f"{self.base_url}/v1/chat/completions",
+                json=payload,
+                headers=self._headers(),
+                timeout=self._timeout,
+            )
+        except httpx.HTTPError as exc:
+            raise ProviderError(
+                f"Ollama Cloud request failed: {exc}",
+                provider=self.name,
+                cause=exc,
+            ) from exc
+
+        if resp.status_code >= 400:
+            raise ProviderError(
+                f"Ollama Cloud returned HTTP {resp.status_code}: {resp.text}",
+                provider=self.name,
+            )
+
+        try:
+            data = resp.json()
+        except ValueError as exc:
+            raise ProviderError(
+                f"Ollama Cloud returned non-JSON body: {resp.text}",
+                provider=self.name,
+                cause=exc,
+            ) from exc
+
+        response = self._parse_response(data, model)
+        response.tool_calls = self._parse_tool_calls(data)
+        return response
 
     async def stream(self, request: LLMRequest) -> Any:
         """Stream completion chunks from Ollama Cloud.
@@ -238,6 +294,50 @@ class OllamaCloudProvider(LLMProvider):
             finish_reason=first.get("finish_reason"),
             raw=data,
         )
+
+    def _parse_tool_calls(self, data: dict[str, Any]) -> list[ToolCall] | None:
+        """Extract tool calls from an OpenAI-style chat-completion payload.
+
+        Returns ``None`` when the model made no tool calls. Each call's
+        ``arguments`` is parsed from its JSON string; unparseable arguments
+        are preserved as an empty dict rather than raising.
+        """
+        choices = data.get("choices") or []
+        first = choices[0] if choices else {}
+        message = first.get("message") or {}
+        raw_calls = message.get("tool_calls") or []
+        if not raw_calls:
+            return None
+
+        import json
+
+        calls: list[ToolCall] = []
+        for raw in raw_calls:
+            if not isinstance(raw, dict):
+                continue
+            fn = raw.get("function") or {}
+            name = fn.get("name") or ""
+            if not name:
+                continue
+            arguments: dict[str, Any] = {}
+            raw_args = fn.get("arguments")
+            if isinstance(raw_args, str):
+                try:
+                    parsed = json.loads(raw_args)
+                    if isinstance(parsed, dict):
+                        arguments = parsed
+                except json.JSONDecodeError:
+                    arguments = {}
+            elif isinstance(raw_args, dict):
+                arguments = raw_args
+            calls.append(
+                ToolCall(
+                    id=raw.get("id") or f"call_{len(calls)}",
+                    name=name,
+                    arguments=arguments,
+                )
+            )
+        return calls or None
 
     def _parse_stream_line(self, line: str) -> str | None:
         if not line:

@@ -9,6 +9,9 @@ Public surface::
         LLMMessage,
         LLMRole,
         LLMUsage,
+        ToolDefinition,
+        ToolCall,
+        ToolResult,
         ProviderError,
         OllamaCloudProvider,
         ModelRouter,
@@ -19,6 +22,11 @@ Public surface::
         reset_router,
         load_config,
         register_provider_type,
+        run_react_loop,
+        ReActLoopConfig,
+        ReActStep,
+        ReActResult,
+        ReActTermination,
     )
 """
 
@@ -30,6 +38,9 @@ from research_engineer.llm.base import (
     LLMRole,
     LLMUsage,
     ProviderError,
+    ToolCall,
+    ToolDefinition,
+    ToolResult,
 )
 from research_engineer.llm.factory import (
     AgentModelSpec,
@@ -40,6 +51,13 @@ from research_engineer.llm.factory import (
     reset_factory,
 )
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
+from research_engineer.llm.react_loop import (
+    ReActLoopConfig,
+    ReActResult,
+    ReActStep,
+    ReActTermination,
+    run_react_loop,
+)
 from research_engineer.llm.router import ModelRouter, get_router, reset_router
 
 __all__ = [
@@ -50,6 +68,9 @@ __all__ = [
     "LLMResponse",
     "LLMRole",
     "LLMUsage",
+    "ToolDefinition",
+    "ToolCall",
+    "ToolResult",
     "ProviderError",
     # Providers
     "OllamaCloudProvider",
@@ -64,4 +85,10 @@ __all__ = [
     "ModelRouter",
     "get_router",
     "reset_router",
+    # ReAct loop
+    "run_react_loop",
+    "ReActLoopConfig",
+    "ReActStep",
+    "ReActResult",
+    "ReActTermination",
 ]

@@ -133,6 +133,34 @@ class TestPaperSearchTool:
         ranked = tool._rank_results(results, "test", "citationCount")
         assert ranked[0].paper_id == "2"
 
+    def test_build_arxiv_query_phrases(self):
+        """Natural-language queries become arXiv boolean queries."""
+        tool = PaperSearchTool()
+        q = tool._build_arxiv_query(
+            "Improve attention efficiency in transformer language models"
+        )
+        assert 'all:"attention efficiency"' in q
+        assert " OR " in q
+        # Generic action words are dropped.
+        assert "improve" not in q
+
+    def test_build_arxiv_query_single_term(self):
+        tool = PaperSearchTool()
+        assert tool._build_arxiv_query("attention") == "all:attention"
+
+    def test_build_arxiv_query_fallback(self):
+        """A query with no extractable terms falls back to the raw query."""
+        tool = PaperSearchTool()
+        assert tool._build_arxiv_query("the and of") == "the and of"
+
+    def test_build_arxiv_query_caps_clauses(self):
+        """Long queries are capped so arXiv does not over-constrain."""
+        tool = PaperSearchTool()
+        q = tool._build_arxiv_query(
+            "efficient attention transformer language model training convergence"
+        )
+        assert q.count(" OR ") <= 2  # at most 3 phrase clauses
+
 
 # --- PaperComparisonTool ---
 

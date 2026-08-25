@@ -114,7 +114,7 @@ class PaperSearchTool(Tool[PaperSearchInput, PaperSearchOutput]):
 
             client = arxiv.Client()
             search = arxiv.Search(
-                query=input.query,
+                query=self._build_arxiv_query(input.query),
                 max_results=input.max_results,
                 sort_by=arxiv.SortCriterion.Relevance,
             )
@@ -211,6 +211,74 @@ class PaperSearchTool(Tool[PaperSearchInput, PaperSearchOutput]):
         "a an and are as at by for from in into is of on or that the to with"
         .split()
     )
+
+    #: Generic action/hedge words that add noise to an arXiv boolean query.
+    #: Kept deliberately small: topical terms like "efficiency", "model",
+    #: and "optimize" are often the actual subject of ML research, so they
+    #: are left in and the IDF ranking handles their low discrimination.
+    _QUERY_NOISE = frozenset(
+        "improve improving improved design designing using use novel new "
+        "better best towards toward approach approaches method methods "
+        "based on for the a an of in to with and or"
+        .split()
+    )
+
+    def _build_arxiv_query(self, query: str) -> str:
+        """Turn a natural-language query into an arXiv boolean query.
+
+        arXiv's search treats a raw sentence as a full-text phrase, which
+        returns poor, off-topic results (e.g. a music-tagging paper for an
+        "attention efficiency" query). This extracts the discriminating
+        topical phrases and ORs them together so the API returns results
+        that actually match the subject. OR (rather than AND) is used
+        because ANDing several quoted phrases over-constrains the search
+        and returns zero results.
+
+        Examples:
+            "Improve attention efficiency in transformer language models"
+                -> all:"attention efficiency" OR all:"transformer language"
+            "Grouped query attention for LLMs"
+                -> all:"grouped query" OR all:"attention llms"
+        """
+        text = query.lower()
+        # Split on non-alphanumeric, keeping hyphenated terms intact.
+        tokens = re.findall(r"[a-z0-9][a-z0-9\-]*", text)
+        tokens = [t for t in tokens if t not in self._STOPWORDS]
+
+        # Detect meaningful adjacent bigrams (content words) to quote.
+        phrases: list[str] = []
+        terms: list[str] = []
+        i = 0
+        while i < len(tokens):
+            tok = tokens[i]
+            if tok in self._QUERY_NOISE:
+                i += 1
+                continue
+            # A two-word phrase where both words are content words.
+            if (
+                i + 1 < len(tokens)
+                and tokens[i + 1] not in self._STOPWORDS
+                and tokens[i + 1] not in self._QUERY_NOISE
+            ):
+                phrases.append(f'all:"{tok} {tokens[i + 1]}"')
+                i += 2
+                continue
+            terms.append(f"all:{tok}")
+            i += 1
+
+        # Fall back to the raw query if nothing meaningful was extracted.
+        if not phrases and not terms:
+            return query
+
+        # Prefer phrases: OR the top few together (broad enough to return
+        # results, specific enough to stay on-topic).
+        if phrases:
+            clauses = phrases[:3]
+            return " OR ".join(clauses)
+
+        # No phrases: AND the top terms, capped so the query stays broad.
+        clauses = terms[:4]
+        return " AND ".join(clauses)
 
     def _rank_results(
         self, results: list[SearchResult], query: str, sort: str
