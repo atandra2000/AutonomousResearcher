@@ -9,6 +9,7 @@ from research_engineer.models.experiment import (
     ArtifactCollectorInput,
     ArtifactPattern,
     ArtifactType,
+    BatchExperimentInput,
     ExperimentQueryInput,
     ExperimentRecord,
     ExperimentRun,
@@ -147,6 +148,67 @@ class TestExperimentRunnerTool:
         out = await tool.execute(inp)
         assert len(out.run.status_history) >= 2
         assert out.run.status_history[0].from_status == ExperimentStatus.PENDING
+
+    @pytest.mark.asyncio
+    async def test_run_many_dry_run(self):
+        tool = ExperimentRunnerTool()
+        inputs = [
+            ExperimentRunnerInput(
+                command=["python", "-c", f"print({i})"],
+                working_dir=".",
+                experiment_id=f"dry_many_{i}",
+                dry_run=True,
+            )
+            for i in range(3)
+        ]
+        outputs = await tool.run_many(inputs, max_concurrent=2)
+        assert len(outputs) == 3
+        for i, out in enumerate(outputs):
+            assert out.run.experiment_id == f"dry_many_{i}"
+            assert out.run.status == ExperimentStatus.PENDING
+
+    @pytest.mark.asyncio
+    async def test_run_many_real_execution(self):
+        tool = ExperimentRunnerTool()
+        inputs = [
+            ExperimentRunnerInput(
+                command=[sys.executable, "-c", f"print('run_{i}')"],
+                working_dir=".",
+                experiment_id=f"real_many_{i}",
+                dry_run=False,
+                timeout_seconds=5,
+            )
+            for i in range(3)
+        ]
+        outputs = await tool.run_many(inputs, max_concurrent=2)
+        assert len(outputs) == 3
+        for i, out in enumerate(outputs):
+            assert out.launched is True
+            assert out.run.status == ExperimentStatus.COMPLETED
+            assert f"run_{i}" in out.run.stdout
+
+    @pytest.mark.asyncio
+    async def test_run_batch(self):
+        tool = ExperimentRunnerTool()
+        batch_inp = BatchExperimentInput(
+            inputs=[
+                ExperimentRunnerInput(
+                    command=[sys.executable, "-c", f"print('batch_{i}')"],
+                    working_dir=".",
+                    experiment_id=f"batch_{i}",
+                    dry_run=False,
+                    timeout_seconds=5,
+                )
+                for i in range(2)
+            ],
+            max_concurrent=2,
+            parallel_group="group_alpha",
+        )
+        batch_out = await tool.run_batch(batch_inp)
+        assert len(batch_out.outputs) == 2
+        assert batch_out.successful_count == 2
+        assert batch_out.failed_count == 0
+        assert batch_out.outputs[0].run.parallel_group == "group_alpha"
 
 
 # ---------------------------------------------------------------------------

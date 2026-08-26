@@ -17,6 +17,7 @@ Stages:
 
 from __future__ import annotations
 
+import asyncio
 import re
 from datetime import datetime
 from pathlib import Path
@@ -449,29 +450,39 @@ class ExperimentExecutorAgent:
         self,
         terminal_tool: TerminalTool | None = None,
         llm: LLMProvider | None = None,
+        max_concurrent: int = 4,
     ) -> None:
         self.agent_name: str = "ExperimentExecutorAgent"
         self.terminal = terminal_tool or TerminalTool()
         self.llm_provider = resolve_llm(self.agent_name, llm)
+        self.max_concurrent = max_concurrent
 
     async def execute(
         self, ctx: SharedResearchContext, **kwargs: Any
     ) -> dict[str, Any]:
-        """Execute or simulate the planned experiments."""
-        outcomes: list[ExperimentOutcome] = []
-        for design in ctx.experiment_designs:
-            if ctx.dry_run_experiments:
-                outcome = ExperimentOutcome(
-                    experiment_id=design.experiment_id,
-                    status="dry_run",
-                    exit_code=0,
-                    metrics={},
-                    duration_seconds=0.0,
-                    stdout=f"Dry run: would execute '{design.command}'",
-                )
-            else:
-                outcome = await self._run_experiment(ctx, design)
-            outcomes.append(outcome)
+        """Execute or simulate the planned experiments in parallel."""
+        max_conc = kwargs.get("max_concurrent", self.max_concurrent)
+        semaphore = asyncio.Semaphore(max(1, max_conc))
+
+        async def _execute_design(design: ExperimentDesign) -> ExperimentOutcome:
+            async with semaphore:
+                if ctx.dry_run_experiments:
+                    return ExperimentOutcome(
+                        experiment_id=design.experiment_id,
+                        status="dry_run",
+                        exit_code=0,
+                        metrics={},
+                        duration_seconds=0.0,
+                        stdout=f"Dry run: would execute '{design.command}'",
+                    )
+                else:
+                    return await self._run_experiment(ctx, design)
+
+        outcomes: list[ExperimentOutcome] = list(
+            await asyncio.gather(
+                *[_execute_design(design) for design in ctx.experiment_designs]
+            )
+        )
         ctx.experiment_outcomes = outcomes
         return {
             "summary": f"Executed {len(outcomes)} experiments "

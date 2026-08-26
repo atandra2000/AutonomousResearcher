@@ -24,6 +24,7 @@ Design principles:
 
 from __future__ import annotations
 
+import asyncio
 import time
 from datetime import datetime
 from typing import Any
@@ -66,6 +67,8 @@ class ResearchConfig:
         stream: bool = True,
         output_dir: str = "output/research",
         llm_enabled: bool = True,
+        parallel_stages: bool = False,
+        max_concurrent: int = 4,
     ) -> None:
         self.max_papers = max_papers
         self.max_hypotheses = max_hypotheses
@@ -75,6 +78,8 @@ class ResearchConfig:
         self.stream = stream
         self.output_dir = output_dir
         self.llm_enabled = llm_enabled
+        self.parallel_stages = parallel_stages
+        self.max_concurrent = max_concurrent
 
 
 class ResearchWorkflowFramework:
@@ -227,6 +232,31 @@ class ResearchWorkflowFramework:
             timestamp=datetime.now(),
             error=top_error,
         )
+
+    async def run_stage_group(
+        self,
+        stage_types: list[ResearchStageType],
+        ctx: SharedResearchContext,
+        stream_sink: Any | None = None,
+    ) -> list[ResearchStageRecord]:
+        """Execute a group of independent research stages concurrently.
+
+        Args:
+            stage_types: List of ResearchStageType enum values to execute.
+            ctx: SharedResearchContext passed to each stage.
+            stream_sink: Optional LLM streaming sink.
+
+        Returns:
+            List of ResearchStageRecord results.
+        """
+        tasks = [
+            self._run_stage(st, ctx, stream_sink)
+            for st in stage_types
+            if st not in ctx.skip_stages
+        ]
+        if not tasks:
+            return []
+        return list(await asyncio.gather(*tasks))
 
     # ------------------------------------------------------------------
     # Stage execution

@@ -509,6 +509,57 @@ class TestResearchWorkflowFramework:
         assert result.stages[0].status == ResearchStageStatus.FAILED
         assert result.error is not None
 
+    @pytest.mark.asyncio
+    async def test_run_stage_group_concurrent(self, tmp_path):
+        from research_engineer.agents import ResearchConfig, ResearchWorkflowFramework
+
+        framework = ResearchWorkflowFramework(
+            config=ResearchConfig(output_dir=str(tmp_path / "out")),
+        )
+        ctx = SharedResearchContext(
+            research_goal="Test parallelism",
+            repo_path=str(tmp_path),
+            output_dir=str(tmp_path / "out"),
+        )
+        stage_records = await framework.run_stage_group(
+            [
+                ResearchStageType.LITERATURE_DISCOVERY,
+                ResearchStageType.KNOWLEDGE_SYNTHESIS,
+            ],
+            ctx,
+        )
+        assert len(stage_records) == 2
+        for rec in stage_records:
+            assert rec.status == ResearchStageStatus.COMPLETED
+
+    @pytest.mark.asyncio
+    async def test_concurrent_experiment_execution(self, tmp_path):
+        from research_engineer.agents.research_stages import ExperimentExecutorAgent
+
+        agent = ExperimentExecutorAgent(
+            terminal_tool=_FakeTerminal(),  # type: ignore[arg-type]
+            max_concurrent=2,
+        )
+        ctx = SharedResearchContext(
+            research_goal="Test concurrent experiment executor",
+            repo_path=str(tmp_path),
+            output_dir=str(tmp_path / "out"),
+            dry_run_experiments=True,
+        )
+        ctx.experiment_designs = [
+            ExperimentDesign(
+                experiment_id=f"exp_{i}",
+                hypothesis_id="h1",
+                name=f"Exp {i}",
+                command=f"python script_{i}.py",
+                expected_outcome="Success",
+            )
+            for i in range(4)
+        ]
+        res = await agent.execute(ctx, max_concurrent=2)
+        assert len(ctx.experiment_outcomes) == 4
+        assert res["summary"].startswith("Executed 4 experiments")
+
 
 # ---------------------------------------------------------------------------
 # ResearchOrchestrator

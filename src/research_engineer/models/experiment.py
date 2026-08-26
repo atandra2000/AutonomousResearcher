@@ -124,6 +124,9 @@ class ExperimentRun(BaseModel):
     execution_mode: ExecutionMode = Field(
         ExecutionMode.REAL, description="Execution mode used"
     )
+    parallel_group: str | None = Field(
+        None, description="Optional group name for parallel runs"
+    )
 
     def is_success(self) -> bool:
         """Return True if the experiment completed successfully."""
@@ -160,6 +163,9 @@ class ExperimentRunnerInput(BaseModel):
     memory_limit_mb: float | None = Field(
         None, ge=1.0, description="Memory limit in MB"
     )
+    parallel_group: str | None = Field(
+        None, description="Optional group name for parallel runs"
+    )
     capture_output: bool = Field(True, description="Capture stdout/stderr")
     max_output_bytes: int = Field(
         10_000_000, ge=1024, description="Max output bytes"
@@ -172,6 +178,33 @@ class ExperimentRunnerOutput(BaseModel):
     run: ExperimentRun = Field(..., description="The experiment run")
     launched: bool = Field(..., description="Whether process was launched")
     message: str = Field("", description="Status message")
+
+
+class BatchExperimentInput(BaseModel):
+    """Input for launching a batch of experiments in parallel."""
+
+    inputs: list[ExperimentRunnerInput] = Field(
+        ..., description="List of experiment runner inputs"
+    )
+    max_concurrent: int = Field(
+        4, ge=1, description="Max concurrent processes"
+    )
+    parallel_group: str | None = Field(
+        None, description="Optional group identifier"
+    )
+
+
+class BatchExperimentOutput(BaseModel):
+    """Output from launching a batch of experiments."""
+
+    outputs: list[ExperimentRunnerOutput] = Field(
+        default_factory=list, description="Outputs from each experiment run"
+    )
+    successful_count: int = Field(0, description="Count of successful runs")
+    failed_count: int = Field(0, description="Count of failed runs")
+    total_duration_seconds: float = Field(
+        0.0, description="Total execution duration in seconds"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -615,6 +648,12 @@ class ExperimentConfig(BaseModel):
     )
     memory_limit_mb: float | None = Field(
         None, description="Default memory limit in MB"
+    )
+    max_concurrent: int = Field(
+        4, ge=1, description="Max concurrent experiment runs"
+    )
+    parallel_group: str | None = Field(
+        None, description="Default parallel group identifier"
     )
 
 

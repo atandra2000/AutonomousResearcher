@@ -240,6 +240,27 @@ class TestConvenienceMethods:
         )
         assert result.run.experiment_type == ExperimentType.VALIDATION
 
+    @pytest.mark.asyncio
+    async def test_run_batch(self, experiment_agent, tmp_path):
+        experiments = [
+            {
+                "command": [sys.executable, "-c", f"print('batch_agent_{i}')"],
+                "dry_run": False,
+                "timeout_seconds": 10,
+            }
+            for i in range(3)
+        ]
+        results = await experiment_agent.run_batch(
+            experiments,
+            repo_path=str(tmp_path),
+            max_concurrent=2,
+            parallel_group="agent_group",
+        )
+        assert len(results) == 3
+        for i, res in enumerate(results):
+            assert res.is_success()
+            assert f"batch_agent_{i}" in res.run.stdout
+
 
 class TestQueryMethods:
     @pytest.mark.asyncio

@@ -6,6 +6,7 @@ collection, failure detection, storage, and memory/graph integration.
 
 from __future__ import annotations
 
+import asyncio
 import time
 from pathlib import Path
 from typing import Any
@@ -281,6 +282,39 @@ class ExperimentAgent:
             experiment_type=ExperimentType.VALIDATION,
             **kwargs,
         )
+
+    async def run_batch(
+        self,
+        experiments: list[dict[str, Any]],
+        repo_path: str,
+        max_concurrent: int | None = None,
+        parallel_group: str | None = None,
+    ) -> list[ExperimentResult]:
+        """Run multiple experiments concurrently with bounded concurrency.
+
+        Args:
+            experiments: List of dicts with kwargs for ``run()``
+            repo_path: Repository directory path
+            max_concurrent: Max concurrent executions (defaults to config)
+            parallel_group: Optional parallel group identifier tag
+
+        Returns:
+            List of ExperimentResult instances
+        """
+        if not experiments:
+            return []
+
+        limit = max_concurrent or self.config.max_concurrent
+        semaphore = asyncio.Semaphore(max(1, limit))
+
+        async def _run_one(exp_kwargs: dict[str, Any]) -> ExperimentResult:
+            async with semaphore:
+                kwargs = dict(exp_kwargs)
+                if "repo_path" not in kwargs:
+                    kwargs["repo_path"] = repo_path
+                return await self.run(**kwargs)
+
+        return list(await asyncio.gather(*[_run_one(exp) for exp in experiments]))
 
     async def list_experiments(
         self,

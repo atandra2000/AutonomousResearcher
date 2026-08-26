@@ -12,6 +12,8 @@ import os
 from datetime import datetime
 
 from research_engineer.models.experiment import (
+    BatchExperimentInput,
+    BatchExperimentOutput,
     ExecutionMode,
     ExperimentRun,
     ExperimentRunnerInput,
@@ -102,6 +104,7 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
                 timeout_seconds=input.timeout_seconds,
                 memory_limit_mb=input.memory_limit_mb,
                 execution_mode=ExecutionMode.DRY_RUN if is_dry else ExecutionMode.REAL,
+                parallel_group=input.parallel_group,
             )
 
             # Dry-run mode: return without executing
@@ -241,6 +244,56 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
             return False
         except Exception:
             return False
+
+    async def run_many(
+        self,
+        inputs: list[ExperimentRunnerInput],
+        max_concurrent: int = 4,
+    ) -> list[ExperimentRunnerOutput]:
+        """Run multiple experiment inputs concurrently with a concurrency limit.
+
+        Args:
+            inputs: List of ExperimentRunnerInput objects to launch.
+            max_concurrent: Max concurrent experiments to execute.
+
+        Returns:
+            List of ExperimentRunnerOutput results matching input order.
+        """
+        if not inputs:
+            return []
+
+        semaphore = asyncio.Semaphore(max(1, max_concurrent))
+
+        async def _run_one(inp: ExperimentRunnerInput) -> ExperimentRunnerOutput:
+            async with semaphore:
+                return await self.execute(inp)
+
+        return list(await asyncio.gather(*[_run_one(inp) for inp in inputs]))
+
+    async def run_batch(
+        self, batch_input: BatchExperimentInput
+    ) -> BatchExperimentOutput:
+        """Run a batch of experiment inputs in parallel."""
+        t0 = datetime.now()
+        # Propagate parallel_group if set on batch
+        if batch_input.parallel_group:
+            for inp in batch_input.inputs:
+                if not inp.parallel_group:
+                    inp.parallel_group = batch_input.parallel_group
+
+        outputs = await self.run_many(
+            batch_input.inputs, max_concurrent=batch_input.max_concurrent
+        )
+        successful = sum(1 for o in outputs if o.run.is_success())
+        failed = len(outputs) - successful
+        duration = (datetime.now() - t0).total_seconds()
+
+        return BatchExperimentOutput(
+            outputs=outputs,
+            successful_count=successful,
+            failed_count=failed,
+            total_duration_seconds=duration,
+        )
 
     def get_process(self, experiment_id: str) -> asyncio.subprocess.Process | None:
         """Get the process handle for an experiment."""
