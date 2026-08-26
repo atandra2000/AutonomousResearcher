@@ -340,7 +340,7 @@ proper failure detection and resource limits.
 
 ---
 
-### 5.3 Workstream C3 — Artifact management
+### 5.3 Workstream C3 — Artifact management [COMPLETED]
 
 **Goal:** Centralize artifact collection, versioning, and retrieval.
 

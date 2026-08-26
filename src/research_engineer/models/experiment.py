@@ -6,6 +6,7 @@ collection, artifact collection, failure detection, and storage.
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -368,6 +369,30 @@ class ExperimentArtifact(BaseModel):
     )
 
 
+class ArtifactManifest(BaseModel):
+    """Manifest for centralized, versioned artifact storage and dedup."""
+
+    manifest_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="Manifest ID"
+    )
+    experiment_id: str = Field(..., description="Experiment ID")
+    artifacts: list[ExperimentArtifact] = Field(
+        default_factory=list, description="Artifacts in manifest"
+    )
+    total_size_bytes: int = Field(0, description="Total size in bytes")
+    total_size_mb: float = Field(0.0, description="Total size in MB")
+    dedup_count: int = Field(0, description="Number of deduplicated files")
+    version: int = Field(1, description="Manifest schema version")
+    created_at: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="Creation ISO timestamp",
+    )
+    output_dir: str | None = Field(None, description="Output directory path")
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional manifest metadata"
+    )
+
+
 class ArtifactCollectorInput(BaseModel):
     """Input for artifact collection."""
 
@@ -396,6 +421,10 @@ class ArtifactCollectorOutput(BaseModel):
     collection_errors: list[str] = Field(
         default_factory=list, description="Collection errors"
     )
+    manifest: ArtifactManifest | None = Field(
+        None, description="Generated artifact manifest"
+    )
+    dedup_count: int = Field(0, description="Number of deduplicated files")
 
 
 # ---------------------------------------------------------------------------
@@ -491,6 +520,9 @@ class ExperimentRecord(BaseModel):
     )
     artifacts: list[ExperimentArtifact] = Field(
         default_factory=list, description="Artifacts"
+    )
+    artifact_manifest: ArtifactManifest | None = Field(
+        None, description="Artifact manifest"
     )
     failure_mode: str | None = Field(None, description="Failure mode")
     failure_severity: FailureSeverity = Field(

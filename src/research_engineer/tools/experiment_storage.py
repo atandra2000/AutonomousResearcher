@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from research_engineer.models.experiment import (
+    ArtifactManifest,
+    ExperimentArtifact,
     ExperimentQueryInput,
     ExperimentQueryOutput,
     ExperimentRecord,
@@ -57,10 +59,23 @@ class ExperimentStorageTool(
                 memory_id TEXT,
                 tags TEXT,
                 notes TEXT,
+                artifact_manifest_json TEXT,
+                artifacts_json TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP
             )
         """)
+        cursor.execute("PRAGMA table_info(experiments)")
+        existing_cols = [row[1] for row in cursor.fetchall()]
+        if "artifact_manifest_json" not in existing_cols:
+            cursor.execute(
+                "ALTER TABLE experiments ADD COLUMN artifact_manifest_json TEXT"
+            )
+        if "artifacts_json" not in existing_cols:
+            cursor.execute(
+                "ALTER TABLE experiments ADD COLUMN artifacts_json TEXT"
+            )
+
         cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_exp_paper ON experiments(paper_id)"
         )
@@ -98,6 +113,14 @@ class ExperimentStorageTool(
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         try:
+            manifest_json = (
+                json.dumps(record.artifact_manifest.model_dump())
+                if record.artifact_manifest
+                else None
+            )
+            artifacts_json = json.dumps(
+                [a.model_dump() for a in record.artifacts]
+            )
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO experiments (
@@ -106,8 +129,9 @@ class ExperimentStorageTool(
                     experiment_type, status, start_time, end_time,
                     duration_seconds, exit_code, metrics_json,
                     failure_mode, failure_severity, root_cause,
-                    output_dir, memory_id, tags, notes, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    output_dir, memory_id, tags, notes, artifact_manifest_json,
+                    artifacts_json, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.experiment_id,
@@ -117,20 +141,28 @@ class ExperimentStorageTool(
                     record.implementation_id,
                     record.repo_path,
                     json.dumps(record.command),
-                    record.experiment_type.value,
-                    record.status.value,
+                    record.experiment_type.value
+                    if hasattr(record.experiment_type, "value")
+                    else str(record.experiment_type),
+                    record.status.value
+                    if hasattr(record.status, "value")
+                    else str(record.status),
                     record.start_time.isoformat(),
                     record.end_time.isoformat() if record.end_time else None,
                     record.duration_seconds,
                     record.exit_code,
                     json.dumps(record.metrics),
                     record.failure_mode,
-                    record.failure_severity.value,
+                    record.failure_severity.value
+                    if hasattr(record.failure_severity, "value")
+                    else str(record.failure_severity),
                     record.root_cause,
                     record.output_dir,
                     record.memory_id,
                     json.dumps(record.tags),
                     record.notes,
+                    manifest_json,
+                    artifacts_json,
                     record.created_at.isoformat(),
                     record.updated_at.isoformat() if record.updated_at else None,
                 ),
@@ -152,6 +184,7 @@ class ExperimentStorageTool(
 
     async def _query(self, input: ExperimentQueryInput) -> ExperimentQueryOutput:
         conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         try:
             query, params = self._build_query(input)
@@ -210,37 +243,93 @@ class ExperimentStorageTool(
             params.extend([like, like, like])
         return query, params
 
-    def _row_to_record(self, row: tuple) -> ExperimentRecord:
+    def _row_to_record(self, row: sqlite3.Row | tuple) -> ExperimentRecord:
         """Convert a database row to an ExperimentRecord."""
+        if isinstance(row, sqlite3.Row):
+            d = dict(row)
+        else:
+            keys = [
+                "experiment_id",
+                "paper_id",
+                "plan_id",
+                "patch_id",
+                "implementation_id",
+                "repo_path",
+                "command_json",
+                "experiment_type",
+                "status",
+                "start_time",
+                "end_time",
+                "duration_seconds",
+                "exit_code",
+                "metrics_json",
+                "failure_mode",
+                "failure_severity",
+                "root_cause",
+                "output_dir",
+                "memory_id",
+                "tags",
+                "notes",
+                "artifact_manifest_json",
+                "artifacts_json",
+                "created_at",
+                "updated_at",
+            ]
+            d = {keys[i]: row[i] for i in range(min(len(keys), len(row)))}
+
+        manifest = None
+        manifest_raw = d.get("artifact_manifest_json")
+        if manifest_raw:
+            try:
+                manifest = ArtifactManifest.model_validate(json.loads(manifest_raw))
+            except Exception:
+                manifest = None
+
+        artifacts = []
+        artifacts_raw = d.get("artifacts_json")
+        if artifacts_raw:
+            try:
+                artifacts = [
+                    ExperimentArtifact.model_validate(a)
+                    for a in json.loads(artifacts_raw)
+                ]
+            except Exception:
+                pass
+        elif manifest and manifest.artifacts:
+            artifacts = manifest.artifacts
+
         return ExperimentRecord(
-            experiment_id=row[0],
-            paper_id=row[1],
-            plan_id=row[2],
-            patch_id=row[3],
-            implementation_id=row[4],
-            repo_path=row[5],
-            command=json.loads(row[6]) if row[6] else [],
-            experiment_type=row[7],
-            status=row[8],
-            start_time=row[9],
-            end_time=row[10],
-            duration_seconds=row[11] or 0.0,
-            exit_code=row[12],
-            metrics=json.loads(row[13]) if row[13] else {},
-            failure_mode=row[14],
-            failure_severity=row[15] or "none",
-            root_cause=row[16],
-            output_dir=row[17],
-            memory_id=row[18],
-            tags=json.loads(row[19]) if row[19] else [],
-            notes=row[20] or "",
-            created_at=row[21],
-            updated_at=row[22],
+            experiment_id=d["experiment_id"],
+            paper_id=d.get("paper_id"),
+            plan_id=d.get("plan_id"),
+            patch_id=d.get("patch_id"),
+            implementation_id=d.get("implementation_id"),
+            repo_path=d["repo_path"],
+            command=json.loads(d["command_json"]) if d.get("command_json") else [],
+            experiment_type=d["experiment_type"],
+            status=d["status"],
+            start_time=d["start_time"],
+            end_time=d.get("end_time"),
+            duration_seconds=d.get("duration_seconds") or 0.0,
+            exit_code=d.get("exit_code"),
+            metrics=json.loads(d["metrics_json"]) if d.get("metrics_json") else {},
+            failure_mode=d.get("failure_mode"),
+            failure_severity=d.get("failure_severity") or "none",
+            root_cause=d.get("root_cause"),
+            output_dir=d.get("output_dir"),
+            memory_id=d.get("memory_id"),
+            tags=json.loads(d["tags"]) if d.get("tags") else [],
+            notes=d.get("notes") or "",
+            artifact_manifest=manifest,
+            artifacts=artifacts,
+            created_at=d["created_at"],
+            updated_at=d.get("updated_at"),
         )
 
     async def get_by_id(self, experiment_id: str) -> ExperimentRecord | None:
         """Retrieve a single experiment by ID."""
         conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         try:
             cursor.execute(

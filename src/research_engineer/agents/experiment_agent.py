@@ -521,6 +521,7 @@ class ExperimentAgent:
             metrics=summary_metrics,
             metric_series=metrics.metric_series if metrics else [],
             artifacts=artifact_list,
+            artifact_manifest=artifacts.manifest if artifacts else None,
             failure_mode=failure_mode,
             failure_severity=failure_severity,
             root_cause=root_cause,

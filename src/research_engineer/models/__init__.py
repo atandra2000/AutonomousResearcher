@@ -68,6 +68,7 @@ from .experiment import (
     AnomalyIndicator,
     ArtifactCollectorInput,
     ArtifactCollectorOutput,
+    ArtifactManifest,
     ArtifactPattern,
     ArtifactType,
     ExperimentArtifact,
