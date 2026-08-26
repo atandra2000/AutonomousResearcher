@@ -37,6 +37,14 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
+from research_engineer.runtime.checkpoint import (
+    CHECKPOINT_SCHEMA_VERSION,
+    Checkpoint,
+    CheckpointError,
+    CheckpointLockError,
+    CheckpointStore,
+    CheckpointVersionError,
+)
 from research_engineer.runtime.models import (
     AgentContext,
     AgentError,
@@ -103,6 +111,10 @@ class AgentRuntime:
             (observability hook).
         event_bus: optional event bus; defaults to the process-wide bus from
             :func:`research_engineer.observability.get_event_bus`.
+        checkpoint_store: optional :class:`CheckpointStore` for durable
+            checkpointing (E2). When provided, the runtime checkpoints after
+            each completed step and before terminal transitions, and exposes
+            :meth:`resume` for crash recovery.
     """
 
     def __init__(
@@ -115,6 +127,7 @@ class AgentRuntime:
         error_classifier: Callable[[BaseException], bool] | None = None,
         on_step: Callable[[AgentStep], None] | None = None,
         event_bus: Any | None = None,
+        checkpoint_store: CheckpointStore | None = None,
     ) -> None:
         self.planner = planner
         self.actor = actor
@@ -124,7 +137,9 @@ class AgentRuntime:
         self._classify = error_classifier or classify_error
         self._on_step = on_step
         self._event_bus = event_bus
+        self._checkpoint_store = checkpoint_store
         self._cancel_event: asyncio.Event | None = None
+        self._resume_lock_held = False
 
     # ------------------------------------------------------------------
     # Public API
@@ -162,19 +177,27 @@ class AgentRuntime:
         try:
             while ctx.state == AgentState.RUNNING:
                 # Budget/timeout/cancellation checks run before each step.
-                if self._check_termination(ctx, start):
+                if await self._check_termination(ctx, start):
                     break
                 if not await self._process_step(ctx, start):
                     break
         except asyncio.CancelledError:
-            self._terminate(ctx, AgentTermination.CANCELLED, "Run cancelled")
+            await self._terminate(ctx, AgentTermination.CANCELLED, "Run cancelled")
         except Exception as exc:  # noqa: BLE001 - top-level safety net
             logger.exception("AgentRuntime.run failed for %s", ctx.execution_id)
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.ERROR,
                 f"Unhandled runtime error: {exc}",
             )
+        finally:
+            # Release any resume lock acquired by :meth:`resume`.
+            if self._resume_lock_held and self._checkpoint_store is not None:
+                try:
+                    await self._checkpoint_store.release_lock(ctx.execution_id)
+                except Exception:  # noqa: BLE001 - best-effort
+                    logger.debug("Failed to release resume lock", exc_info=True)
+                self._resume_lock_held = False
 
         ctx.finished_at = datetime.now()
         ctx.duration_seconds = round(time.monotonic() - start, 6)
@@ -185,6 +208,46 @@ class AgentRuntime:
             reason=ctx.termination_reason,
             output=ctx.output,
         )
+
+    async def resume(self, run_id: str) -> AgentContext:
+        """Load a checkpoint and return the restored context for continuation.
+
+        This is the crash-recovery entry point. It:
+
+        1. Loads the checkpoint for ``run_id`` from the configured store.
+        2. Validates the schema version (raises
+           :class:`CheckpointVersionError` on mismatch).
+        3. Acquires a resume lock to prevent concurrent resumes of the same
+           run (raises :class:`CheckpointLockError` if already held).
+
+        The returned :class:`AgentContext` can be passed to :meth:`run` to
+        continue the run without repeating already-completed steps. The lock
+        is released automatically when :meth:`run` completes.
+
+        Raises:
+            CheckpointNotFoundError: no checkpoint exists for ``run_id``.
+            CheckpointCorruptedError: the stored checkpoint is invalid.
+            CheckpointVersionError: unsupported schema version.
+            CheckpointLockError: another resumer holds the lock.
+        """
+        if self._checkpoint_store is None:
+            raise CheckpointError(
+                "No checkpoint store configured; cannot resume run " + run_id
+            )
+        checkpoint = await self._checkpoint_store.load(run_id)
+        if checkpoint.metadata.schema_version != CHECKPOINT_SCHEMA_VERSION:
+            raise CheckpointVersionError(
+                "Unsupported checkpoint schema version "
+                f"{checkpoint.metadata.schema_version} (expected "
+                f"{CHECKPOINT_SCHEMA_VERSION})"
+            )
+        if not await self._checkpoint_store.acquire_lock(run_id):
+            raise CheckpointLockError(
+                f"Run {run_id} is already being resumed by another process"
+            )
+        self._resume_lock_held = True
+        self._emit("resume", checkpoint.context, run_id=run_id)
+        return checkpoint.context
 
     async def _process_step(self, ctx: AgentContext, start: float) -> bool:
         """Run one step and post-process it; return False to stop the loop."""
@@ -203,21 +266,25 @@ class AgentRuntime:
             return False
 
         # Re-check budgets after the step consumed resources.
-        if self._check_termination(ctx, start):
+        if await self._check_termination(ctx, start):
             return False
 
         # Progress tracking from the evaluation score.
         if step.score is not None:
-            self._track_progress(ctx, step.score)
+            await self._track_progress(ctx, step.score)
             if ctx.state != AgentState.RUNNING:
                 return False
 
         # The evaluator may signal completion by returning a sentinel
         # or by mutating the context; check for a done flag.
         if self._evaluator_says_done(step):
-            self._terminate(
+            await self._terminate(
                 ctx, AgentTermination.SUCCESS, "Evaluator signalled completion"
             )
+        else:
+            # Safe execution boundary: checkpoint after each completed step
+            # so a crash can resume without repeating this work.
+            await self._checkpoint(ctx)
         return True
 
     def cancel(self) -> None:
@@ -250,7 +317,7 @@ class AgentRuntime:
         try:
             step.plan = await self.planner(ctx)
         except Exception as exc:  # noqa: BLE001 - classified below
-            self._handle_error(ctx, step, exc, AgentPhase.PLANNING)
+            await self._handle_error(ctx, step, exc, AgentPhase.PLANNING)
             return self._finish_step(step, t0)
 
         # --- Act ---
@@ -258,7 +325,7 @@ class AgentRuntime:
         try:
             step.action = await self.actor(ctx, step.plan)
         except Exception as exc:  # noqa: BLE001 - classified below
-            self._handle_error(ctx, step, exc, AgentPhase.ACTING)
+            await self._handle_error(ctx, step, exc, AgentPhase.ACTING)
             return self._finish_step(step, t0)
 
         # --- Observe ---
@@ -266,7 +333,7 @@ class AgentRuntime:
         try:
             step.observation = await self.observer(ctx, step.action)
         except Exception as exc:  # noqa: BLE001 - classified below
-            self._handle_error(ctx, step, exc, AgentPhase.OBSERVING)
+            await self._handle_error(ctx, step, exc, AgentPhase.OBSERVING)
             return self._finish_step(step, t0)
 
         # --- Evaluate ---
@@ -274,7 +341,7 @@ class AgentRuntime:
         try:
             step.evaluation = await self.evaluator(ctx, step.observation)
         except Exception as exc:  # noqa: BLE001 - classified below
-            self._handle_error(ctx, step, exc, AgentPhase.EVALUATING)
+            await self._handle_error(ctx, step, exc, AgentPhase.EVALUATING)
             return self._finish_step(step, t0)
 
         step.score = self._extract_score(step.evaluation)
@@ -287,7 +354,7 @@ class AgentRuntime:
         step.duration_seconds = round(time.monotonic() - t0, 6)
         return step
 
-    def _handle_error(
+    async def _handle_error(
         self,
         ctx: AgentContext,
         step: AgentStep,
@@ -316,7 +383,7 @@ class AgentRuntime:
         self._emit("error", ctx, error=err)
 
         if not recoverable:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.ERROR,
                 f"Fatal error in {phase.value}: {exc}",
@@ -325,7 +392,7 @@ class AgentRuntime:
 
         ctx.recoverable_errors += 1
         if ctx.recoverable_errors > self.policy.max_recoverable_errors:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.ERROR,
                 f"Too many recoverable errors ({ctx.recoverable_errors})",
@@ -339,16 +406,16 @@ class AgentRuntime:
         )
         return True
 
-    def _check_termination(self, ctx: AgentContext, start: float) -> bool:
+    async def _check_termination(self, ctx: AgentContext, start: float) -> bool:
         """Return True when the run should stop (budget/timeout/cancel)."""
         budget = self.policy.budget
 
         if self._cancel_event is not None and self._cancel_event.is_set():
-            self._terminate(ctx, AgentTermination.CANCELLED, "Run cancelled")
+            await self._terminate(ctx, AgentTermination.CANCELLED, "Run cancelled")
             return True
 
         if budget.max_steps is not None and ctx.current_step >= budget.max_steps:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.BUDGET_EXCEEDED,
                 f"Max steps reached ({budget.max_steps})",
@@ -356,7 +423,7 @@ class AgentRuntime:
             return True
 
         if budget.max_tool_calls is not None and ctx.tool_calls >= budget.max_tool_calls:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.BUDGET_EXCEEDED,
                 f"Max tool calls reached ({budget.max_tool_calls})",
@@ -366,7 +433,7 @@ class AgentRuntime:
         if budget.max_runtime_seconds is not None:
             elapsed = time.monotonic() - start
             if elapsed >= budget.max_runtime_seconds:
-                self._terminate(
+                await self._terminate(
                     ctx,
                     AgentTermination.TIMEOUT,
                     f"Runtime budget exceeded ({elapsed:.2f}s)",
@@ -374,7 +441,7 @@ class AgentRuntime:
                 return True
 
         if budget.max_cost_usd is not None and ctx.cost_usd >= budget.max_cost_usd:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.BUDGET_EXCEEDED,
                 f"Cost budget exceeded (${ctx.cost_usd:.4f})",
@@ -382,7 +449,7 @@ class AgentRuntime:
             return True
 
         if budget.max_tokens is not None and ctx.tokens >= budget.max_tokens:
-            self._terminate(
+            await self._terminate(
                 ctx,
                 AgentTermination.BUDGET_EXCEEDED,
                 f"Token budget exceeded ({ctx.tokens})",
@@ -391,7 +458,7 @@ class AgentRuntime:
 
         return False
 
-    def _track_progress(self, ctx: AgentContext, score: float) -> None:
+    async def _track_progress(self, ctx: AgentContext, score: float) -> None:
         """Update best-score and stagnation tracking from an evaluation score."""
         if ctx.best_score is None:
             ctx.best_score = score
@@ -404,7 +471,7 @@ class AgentRuntime:
         else:
             ctx.stagnation_count += 1
             if ctx.stagnation_count >= self.policy.stagnation_window:
-                self._terminate(
+                await self._terminate(
                     ctx,
                     AgentTermination.NO_PROGRESS,
                     f"No progress for {ctx.stagnation_count} steps",
@@ -435,7 +502,7 @@ class AgentRuntime:
             return bool(getattr(ev, "done"))
         return False
 
-    def _terminate(
+    async def _terminate(
         self, ctx: AgentContext, termination: AgentTermination, reason: str
     ) -> None:
         """Transition the context to a terminal state."""
@@ -444,6 +511,29 @@ class AgentRuntime:
         ctx.termination_reason = reason
         ctx.output = self._final_output(ctx)
         self._emit("terminate", ctx, termination=termination)
+        # Persist the terminal state so a resume can observe it.
+        await self._checkpoint(ctx)
+
+    async def _checkpoint(self, ctx: AgentContext) -> None:
+        """Best-effort persistence of the current context to the store.
+
+        Failures are logged and surfaced as an observability event but never
+        propagate, so checkpointing can never break the run loop.
+        """
+        if self._checkpoint_store is None:
+            return
+        try:
+            checkpoint = Checkpoint.from_context(ctx)
+            await self._checkpoint_store.save(checkpoint)
+            self._emit("checkpoint", ctx, step=ctx.current_step)
+        except Exception as exc:  # noqa: BLE001 - best-effort by design
+            logger.warning(
+                "Checkpoint failed for %s at step %d: %s",
+                ctx.execution_id,
+                ctx.current_step,
+                exc,
+            )
+            self._emit("checkpoint_failed", ctx, error=str(exc))
 
     @staticmethod
     def _final_output(ctx: AgentContext) -> Any:

@@ -22,10 +22,38 @@ Public surface::
         AgentContext,
         AgentExecution,
         classify_error,
+        Checkpoint,
+        CheckpointMetadata,
+        CheckpointStore,
+        InMemoryCheckpointStore,
+        SQLiteCheckpointStore,
+        PostgresCheckpointStore,
+        CheckpointError,
+        CheckpointNotFoundError,
+        CheckpointCorruptedError,
+        CheckpointVersionError,
+        CheckpointLockError,
+        CheckpointWriteError,
     )
 """
 
 from research_engineer.runtime.adapters import AgentAdapter
+from research_engineer.runtime.checkpoint import (
+    Checkpoint,
+    CheckpointCorruptedError,
+    CheckpointError,
+    CheckpointLockError,
+    CheckpointMetadata,
+    CheckpointNotFoundError,
+    CheckpointStore,
+    CheckpointVersionError,
+    CheckpointWriteError,
+)
+from research_engineer.runtime.checkpoint_stores import (
+    InMemoryCheckpointStore,
+    PostgresCheckpointStore,
+    SQLiteCheckpointStore,
+)
 from research_engineer.runtime.models import (
     AgentBudget,
     AgentContext,
@@ -52,4 +80,16 @@ __all__ = [
     "AgentContext",
     "AgentExecution",
     "classify_error",
+    "Checkpoint",
+    "CheckpointMetadata",
+    "CheckpointStore",
+    "InMemoryCheckpointStore",
+    "SQLiteCheckpointStore",
+    "PostgresCheckpointStore",
+    "CheckpointError",
+    "CheckpointNotFoundError",
+    "CheckpointCorruptedError",
+    "CheckpointVersionError",
+    "CheckpointLockError",
+    "CheckpointWriteError",
 ]
