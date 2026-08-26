@@ -317,13 +317,18 @@ class SafetyController:
 
         # PAUSE_FOR_APPROVAL: consult the gate; fail closed without one.
         if decision.action == ControlAction.PAUSE_FOR_APPROVAL:
+            # Snapshot the escalation metadata *before* ``decision`` may be
+            # replaced below — otherwise ``highest_risk`` is lost and a
+            # human-approved risk level can never cover later calls, so
+            # every subsequent step re-pauses (one intervention per step).
+            pause_metadata = dict(decision.metadata)
             request = PauseRequest(
                 run_id=ctx.execution_id,
                 step=signal.step,
                 trigger=decision.trigger,
                 reason_code=decision.reason_code,
                 reason=decision.reason,
-                metadata=dict(decision.metadata),
+                metadata=pause_metadata,
             )
             if self._approval_gate is None:
                 return ControlDecision(
@@ -349,8 +354,9 @@ class SafetyController:
                 reason_code=f"approval_granted.{decision.reason_code}",
                 reason=f"Human approval granted after pause: {decision.reason}",
             )
-            # Record the approved level so equivalent calls don't re-pause.
-            highest = decision.metadata.get("highest_risk") or None
+            # Record the approved level so equivalent calls don't re-pause
+            # (read from the captured pause metadata, not the replacement).
+            highest = pause_metadata.get("highest_risk") or None
             order = [lvl.value for lvl in RiskLevel]
             if highest in order and (
                 state.approved_risk is None

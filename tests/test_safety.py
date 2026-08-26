@@ -356,9 +356,15 @@ class TestBudgetAndRisk:
         first = _observe(ctx, controller, _step(1))
         assert first.action == ControlAction.CONTINUE
         assert "approval_granted" in first.reason_code
+        # The human approval must cover equivalent future calls: the
+        # approved level survives the pause->continue replacement.
+        assert controller.get_state(ctx).approved_risk == "high"
+        assert ctx.metadata["human_interventions"] == 1
         # A second observation does not re-pause (approval covers the level).
         second = _observe(ctx, controller, _step(2))
         assert second.action == ControlAction.CONTINUE
+        assert "approval_granted" not in second.reason_code
+        assert ctx.metadata["human_interventions"] == 1
 
     def test_policy_failure_is_hard_limit(self) -> None:
         controller = SafetyController(AutonomyPolicy())
