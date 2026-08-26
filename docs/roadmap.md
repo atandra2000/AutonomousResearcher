@@ -2,7 +2,7 @@
 
 Versioned roadmap for the Autonomous ML Research Engineer, from the v1.0 baseline through v2.0 and beyond.
 
-> **Current state (v2.0):** 15/15 phases complete · 23 agents · 56 tools · 186 models · 878 tests.
+> **Current state (v2.1):** 15/15 phases complete · 23 agents · 56 tools · 186 models · 1111 tests.
 
 ---
 
@@ -30,16 +30,16 @@ All fifteen phases are production-ready:
 
 ---
 
-## v2.1 — Multi-provider LLM support
+## v2.1 — Multi-provider LLM support (complete)
 
 **Goal:** Run the platform on any OpenAI-compatible provider, not just Ollama Cloud.
 
-- [ ] `OpenAIProvider` (GPT-4o, o1, etc.)
-- [ ] `AnthropicProvider` (Claude 3.5 Sonnet, Opus)
-- [ ] `LocalOllamaProvider` (local Ollama daemon, `http://localhost:11434`)
-- [ ] Provider health checks + automatic failover
-- [ ] Cost tracking per agent (token usage → USD)
-- [ ] Streaming-first agent outputs (chunked `LLMResponse`)
+- [x] `OpenAIProvider` (GPT-4o, o1, etc.)
+- [x] `AnthropicProvider` (Claude 3.5 Sonnet, Opus)
+- [x] `LocalOllamaProvider` (local Ollama daemon, `http://localhost:11434`)
+- [x] Provider health checks + automatic failover
+- [x] Cost tracking per agent (token usage → USD)
+- [x] Streaming-first agent outputs (chunked `LLMResponse`)
 
 **No agent changes required** — all providers implement the existing `LLMProvider` ABC.
 

@@ -71,6 +71,11 @@ class ReActLoopConfig(BaseModel):
     on_step: Callable[[ReActStep], None] | None = Field(
         default=None, description="Observability hook invoked after each step"
     )
+    stream: bool = Field(
+        default=False,
+        description="Stream each model call and assemble the response via "
+        "``stream_response`` when the provider supports it",
+    )
 
 
 class ReActResult(BaseModel):
@@ -113,7 +118,16 @@ async def run_react_loop(
 
     for step in range(1, cfg.max_steps + 1):
         request = LLMRequest(messages=conversation)
-        response = await provider.complete_with_tools(request, tools)
+        if cfg.stream:
+            # Stream the call and assemble the full response. Falls back to
+            # ``complete_with_tools`` when the provider lacks a streaming path.
+            streamer = getattr(provider, "stream_response", None)
+            if streamer is not None:
+                response = await streamer(request)
+            else:
+                response = await provider.complete_with_tools(request, tools)
+        else:
+            response = await provider.complete_with_tools(request, tools)
         tool_calls = response.tool_calls or []
 
         # Append the assistant message (with any tool calls) to the conversation.

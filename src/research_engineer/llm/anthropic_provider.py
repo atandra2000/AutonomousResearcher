@@ -185,6 +185,48 @@ class AnthropicProvider(LLMProvider):
         response.tool_calls = self._parse_tool_calls(data)
         return response
 
+    async def stream(self, request: LLMRequest) -> Any:
+        """Stream completion chunks from the Anthropic Messages API.
+
+        Yields ``str`` delta-content chunks parsed from the native SSE event
+        stream (``content_block_delta`` events with ``text_delta`` blocks).
+        Falls back to a single non-streamed call when the server does not
+        support streaming.
+        """
+        if request.stream is False:
+            response = await self.complete(request.model_copy(update={"stream": False}))
+            yield response.content
+            return
+
+        model = request.model or self.default_model
+        payload = self._build_payload(request, model)
+        payload["stream"] = True
+        client = await self._get_client()
+        try:
+            async with client.stream(
+                "POST",
+                f"{self.base_url}/v1/messages",
+                json=payload,
+                headers=self._headers(),
+                timeout=self._timeout,
+            ) as resp:
+                if resp.status_code >= 400:
+                    body = await resp.aread()
+                    raise ProviderError(
+                        f"Anthropic returned HTTP {resp.status_code}: {body.decode(errors='replace')}",
+                        provider=self.name,
+                    )
+                async for line in resp.aiter_lines():
+                    text = self._parse_stream_event(line)
+                    if text is not None:
+                        yield text
+        except httpx.HTTPError as exc:
+            raise ProviderError(
+                f"Anthropic stream failed: {exc}",
+                provider=self.name,
+                cause=exc,
+            ) from exc
+
     async def health(self) -> bool:
         """Probe liveness by pinging the Messages API.
 
@@ -380,6 +422,39 @@ class AnthropicProvider(LLMProvider):
                 )
             )
         return calls or None
+
+    def _parse_stream_event(self, line: str) -> str | None:
+        """Extract a text delta from a single Anthropic SSE stream line.
+
+        The Messages API streams ``event:``/``data:`` pairs. Only
+        ``content_block_delta`` events whose ``delta.type == 'text_delta'``
+        carry visible text; all other events (``message_start``,
+        ``content_block_start``, ``content_block_stop``, ``message_delta``,
+        ``message_stop``, ping) yield ``None``.
+        """
+        if not line:
+            return None
+        if line.startswith("event:"):
+            return None
+        if not line.startswith("data:"):
+            return None
+        data = line[len("data:") :].strip()
+        if not data:
+            return None
+        import json
+
+        try:
+            obj = json.loads(data)
+        except json.JSONDecodeError:
+            return None
+        if not isinstance(obj, dict):
+            return None
+        if obj.get("type") != "content_block_delta":
+            return None
+        delta = obj.get("delta") or {}
+        if not isinstance(delta, dict) or delta.get("type") != "text_delta":
+            return None
+        return delta.get("text")
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None:

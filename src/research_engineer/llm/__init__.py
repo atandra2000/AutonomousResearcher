@@ -75,6 +75,11 @@ from research_engineer.llm.react_loop import (
     run_react_loop,
 )
 from research_engineer.llm.router import ModelRouter, get_router, reset_router
+from research_engineer.llm.streaming import (
+    StreamChunk,
+    collect_stream,
+    stream_with_retry,
+)
 
 __all__ = [
     # Base
@@ -110,6 +115,10 @@ __all__ = [
     "ReActStep",
     "ReActResult",
     "ReActTermination",
+    # Streaming (v2.1)
+    "StreamChunk",
+    "collect_stream",
+    "stream_with_retry",
     # Cost accounting (D1)
     "PricingTable",
     "UsageRecord",

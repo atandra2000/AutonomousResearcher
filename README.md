@@ -778,8 +778,8 @@ Test coverage spans every phase: models, tools, agents, CLI, and end-to-end inte
 
 ### Planned
 
-- **v2.1** — Additional providers (OpenAI, Anthropic, local Ollama) behind the same `LLMProvider` ABC.
-- **v2.2** — Streaming-first agent outputs; structured tool-calling for the CodingAgent.
+- **v2.1** — ✅ Complete: additional providers (OpenAI, Anthropic, local Ollama), health checks/failover, cost tracking, streaming-first outputs behind the same `LLMProvider` ABC.
+- **v2.2** — Structured tool-calling for the CodingAgent.
 - **v2.3** — Web UI dashboard for loop monitoring + knowledge-graph visualization.
 - **v2.4** — Multi-repo experiment matrices; distributed experiment execution.
 - **v3.0** — Self-improving meta-loop: the platform proposes its own research goals from memory trends.

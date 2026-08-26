@@ -111,6 +111,25 @@ class _BoundProvider(LLMProvider):
         async for chunk in self._delegate.stream(request):  # type: ignore[attr-defined]
             yield chunk
 
+    async def stream_response(self, request: LLMRequest) -> LLMResponse:
+        """Stream a completion and return the assembled, cost-stamped response.
+
+        Uses :func:`~research_engineer.llm.streaming.stream_with_retry` so
+        streamed calls get the same retry/backoff, cost accounting (D1), and
+        observability (D2) treatment as non-streamed completions.
+        """
+        if request.model is None and self._model is not None:
+            request = request.model_copy(update={"model": self._model})
+        from research_engineer.llm.streaming import stream_with_retry
+
+        return await stream_with_retry(
+            self._delegate,
+            request,
+            agent_name=f"{self._delegate.name}/{self._model or 'default'}",
+            on_complete=self._stamp_cost_record_and_emit,
+        )
+
+
     async def validate(self, request: LLMRequest) -> bool:
         return await self._delegate.validate(request)
 
