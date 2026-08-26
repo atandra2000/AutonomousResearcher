@@ -225,3 +225,98 @@ class TestConfiguration:
         await store.create(rec)
         with pytest.raises(ResumeNotAvailableError):
             await manager.resume("busy")
+
+
+class TestResumeLockHygiene:
+    @pytest.mark.asyncio
+    async def test_maybe_resume_does_not_leak_resume_lock(self, env) -> None:
+        from research_engineer.runtime.checkpoint import Checkpoint
+        from research_engineer.runtime.models import AgentContext, AgentState
+
+        store, _queue, manager, worker = env
+        created = await manager.submit(
+            CreateRunRequest(goal="Step one. Step two.")
+        )
+        record = await store.get_required(created.run_id)
+        # Crash simulation: recovery marked the run RESUMABLE and re-queued
+        # it; this claim is the second execution (claim_count 2), so the
+        # worker probes for a resumable checkpoint.
+        record.status = RunStatus.RUNNING
+        record.claim_count = 2
+        await store.update(record)
+        ctx = AgentContext(goal=record.goal, state=AgentState.RUNNING)
+        ctx.execution_id = created.run_id
+        await worker.checkpoint_store.save(Checkpoint.from_context(ctx))
+
+        first = await worker._maybe_resume(record)
+        assert first is not None
+        # The probe's resume lock must not outlive _maybe_resume: a second
+        # recovery of the same run (another crash cycle) used to wedge here
+        # with CheckpointLockError, making the run permanently unresumable.
+        second = await worker._maybe_resume(record)
+        assert second is not None
+
+
+class TestOutcomeSettlementRaces:
+    @pytest.mark.asyncio
+    async def test_superseded_outcome_does_not_resurrect_terminal(
+        self, tmp_path: Path
+    ) -> None:
+        """A cancel landing while the run finishes must win: no crash, no
+        resurrection to COMPLETED, and the queue entry still gets acked."""
+
+        class AckRecorder(InMemoryQueue):
+            def __init__(self) -> None:
+                super().__init__()
+                self.acked: list[str] = []
+
+            async def ack(self, run_id: str) -> None:
+                self.acked.append(run_id)
+                await super().ack(run_id)
+
+        from research_engineer.runtime.models import AgentContext
+
+        queue = AckRecorder()
+        store = SQLiteRunStore(tmp_path / "runs.db")
+        manager = RunManager(store, queue, ServiceTelemetry(),
+                             stale_run_timeout_seconds=0.3)
+        worker = AgentWorker(
+            store=store,
+            queue=queue,
+            checkpoint_store=InMemoryCheckpointStore(),
+            artifacts=ArtifactStore(tmp_path / "artifacts"),
+            factories=AgentFactoryRegistry(config_max_steps=5),
+            telemetry=ServiceTelemetry(),
+        )
+        created = await manager.submit(
+            CreateRunRequest(goal="Step one. Step two. Done.")
+        )
+        # Simulate a live claim (status running).
+        record = await store.get_required(created.run_id)
+        record.status = RunStatus.RUNNING
+        await store.update(record)
+
+        # The stale snapshot the worker has been mutating in memory while
+        # executing; its work completed successfully...
+        stale_record = await store.get_required(created.run_id)
+        stale_record.status = RunStatus.COMPLETED
+        stale_record.finished_at = datetime.datetime.now()
+
+        # ...but before it could settle, another writer terminalized the
+        # store row as cancelled.
+        cancelled = await store.get_required(created.run_id)
+        cancelled.status = RunStatus.CANCELLED
+        cancelled.finished_at = datetime.datetime.now()
+        await store.update(cancelled)
+
+        ctx = AgentContext(goal=created.goal, execution_id=created.run_id)
+        ctx.output = {"done": True}
+        ctx.duration_seconds = 0.01
+
+        # Pre-fix: InvalidTransitionError escaped ``_persist_outcome`` as an
+        # orphan task exception and the queue entry was never acked.
+        await worker._persist_outcome(stale_record, ctx)
+
+        final = await store.get_required(created.run_id)
+        assert final.status == RunStatus.CANCELLED
+        assert queue.acked == [created.run_id]

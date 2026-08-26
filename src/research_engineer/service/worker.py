@@ -40,7 +40,10 @@ from research_engineer.service.agents import (
 from research_engineer.service.artifacts import ArtifactStore
 from research_engineer.service.models import RunRecord, RunStatus
 from research_engineer.service.queue import RunQueue
-from research_engineer.service.store import BaseRunStore
+from research_engineer.service.store import (
+    BaseRunStore,
+    InvalidTransitionError,
+)
 from research_engineer.service.telemetry import ServiceTelemetry
 
 logger = logging.getLogger(__name__)
@@ -169,16 +172,31 @@ class AgentWorker:
         if record.started_at is None:
             record.started_at = datetime.now()
             record.error = None
-        await self.store.update(record)
+        try:
+            await self.store.update(record)
+        except InvalidTransitionError:
+            # The run was terminalized between our read and this write (e.g.
+            # cancel won the race). Never resurrect terminal state; just ack.
+            latest = await self.store.get_required(record.run_id)
+            logger.info(
+                "run %s already terminal (%s); skipping execution",
+                record.run_id,
+                latest.status.value,
+            )
+            await self.queue.ack(record.run_id)
+            return
         latency_of = getattr(self.queue, "latency_of", None)
         if latency_of is not None:
             queued_for = latency_of(run_id)
             if queued_for is not None:
                 self.telemetry.queue_latency(run_id, queued_for)
 
-        resumed_context = await self._maybe_resume(record)
         heartbeat = asyncio.create_task(self._heartbeat(record.run_id))
         try:
+            # Resume (and every later failure) is handled inside the guarded
+            # region so an error marks the run FAILED instead of escaping as
+            # an orphan task exception with the queue entry never acked.
+            resumed_context = await self._maybe_resume(record)
             adapter, policy = await self.factories.build(
                 str(record.metadata.get("agent_kind", DEFAULT_AGENT_KIND)),
                 dict(record.budget_overrides),
@@ -268,7 +286,19 @@ class AgentWorker:
             await self.checkpoint_store.delete(record.run_id)
         except Exception:  # noqa: BLE001 - terminal cleanup is best-effort
             pass
-        await self.store.update(record)
+        try:
+            await self.store.update(record)
+        except InvalidTransitionError:
+            # Lost a race: the store already holds a newer terminal truth
+            # (typically a cancel landing while the run finished). The run's
+            # own artifact stays on disk, but we must not overwrite state.
+            latest = await self.store.get_required(record.run_id)
+            logger.info(
+                "run %s outcome superseded by terminal status %s; result "
+                "kept as artifact only",
+                record.run_id,
+                latest.status.value,
+            )
         await self.queue.ack(record.run_id)
 
     # ------------------------------------------------------------------
@@ -300,7 +330,19 @@ class AgentWorker:
             policy=AgentPolicy(),
             checkpoint_store=self.checkpoint_store,
         )
-        return await probe.resume(record.run_id)
+        context = await probe.resume(record.run_id)
+        # Release the resume lock immediately. Executor concurrency is
+        # already serialized by queue-claim exclusivity plus the stale-run
+        # takeover guard, and the probe's lock is never released by its own
+        # ``run()`` (it never runs) — leaving it held wedges every later
+        # recovery of this run with CheckpointLockError.
+        try:
+            await self.checkpoint_store.release_lock(record.run_id)
+        except Exception:  # noqa: BLE001 - best-effort unlock
+            logger.debug(
+                "resume-lock release failed for %s", record.run_id, exc_info=True
+            )
+        return context
 
     def _register_runtime(self, run_id: str, runtime: AgentRuntime) -> None:
         self._cancellable[run_id] = runtime

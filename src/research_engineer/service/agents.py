@@ -4,8 +4,16 @@ The production default is a deterministic, LLM-free planning agent built on
 the existing :class:`~research_engineer.runtime.adapters.AgentAdapter`
 pattern: it decomposes the submitted goal into checklist steps and completes
 them step by step so the full runtime loop (plan -> act -> observe ->
-evaluate), checkpointing (E2), gateway (E3), safety (E5), and observability
-(E6) are exercised without requiring LLM credentials.
+evaluate), checkpointing (E2), and observability (E6) are exercised without
+requiring LLM credentials.
+
+The E3 ToolGateway and E5 SafetyController are deployment-specific: the
+worker wires whatever the factory's runtime assembly provides. The default
+service stack does not attach a gateway or safety controller, so any run
+whose custom factory attempts a tool call fails closed in
+``AgentRuntime.call_tool`` rather than bypassing policy enforcement.
+Custom factories that need the full safety chain must wire
+gateway + controller into their returned adapter/policy themselves.
 
 Custom factories can be registered with
 :meth:`AgentFactoryRegistry.register` keyed by an ``agent_kind`` value

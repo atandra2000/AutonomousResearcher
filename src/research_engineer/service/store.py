@@ -20,9 +20,10 @@ import json
 import sqlite3
 import threading
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from pydantic import TypeAdapter
 
@@ -32,6 +33,15 @@ from research_engineer.service.models import RunRecord, RunStatus
 POSTGRES_DSN_ENV = "RE_POSTGRES_DSN"
 
 _RUN_RECORD_ADAPTER: TypeAdapter[RunRecord] = TypeAdapter(RunRecord)
+
+#: CSV of terminal statuses embedded directly into the guard predicate so
+#: the lifecycle rule is enforced *inside* the UPDATE statement (atomic —
+#: immune to the SELECT-then-UPDATE race between processes).
+_TERMINAL_CSV = ", ".join(f"'{s.value}'" for s in RunStatus.terminal())
+#: Guard clause, SQLite named-parameter style.
+_SQLITE_GUARD = f"(status = :status OR status NOT IN ({_TERMINAL_CSV}))"
+#: Guard clause, psycopg %(name)s style.
+_PG_GUARD = f"(status = %(status)s OR status NOT IN ({_TERMINAL_CSV}))"
 
 
 class RunNotFoundError(Exception):
@@ -55,6 +65,34 @@ class BaseRunStore(ABC):
             raise InvalidTransitionError(
                 f"Run in terminal status {current} cannot move to {new}"
             )
+
+    @classmethod
+    async def _guard_update(
+        cls,
+        apply_update: Callable[[], Awaitable[int]],
+        read_status: Callable[[str], str | None],
+        record: RunRecord,
+    ) -> None:
+        """Run the guarded update and classify a zero-row outcome.
+
+        A zero rowcount means either an unknown run id or that another
+        writer terminalized/changed the run between our snapshot and the
+        write; ``read_status`` disambiguates for precise errors.
+        """
+        affected = await apply_update()
+        if affected:
+            return
+        current_raw = read_status(record.run_id)
+        if current_raw is None:
+            raise RunNotFoundError(f"Unknown run {record.run_id}")
+        self_current = RunStatus(current_raw)
+        cls._validate_transition(self_current, record.status)
+        # Same-status non-terminal writes may legitimately affect zero rows
+        # only when racing with a change; surface it as a transition error.
+        raise InvalidTransitionError(
+            f"Run {record.run_id} changed concurrently "
+            f"(db status {self_current}, incoming {record.status})"
+        )
 
     @abstractmethod
     async def create(self, record: RunRecord) -> None: ...
@@ -162,7 +200,7 @@ class SQLiteRunStore(BaseRunStore):
             row = cur.fetchone()
         if row is None:
             return None
-        return cast(RunRecord, _RUN_RECORD_ADAPTER.validate_python(json.loads(str(row[0]))))
+        return _RUN_RECORD_ADAPTER.validate_python(json.loads(str(row[0])))
 
     async def get_required(self, run_id: str) -> RunRecord:
         record = await self.get(run_id)
@@ -172,26 +210,39 @@ class SQLiteRunStore(BaseRunStore):
 
     async def update(self, record: RunRecord) -> RunRecord:
         record.updated_at = datetime.now()
+        row = self._record_to_row(record)
+        # Atomic guarded UPDATE: the lifecycle rule lives in the WHERE
+        # clause, so a concurrent writer cannot slip a terminal transition
+        # between our status check and this write.
+        statement = (
+            "UPDATE runs SET status=:status, updated_at=:updated_at,"
+            " started_at=:started_at, finished_at=:finished_at,"
+            " worker_id=:worker_id, claim_count=:claim_count,"
+            " cancel_requested=:cancel_requested, error=:error,"
+            " termination_reason=:termination_reason,"
+            " payload_json=:payload_json"
+            f" WHERE run_id=:run_id AND {_SQLITE_GUARD}"
+        )
+
+        async def apply_update() -> int:
+            with self._lock, self._connect() as conn:
+                cur = conn.execute(statement, row)
+                return int(cur.rowcount)
+
+        await BaseRunStore._guard_update(
+            apply_update,
+            lambda rid: self._read_status_raw(rid),
+            record,
+        )
+        return record
+
+    def _read_status_raw(self, run_id: str) -> str | None:
         with self._lock, self._connect() as conn:
             cur = conn.execute(
-                "SELECT status FROM runs WHERE run_id = ?", (record.run_id,)
+                "SELECT status FROM runs WHERE run_id = ?", (run_id,)
             )
             existing = cur.fetchone()
-            if existing is None:
-                raise RunNotFoundError(f"Unknown run {record.run_id}")
-            current = RunStatus(existing["status"])
-            if record.status != current or not current.is_terminal():
-                self._validate_transition(current, record.status)
-            conn.execute(
-                "UPDATE runs SET status=:status, updated_at=:updated_at,"
-                " started_at=:started_at, finished_at=:finished_at,"
-                " worker_id=:worker_id, claim_count=:claim_count,"
-                " cancel_requested=:cancel_requested, error=:error,"
-                " termination_reason=:termination_reason,"
-                " payload_json=:payload_json WHERE run_id=:run_id",
-                self._record_to_row(record),
-            )
-        return record
+        return str(existing["status"]) if existing is not None else None
 
     async def find_stale_running(
         self, older_than_seconds: float
@@ -285,7 +336,7 @@ class PostgresRunStore(BaseRunStore):
             r = cur.fetchone()
         if r is None:
             return None
-        return cast(RunRecord, _RUN_RECORD_ADAPTER.validate_python(json.loads(str(r[0]))))
+        return _RUN_RECORD_ADAPTER.validate_python(json.loads(str(r[0])))
 
     async def get_required(self, run_id: str) -> RunRecord:
         record = await self.get(run_id)
@@ -295,29 +346,48 @@ class PostgresRunStore(BaseRunStore):
 
     async def update(self, record: RunRecord) -> RunRecord:
         record.updated_at = datetime.now()
-        current = await self.get(record.run_id)
-        if current is None:
-            raise RunNotFoundError(f"Unknown run {record.run_id}")
-        if record.status != current.status or not current.status.is_terminal():
-            self._validate_transition(current.status, record.status)
         conn = self._ensure()
         row = self._record_to_row(record)
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE runs SET status=%(status)s, updated_at=%(updated_at)s,"
-                " started_at=%(started_at)s, finished_at=%(finished_at)s,"
-                " worker_id=%(worker_id)s, claim_count=%(claim_count)s,"
-                " cancel_requested=%(cancel_requested)s, error=%(error)s,"
-                " termination_reason=%(termination_reason)s,"
-                " payload_json=%(payload_json)s WHERE run_id=%(run_id)s",
-                row,
-            )
+        # Atomic guarded UPDATE (see SQLiteRunStore.update): the terminal
+        # guard is part of the WHERE clause, not a pre-read check.
+        statement = (
+            "UPDATE runs SET status=%(status)s, updated_at=%(updated_at)s,"
+            " started_at=%(started_at)s, finished_at=%(finished_at)s,"
+            " worker_id=%(worker_id)s, claim_count=%(claim_count)s,"
+            " cancel_requested=%(cancel_requested)s, error=%(error)s,"
+            " termination_reason=%(termination_reason)s,"
+            " payload_json=%(payload_json)s"
+            f" WHERE run_id=%(run_id)s AND {_PG_GUARD}"
+        )
+
+        async def apply_update() -> int:
+            with conn.cursor() as cur:
+                cur.execute(statement, row)
+                return int(cur.rowcount)
+
+        await BaseRunStore._guard_update(
+            apply_update, lambda rid: self._read_status_raw(rid), record
+        )
         conn.commit()
         return record
+
+    def _read_status_raw(self, run_id: str) -> str | None:
+        conn = self._ensure()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT status FROM runs WHERE run_id = %s", (run_id,)
+            )
+            r = cur.fetchone()
+        return str(r[0]) if r is not None else None
 
     async def find_stale_running(
         self, older_than_seconds: float
     ) -> list[RunRecord]:
+        """Runs stuck in running/resumable without recent heartbeats.
+
+        Mirrors the SQLite backend: one corrupted payload row must not
+        abort the whole recovery scan.
+        """
         records: list[RunRecord] = []
         conn = self._ensure()
         with conn.cursor() as cur:
@@ -326,10 +396,14 @@ class PostgresRunStore(BaseRunStore):
                 " ('running', 'resumable')"
             )
             rows = cur.fetchall()
+        cutoff_ts = datetime.now().timestamp() - older_than_seconds
         for row in rows:
-            rec = RunRecord.model_validate(json.loads(row[0]))
-            age = (datetime.now() - rec.updated_at).total_seconds()
-            if age > older_than_seconds:
+            try:
+                rec = RunRecord.model_validate(json.loads(str(row[0])))
+            except Exception:  # noqa: BLE001 - skip corrupted rows
+                continue
+            ref = rec.updated_at or rec.created_at
+            if ref.timestamp() < cutoff_ts:
                 records.append(rec)
         return records
 
