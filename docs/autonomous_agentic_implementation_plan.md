@@ -6,7 +6,8 @@
 >
 > **Status:** ✅ **Complete.** All 14 workstreams across all four tiers
 > (Tier 1 A1–A4, Tier 2 B1–B3, Tier 3 C1–C3, Tier 4 D1–D4) are implemented
-> and validated; the full test suite is green (1087 passing, gate ≥ 960).
+> and validated, plus **E1 (Production Agent Runtime)**. The full test suite
+> is green (1111+ passing, gate ≥ 960).
 
 ---
 
@@ -516,6 +517,48 @@ experiments.
   functional ChromaDB (in-memory + persistence), gated sentence-transformer
   tests, and `HybridRetriever`-with-ChromaDB integration.
 
+
+---
+
+## 6.5 E1 — Production Agent Runtime ✅ COMPLETE
+
+**Goal:** A generic, async-first `AgentRuntime` that becomes the central
+orchestration layer for autonomous agents — owning lifecycle/state
+transitions, `plan → act → observe → evaluate` loops, tool/LLM execution,
+budgets, termination, cancellation, error recovery, and observability.
+
+**Files changed (done):**
+
+| File | Change |
+|------|--------|
+| `runtime/models.py` | New — `AgentState`, `AgentPhase`, `AgentTermination`, `AgentBudget`, `AgentPolicy`, `AgentError`, `AgentStep`, `AgentContext`, `AgentExecution` |
+| `runtime/runtime.py` | New — `AgentRuntime` + `classify_error` |
+| `runtime/adapters.py` | New — `AgentAdapter` for running existing agents unchanged |
+| `runtime/__init__.py` | New — package exports |
+| `tests/test_runtime.py` | New — 34 unit/integration tests |
+| `docs/roadmap.md` | Documented E1 as complete |
+
+**Design highlights:**
+- Deterministic state machine: `CREATED → RUNNING → TERMINATED`; the only
+  non-terminal state is `RUNNING`, and the precise reason for termination is
+  captured by `AgentTermination` (success, budget exceeded, timeout,
+  cancelled, error, no-progress).
+- `AgentContext` is fully JSON-serializable (`model_dump_json`) so it can be
+  persisted for future checkpointing (E2) without modification.
+- Budgets enforced between phases: max steps, tool calls, runtime (→
+  `TIMEOUT`), cost, and tokens.
+- Recoverable vs fatal error taxonomy via `classify_error` (overridable);
+  recoverable errors are retried, fatal errors terminate with `ERROR`.
+- Cooperative cancellation via `cancel()`.
+- Observability: emits structured `agent_runtime` events (start/step/error/
+  terminate/end) through the existing event bus.
+- `AgentAdapter` wraps any existing agent's async entry point (with an
+  optional `arg_mapper` to adapt signatures) so existing agents run through
+  the runtime unchanged.
+
+**Extension points (E2+):** checkpoint persistence, eval framework,
+deployment. The runtime is intentionally generic and does not know about any
+specific agent.
 
 ---
 

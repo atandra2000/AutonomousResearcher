@@ -45,6 +45,27 @@ All fifteen phases are production-ready:
 
 ---
 
+## E1 — Production Agent Runtime (complete)
+
+**Goal:** A generic, async-first `AgentRuntime` that becomes the central
+orchestration layer for autonomous agents.
+
+- [x] `AgentRuntime` with deterministic state machine (`CREATED → RUNNING → TERMINATED`)
+- [x] `plan → act → observe → evaluate` loop via injected async callables
+- [x] Typed models: `AgentState`, `AgentContext`, `AgentExecution`, `AgentPolicy`, `AgentBudget`
+- [x] Serializable execution state (JSON) for future checkpointing (E2)
+- [x] Budgets: max steps, tool calls, runtime, cost, tokens
+- [x] Termination reasons: success, budget exceeded, timeout, cancelled, error, no-progress
+- [x] Recoverable vs fatal error handling with retry
+- [x] Cooperative cancellation
+- [x] Observability integration (structured `agent_runtime` events)
+- [x] `AgentAdapter` for running existing agents unchanged through the runtime
+- [x] 34 unit/integration tests
+
+**Extension points (E2+):** checkpoint persistence, eval framework, deployment.
+
+---
+
 ## v2.2 — Structured tool-calling
 
 **Goal:** Let agents use LLM tool-calling for richer code generation and analysis.
