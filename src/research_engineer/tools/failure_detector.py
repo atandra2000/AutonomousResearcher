@@ -23,6 +23,16 @@ from research_engineer.tools.base import Tool, ToolError
 ERROR_PATTERNS: list[tuple[str, str, str]] = [
     # (substring, failure_mode, description)
     ("cuda out of memory", "memory_overflow", "GPU memory exceeded"),
+    ("out of memory", "memory_overflow", "Process memory exceeded"),
+    ("memoryerror", "memory_overflow", "Python MemoryError encountered"),
+    ("std::bad_alloc", "memory_overflow", "C++ memory allocation failed"),
+    ("oom-killer", "memory_overflow", "Kernel OOM killer invoked"),
+    ("loss: nan", "numerical_instability", "NaN loss detected in logs"),
+    ("loss is nan", "numerical_instability", "NaN loss detected in logs"),
+    ("nan loss", "numerical_instability", "NaN loss detected in logs"),
+    ("loss: inf", "numerical_instability", "Infinite loss detected in logs"),
+    ("loss is inf", "numerical_instability", "Infinite loss detected in logs"),
+    ("overflowerror", "numerical_instability", "Numerical overflow encountered"),
     ("runtimeerror", "crash", "Runtime error encountered"),
     ("keyerror", "api_incompatibility", "Key error (API mismatch)"),
     ("importerror", "api_incompatibility", "Import error (missing module)"),
@@ -63,166 +73,59 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
 
             # Success case
             if run.status == ExperimentStatus.COMPLETED and run.exit_code == 0:
-                if not metrics and input.expected_metrics:
+                res = self._analyze_success_case(run, metrics, input)
+                if isinstance(res, FailureDetectorOutput):
+                    return res
+                (
+                    detected,
+                    failure_mode,
+                    severity,
+                    root_cause,
+                    snippets,
+                    recommendations,
+                    lessons,
+                    anomalies,
+                ) = res
+
+            # Timeout, Cancelled, Crashed, or Failed status
+            if run.status != ExperimentStatus.COMPLETED or run.exit_code != 0:
+                (
+                    s_detected,
+                    s_mode,
+                    s_sev,
+                    s_cause,
+                    s_snips,
+                    s_recs,
+                    s_less,
+                    s_anom,
+                ) = self._analyze_status_case(run)
+                if s_detected:
                     detected = True
-                    failure_mode = "poor_performance"
-                    severity = FailureSeverity.LOW
-                    root_cause = (
-                        "Experiment completed but no metrics were produced."
-                    )
-                    recommendations.append(
-                        "Verify that the training script outputs metrics."
-                    )
-                    lessons.append(
-                        "Completed runs without metrics are not useful; "
-                        "ensure metric logging is enabled."
-                    )
-                else:
-                    # Check for metric anomalies even on success
-                    metric_anomalies = self._check_metric_anomalies(metrics)
-                    if metric_anomalies:
-                        detected = True
-                        severity = FailureSeverity.HIGH
-                        anomalies.extend(metric_anomalies)
-                        first = metric_anomalies[0]
-                        failure_mode = first.indicator
-                        root_cause = first.description
-                        lessons.extend(
-                            [a.description for a in metric_anomalies]
-                        )
-                        recommendations.extend(
-                            [
-                                "Lower the learning rate.",
-                                "Add gradient clipping.",
-                                "Check for numerical instability in the model.",
-                            ]
-                        )
-                        snippets.append(root_cause)
-                    else:
-                        return FailureDetectorOutput(
-                            detected_failure=False,
-                            failure_mode=None,
-                            severity=FailureSeverity.NONE,
-                            root_cause_hypothesis="Experiment completed successfully.",
-                            recommendations=[],
-                            lessons_learned=[],
-                        )
-
-            # Timeout
-            if run.status == ExperimentStatus.TIMEOUT:
-                detected = True
-                failure_mode = None
-                severity = FailureSeverity.MEDIUM
-                root_cause = (
-                    f"Experiment timed out after {run.timeout_seconds}s."
-                )
-                snippets.append(f"Timeout: {run.error_message or ''}")
-                recommendations.append(
-                    "Increase the timeout or reduce the workload (fewer "
-                    "steps, smaller batch, smaller dataset)."
-                )
-                lessons.append(
-                    f"Run exceeded {run.timeout_seconds}s timeout; consider "
-                    "reducing problem size or increasing the limit."
-                )
-
-            # Cancelled
-            if run.status == ExperimentStatus.CANCELLED:
-                detected = True
-                failure_mode = None
-                severity = FailureSeverity.LOW
-                root_cause = "Experiment was cancelled."
-                recommendations.append("Investigate why the run was cancelled.")
-
-            # Crashed (no exit code)
-            if run.status == ExperimentStatus.CRASHED:
-                detected = True
-                failure_mode = "crash"
-                severity = FailureSeverity.HIGH
-                root_cause = run.error_message or "Process crashed."
-                snippets.append(root_cause)
-                recommendations.append(
-                    "Check for environment issues, missing dependencies, or "
-                    "invalid paths."
-                )
-                lessons.append("Process crashed before producing output.")
-
-            # Non-zero exit or FAILED status: scan stderr for patterns
-            combined = f"{run.stderr}\n{run.stdout}".lower()
-            if run.status in (ExperimentStatus.FAILED, ExperimentStatus.CRASHED):
-                for substring, mode, desc in ERROR_PATTERNS:
-                    if substring in combined:
-                        detected = True
-                        failure_mode = mode
-                        severity = self._severity_for_mode(mode)
-                        root_cause = self._root_cause_for(mode, run)
-                        snippet = self._extract_snippet(run.stderr, substring)
-                        if snippet:
-                            snippets.append(snippet)
-                        recs = self._recommendations_for(mode)
-                        recommendations.extend(recs)
-                        lessons.append(self._lesson_for(mode))
-                        anomalies.append(
-                            AnomalyIndicator(
-                                indicator=substring.replace(" ", "_"),
-                                description=desc,
-                                confidence=0.85,
-                                evidence=[snippet] if snippet else [],
-                            )
-                        )
-                        break  # Use first match
-
-                # If no pattern matched but non-zero exit
-                if not detected:
-                    detected = True
-                    failure_mode = "crash"
-                    severity = FailureSeverity.HIGH
-                    root_cause = (
-                        f"Process exited with code {run.exit_code} but no "
-                        f"known error pattern was detected."
-                    )
-                    snippets.append(run.stderr[-500:] if run.stderr else "")
-                    recommendations.append(
-                        "Inspect the full logs for the actual error."
-                    )
-                    lessons.append(
-                        f"Exit code {run.exit_code} with unrecognized error; "
-                        "manual log inspection required."
-                    )
+                    failure_mode = s_mode
+                    severity = s_sev
+                    root_cause = s_cause
+                    snippets.extend(s_snips)
+                    recommendations.extend(s_recs)
+                    lessons.extend(s_less)
+                    anomalies.extend(s_anom)
 
             # Metric-based checks (run regardless of exit code)
-            # Skip if already checked during success path to avoid duplicates
             if not (
                 run.status == ExperimentStatus.COMPLETED
                 and run.exit_code == 0
                 and metrics
             ):
-                metric_anomalies = self._check_metric_anomalies(metrics)
-                for anomaly in metric_anomalies:
-                    anomalies.append(anomaly)
-                    if anomaly.confidence > 0.7:
-                        detected = True
-                        if failure_mode is None:
-                            failure_mode = anomaly.indicator
-                            severity = FailureSeverity.HIGH
-                            root_cause = anomaly.description
-                        lessons.append(anomaly.description)
+                m_detected, m_mode, m_sev, m_cause = self._process_metric_anomalies(
+                    metrics, failure_mode, anomalies, lessons
+                )
+                if m_detected:
+                    detected = True
+                    failure_mode = m_mode
+                    severity = m_sev
+                    root_cause = m_cause
 
             # Expected metrics missing
-            if input.expected_metrics and metrics:
-                found_names = {m.name for m in metrics}
-                missing = set(input.expected_metrics) - found_names
-                if missing:
-                    anomalies.append(
-                        AnomalyIndicator(
-                            indicator="missing_expected_metrics",
-                            description=(
-                                f"Expected metrics not found: {sorted(missing)}"
-                            ),
-                            confidence=0.6,
-                            evidence=[],
-                        )
-                    )
+            self._check_missing_expected_metrics(input, metrics, anomalies)
 
             return FailureDetectorOutput(
                 detected_failure=detected,
@@ -236,6 +139,48 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
             )
         except Exception as e:
             raise ToolError(f"Failure detection failed: {e}", input, e)
+
+    def _process_metric_anomalies(
+        self,
+        metrics: list[MetricReading],
+        current_failure_mode: str | None,
+        anomalies: list[AnomalyIndicator],
+        lessons: list[str],
+    ) -> tuple[bool, str | None, FailureSeverity, str]:
+        detected = False
+        failure_mode = current_failure_mode
+        severity = FailureSeverity.NONE
+        root_cause = ""
+        metric_anomalies = self._check_metric_anomalies(metrics)
+        for anomaly in metric_anomalies:
+            anomalies.append(anomaly)
+            if anomaly.confidence > 0.7:
+                detected = True
+                if failure_mode is None:
+                    failure_mode = anomaly.indicator
+                    severity = FailureSeverity.HIGH
+                    root_cause = anomaly.description
+                lessons.append(anomaly.description)
+        return detected, failure_mode, severity, root_cause
+
+    @staticmethod
+    def _check_missing_expected_metrics(
+        input: FailureDetectorInput,
+        metrics: list[MetricReading],
+        anomalies: list[AnomalyIndicator],
+    ) -> None:
+        if input.expected_metrics and metrics:
+            found_names = {m.name for m in metrics}
+            missing = set(input.expected_metrics) - found_names
+            if missing:
+                anomalies.append(
+                    AnomalyIndicator(
+                        indicator="missing_expected_metrics",
+                        description=f"Expected metrics not found: {sorted(missing)}",
+                        confidence=0.6,
+                        evidence=[],
+                    )
+                )
 
     def _check_metric_anomalies(
         self, metrics: list[MetricReading]
@@ -294,6 +239,180 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
                     )
 
         return anomalies
+
+    def _analyze_success_case(
+        self,
+        run: ExperimentRun,
+        metrics: list[MetricReading],
+        input: FailureDetectorInput,
+    ) -> FailureDetectorOutput | tuple[
+        bool,
+        str | None,
+        FailureSeverity,
+        str,
+        list[str],
+        list[str],
+        list[str],
+        list[AnomalyIndicator],
+    ]:
+        if not metrics and input.expected_metrics:
+            return (
+                True,
+                "poor_performance",
+                FailureSeverity.LOW,
+                "Experiment completed but no metrics were produced.",
+                [],
+                ["Verify that the training script outputs metrics."],
+                [
+                    "Completed runs without metrics are not useful; "
+                    "ensure metric logging is enabled."
+                ],
+                [],
+            )
+        metric_anomalies = self._check_metric_anomalies(metrics)
+        if metric_anomalies:
+            first = metric_anomalies[0]
+            return (
+                True,
+                first.indicator,
+                FailureSeverity.HIGH,
+                first.description,
+                [first.description],
+                [
+                    "Lower the learning rate.",
+                    "Add gradient clipping.",
+                    "Check for numerical instability in the model.",
+                ],
+                [a.description for a in metric_anomalies],
+                metric_anomalies,
+            )
+        return FailureDetectorOutput(
+            detected_failure=False,
+            failure_mode=None,
+            severity=FailureSeverity.NONE,
+            root_cause_hypothesis="Experiment completed successfully.",
+            recommendations=[],
+            lessons_learned=[],
+        )
+
+    def _analyze_status_case(
+        self, run: ExperimentRun
+    ) -> tuple[
+        bool,
+        str | None,
+        FailureSeverity,
+        str,
+        list[str],
+        list[str],
+        list[str],
+        list[AnomalyIndicator],
+    ]:
+        if run.status == ExperimentStatus.TIMEOUT:
+            return (
+                True,
+                "timeout",
+                FailureSeverity.HIGH,
+                f"Experiment timed out after {run.timeout_seconds}s.",
+                [f"Timeout: {run.error_message or ''}"],
+                [
+                    "Increase the timeout or reduce the workload (fewer steps, smaller batch, smaller dataset)."
+                ],
+                [
+                    f"Run exceeded {run.timeout_seconds}s timeout; consider reducing problem size or increasing the limit."
+                ],
+                [],
+            )
+        if run.status == ExperimentStatus.CANCELLED:
+            return (
+                True,
+                None,
+                FailureSeverity.LOW,
+                "Experiment was cancelled.",
+                [],
+                ["Investigate why the run was cancelled."],
+                [],
+                [],
+            )
+        if run.status in (ExperimentStatus.FAILED, ExperimentStatus.CRASHED):
+            return self._detect_stderr_patterns(run)
+
+        return False, None, FailureSeverity.NONE, "", [], [], [], []
+
+    def _detect_stderr_patterns(
+        self, run: ExperimentRun
+    ) -> tuple[
+        bool,
+        str | None,
+        FailureSeverity,
+        str,
+        list[str],
+        list[str],
+        list[str],
+        list[AnomalyIndicator],
+    ]:
+        """Scan process logs/exit code for error patterns."""
+        anomalies: list[AnomalyIndicator] = []
+        snippets: list[str] = []
+        recommendations: list[str] = []
+        lessons: list[str] = []
+        combined = f"{run.stderr}\n{run.stdout}".lower()
+        for substring, mode, desc in ERROR_PATTERNS:
+            if substring in combined:
+                severity = self._severity_for_mode(mode)
+                root_cause = self._root_cause_for(mode, run)
+                snippet = self._extract_snippet(run.stderr, substring)
+                if snippet:
+                    snippets.append(snippet)
+                recommendations.extend(self._recommendations_for(mode))
+                lessons.append(self._lesson_for(mode))
+                anomalies.append(
+                    AnomalyIndicator(
+                        indicator=substring.replace(" ", "_"),
+                        description=desc,
+                        confidence=0.85,
+                        evidence=[snippet] if snippet else [],
+                    )
+                )
+                return (
+                    True,
+                    mode,
+                    severity,
+                    root_cause,
+                    snippets,
+                    recommendations,
+                    lessons,
+                    anomalies,
+                )
+
+        if run.exit_code == 137:
+            return (
+                True,
+                "memory_overflow",
+                FailureSeverity.HIGH,
+                "Process was killed (exit code 137, SIGKILL), likely due to Out-Of-Memory (OOM).",
+                [],
+                [
+                    "Reduce batch size or model memory overhead.",
+                    "Increase memory limit or use gradient accumulation.",
+                ],
+                ["Exit code 137 indicates OOM killer termination."],
+                [],
+            )
+
+        root_cause = (
+            f"Process exited with code {run.exit_code} but no known error pattern was detected."
+        )
+        snippet = run.stderr[-500:] if run.stderr else ""
+        return (
+            True,
+            "crash",
+            FailureSeverity.HIGH,
+            root_cause,
+            [snippet] if snippet else [],
+            ["Inspect the full logs for the actual error."],
+            [f"Exit code {run.exit_code} with unrecognized error; manual log inspection required."],
+            [],
+        )
 
     @staticmethod
     def _extract_snippet(text: str, pattern: str, context: int = 200) -> str:
@@ -356,6 +475,10 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
                 "Experiment produced no useful metrics. Verify the training "
                 "script outputs results."
             ),
+            "timeout": (
+                "Experiment timed out before completion. Increase timeout "
+                "or reduce workload."
+            ),
         }
         return causes.get(mode, f"Unknown failure mode: {mode}")
 
@@ -400,6 +523,11 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
                 "Check checkpoint format compatibility.",
                 "Try loading with map_location='cpu'.",
             ],
+            "timeout": [
+                "Increase timeout_seconds parameter.",
+                "Reduce dataset size or batch count for faster testing.",
+                "Optimize model training speed or enable mixed precision.",
+            ],
         }
         return recs.get(mode, ["Inspect the logs for more details."])
 
@@ -428,6 +556,9 @@ class FailureDetectorTool(Tool[FailureDetectorInput, FailureDetectorOutput]):
             ),
             "poor_performance": (
                 "No metrics produced; ensure the script logs results."
+            ),
+            "timeout": (
+                "Experiment timed out; increase limit or optimize runtime."
             ),
         }
         return lessons.get(mode, f"Failure mode: {mode}")

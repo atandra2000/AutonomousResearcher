@@ -6,13 +6,12 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from research_engineer.agents.experiment_agent import ExperimentAgent
-from research_engineer.tools.experiment_storage import ExperimentStorageTool
 from research_engineer.models.experiment import (
     ExperimentConfig,
-    ExperimentQueryInput,
     ExperimentStatus,
     ExperimentType,
 )
+from research_engineer.tools.experiment_storage import ExperimentStorageTool
 
 
 @pytest.fixture
@@ -72,6 +71,40 @@ class TestRunWorkflow:
         assert result.experiment_id.startswith("exp_")
         assert result.run is not None
         assert result.run.status == ExperimentStatus.PENDING
+
+    @pytest.mark.asyncio
+    async def test_real_param_overrides_dry_run(self, experiment_agent, tmp_path):
+        result = await experiment_agent.run(
+            command=[sys.executable, "-c", "print('real mode')"],
+            repo_path=str(tmp_path),
+            real=True,
+            memory_limit_mb=1024.0,
+            timeout_seconds=10,
+        )
+        assert result.run is not None
+        assert result.run.status == ExperimentStatus.COMPLETED
+        assert result.run.execution_mode == "real"
+        assert result.run.memory_limit_mb == 1024.0
+
+    @pytest.mark.asyncio
+    async def test_real_execution_config_default(self, mock_memory_agent, tmp_path):
+        config = ExperimentConfig(
+            default_timeout_seconds=10,
+            real_execution=True,
+            output_dir=str(tmp_path / "experiments"),
+        )
+        agent = ExperimentAgent(
+            memory_agent=mock_memory_agent,
+            storage_tool=ExperimentStorageTool(db_path=str(tmp_path / "exp_real.db")),
+            config=config,
+        )
+        result = await agent.run(
+            command=[sys.executable, "-c", "print('auto real')"],
+            repo_path=str(tmp_path),
+        )
+        assert result.run is not None
+        assert result.run.status == ExperimentStatus.COMPLETED
+        assert result.run.execution_mode == "real"
 
     @pytest.mark.asyncio
     async def test_real_run_success(self, experiment_agent, tmp_path):

@@ -88,6 +88,8 @@ class ExperimentAgent:
         timeout_seconds: int | None = None,
         env_vars: dict[str, str] | None = None,
         dry_run: bool | None = None,
+        real: bool | None = None,
+        memory_limit_mb: float | None = None,
         output_dir: str | None = None,
     ) -> ExperimentResult:
         """Full experiment execution workflow.
@@ -103,6 +105,8 @@ class ExperimentAgent:
             timeout_seconds: Max runtime (uses config default if None)
             env_vars: Additional environment variables
             dry_run: Override config dry_run_default
+            real: Explicitly enable real execution (overrides dry_run)
+            memory_limit_mb: Max memory limit in MB
             output_dir: Override config output_dir
 
         Returns:
@@ -112,8 +116,17 @@ class ExperimentAgent:
         experiment_id = f"exp_{uuid4().hex[:12]}"
         cmd_list = self._parse_command(command)
         out_dir = output_dir or self.config.output_dir
-        dry = dry_run if dry_run is not None else self.config.dry_run_default
+        if dry_run is not None:
+            dry = dry_run
+        elif real is not None:
+            dry = not real
+        elif getattr(self.config, "real_execution", False):
+            dry = False
+        else:
+            dry = self.config.dry_run_default
+
         timeout = timeout_seconds or self.config.default_timeout_seconds
+        mem_limit = memory_limit_mb or getattr(self.config, "memory_limit_mb", None)
 
         result = ExperimentResult(
             experiment_id=experiment_id,
@@ -133,6 +146,7 @@ class ExperimentAgent:
             timeout_seconds=timeout,
             env_vars=env_vars or {},
             dry_run=dry,
+            memory_limit_mb=mem_limit,
         )
         runner_output = await self.runner.execute(runner_input)
         result.run = runner_output.run

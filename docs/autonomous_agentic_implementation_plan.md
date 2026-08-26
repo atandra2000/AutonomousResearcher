@@ -4,7 +4,7 @@
 > pipeline orchestrator into a fully autonomous, industry-grade, deployable
 > agentic research system.
 >
-> **Status:** In progress — **Tier 1 (A1–A4) and B1, B3 complete.** The remaining
+> **Status:** In progress — **Tier 1 (A1–A4), Tier 2 (B1, B3), and Tier 3 (C1) complete.** The remaining
 > workstreams (Tier 2–4) are queued and will be implemented one at a time in
 > subsequent sessions.
 
@@ -455,7 +455,7 @@ D4 (independent)
 | B1 `_derive_next_command()` | 2 | 1 day | — (done) |
 | B2 Memory-driven iteration | 2 | 1 day | B1 |
 | B3 Research-output evaluation | 2 | 1.5 days | — (done) |
-| C1 Real experiment execution | 3 | 2 days | — |
+| C1 Real experiment execution | 3 | 2 days | — (done) |
 | C2 Parallelization | 3 | 1.5 days | C1 |
 | C3 Artifact management | 3 | 1 day | C1 |
 | D1 Cost accounting | 4 | 1 day | A3 |
@@ -463,7 +463,7 @@ D4 (independent)
 | D3 Human-in-the-loop UX | 4 | 1.5 days | B1, D1 |
 | D4 Better memory | 4 | 2 days | — |
 
-**Total:** ~19.5 days of focused implementation (Tier 1, A1–A4, done ≈ 4 days; B1 done ≈ 1 day; B3 done ≈ 1 day; **~13.5 days remaining** across Tiers 2–4).
+**Total:** ~19.5 days of focused implementation (Tier 1, A1–A4, done ≈ 4 days; B1 done ≈ 1 day; B3 done ≈ 1.5 days; C1 done ≈ 2 days; **~11.5 days remaining** across Tiers 2–4).
 
 ---
 

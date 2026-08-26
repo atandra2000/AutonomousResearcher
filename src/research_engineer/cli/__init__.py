@@ -1147,7 +1147,7 @@ def memory_build(
             typer.echo(f"   Code chunks:      {stats.total_chunks}")
             typer.echo(f"   Graph edges:      {stats.total_edges}")
             typer.echo(f"   Index time:       {stats.index_time_seconds}s")
-            typer.echo(f"   Symbols by kind:")
+            typer.echo("   Symbols by kind:")
             for kind, count in sorted(stats.symbols_by_kind.items()):
                 typer.echo(f"     {kind}: {count}")
         return 0
@@ -1238,7 +1238,7 @@ def memory_stats_repo(
             typer.echo(f"   Chunks:    {stats.total_chunks}")
             typer.echo(f"   Edges:     {stats.total_edges}")
             typer.echo(f"   Indexed:   {stats.indexed_at}")
-            typer.echo(f"   By kind:")
+            typer.echo("   By kind:")
             for kind, count in sorted(stats.symbols_by_kind.items()):
                 typer.echo(f"     {kind}: {count}")
         return 0
@@ -1773,6 +1773,12 @@ def experiment_run(
     dry_run: bool = typer.Option(
         True, "--dry-run/--no-dry-run", help="Dry run (do not execute command)"
     ),
+    real: bool | None = typer.Option(
+        None, "--real/--no-real", help="Explicitly enable/disable real execution"
+    ),
+    memory_limit_mb: float | None = typer.Option(
+        None, "--memory-limit-mb", help="Memory limit in MB"
+    ),
     output_format: str = typer.Option(
         "console", "--format", help="Output: console, json"
     ),
@@ -1809,6 +1815,8 @@ def experiment_run(
                 experiment_type=exp_type,
                 timeout_seconds=timeout,
                 dry_run=dry_run,
+                real=real,
+                memory_limit_mb=memory_limit_mb,
                 output_dir=output_dir,
             )
         )

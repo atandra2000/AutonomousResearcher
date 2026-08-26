@@ -12,6 +12,7 @@ import os
 from datetime import datetime
 
 from research_engineer.models.experiment import (
+    ExecutionMode,
     ExperimentRun,
     ExperimentRunnerInput,
     ExperimentRunnerOutput,
@@ -44,6 +45,23 @@ def _command_allowed(command: list[str]) -> bool:
     return base in ALLOWED_COMMAND_PREFIXES
 
 
+def _make_preexec_fn(memory_limit_mb: float | None):
+    """Return a preexec function setting RLIMIT_AS on POSIX systems."""
+    if memory_limit_mb is None or os.name == "nt":
+        return None
+
+    def _set_limits() -> None:
+        try:
+            import resource
+
+            bytes_limit = int(memory_limit_mb * 1024 * 1024)
+            resource.setrlimit(resource.RLIMIT_AS, (bytes_limit, bytes_limit))
+        except Exception:
+            pass
+
+    return _set_limits
+
+
 class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
     """Launch experiments as subprocesses with safety controls."""
 
@@ -69,6 +87,12 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
                     None,
                 )
 
+            is_dry = (
+                input.dry_run
+                or input.execution_mode == ExecutionMode.DRY_RUN
+                or input.experiment_type == ExperimentType.DRY_RUN
+            )
+
             run = ExperimentRun(
                 experiment_id=input.experiment_id,
                 command=input.command,
@@ -76,10 +100,12 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
                 experiment_type=input.experiment_type,
                 status=ExperimentStatus.PENDING,
                 timeout_seconds=input.timeout_seconds,
+                memory_limit_mb=input.memory_limit_mb,
+                execution_mode=ExecutionMode.DRY_RUN if is_dry else ExecutionMode.REAL,
             )
 
             # Dry-run mode: return without executing
-            if input.dry_run or input.experiment_type == ExperimentType.DRY_RUN:
+            if is_dry:
                 run.status = ExperimentStatus.PENDING
                 run.status_history.append(
                     StatusTransition(
@@ -108,6 +134,8 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
             env = os.environ.copy()
             env.update(input.env_vars)
 
+            preexec = _make_preexec_fn(input.memory_limit_mb)
+
             try:
                 proc = await asyncio.create_subprocess_exec(
                     *input.command,
@@ -115,6 +143,7 @@ class ExperimentRunnerTool(Tool[ExperimentRunnerInput, ExperimentRunnerOutput]):
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     env=env,
+                    preexec_fn=preexec,
                 )
             except (FileNotFoundError, NotADirectoryError, OSError) as e:
                 run.status = ExperimentStatus.CRASHED

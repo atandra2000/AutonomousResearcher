@@ -1,27 +1,18 @@
 """Tests for Phase 7 experiment tools."""
 
-import asyncio
 import json
-import math
-import os
 import sys
-import time
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from research_engineer.models.experiment import (
-    AnomalyIndicator,
     ArtifactCollectorInput,
-    ArtifactCollectorInput as _ACI,
     ArtifactPattern,
     ArtifactType,
-    ExperimentArtifact,
     ExperimentQueryInput,
     ExperimentRecord,
-    ExperimentRunnerInput,
     ExperimentRun,
+    ExperimentRunnerInput,
     ExperimentStatus,
     ExperimentStorageInput,
     ExperimentType,
@@ -30,12 +21,10 @@ from research_engineer.models.experiment import (
     MetricCollectorInput,
     MetricPattern,
     MetricReading,
-    MetricType,
     MonitoringInput,
 )
 from research_engineer.tools.artifact_collector import ArtifactCollectorTool
 from research_engineer.tools.experiment_runner import (
-    ALLOWED_COMMAND_PREFIXES,
     ExperimentRunnerTool,
     _command_allowed,
 )
@@ -43,7 +32,6 @@ from research_engineer.tools.experiment_storage import ExperimentStorageTool
 from research_engineer.tools.failure_detector import FailureDetectorTool
 from research_engineer.tools.metric_collector import MetricCollectorTool
 from research_engineer.tools.monitoring import MonitoringTool
-
 
 # ---------------------------------------------------------------------------
 # ExperimentRunnerTool
@@ -107,6 +95,23 @@ class TestExperimentRunnerTool:
         out = await tool.execute(inp)
         assert out.run.status == ExperimentStatus.TIMEOUT
         assert out.run.killed is True
+
+    @pytest.mark.asyncio
+    async def test_real_execution_with_memory_limit(self):
+        tool = ExperimentRunnerTool()
+        inp = ExperimentRunnerInput(
+            command=[sys.executable, "-c", "print('mem limit test')"],
+            working_dir=".",
+            experiment_id="mem_limit_1",
+            dry_run=False,
+            memory_limit_mb=512.0,
+            timeout_seconds=10,
+        )
+        out = await tool.execute(inp)
+        assert out.launched is True
+        assert out.run.status == ExperimentStatus.COMPLETED
+        assert out.run.memory_limit_mb == 512.0
+        assert out.run.execution_mode == "real"
 
     @pytest.mark.asyncio
     async def test_disallowed_command_rejected(self):
@@ -452,6 +457,48 @@ class TestFailureDetectorTool:
         assert out.detected_failure is True
         assert out.failure_mode == "memory_overflow"
         assert out.severity == FailureSeverity.HIGH
+        assert len(out.recommendations) > 0
+
+    @pytest.mark.asyncio
+    async def test_oom_exit_code_137(self):
+        tool = FailureDetectorTool()
+        run = self._make_run(
+            status=ExperimentStatus.FAILED,
+            exit_code=137,
+            stderr="Killed",
+        )
+        inp = FailureDetectorInput(run=run, metrics=[])
+        out = await tool.execute(inp)
+        assert out.detected_failure is True
+        assert out.failure_mode == "memory_overflow"
+        assert out.severity == FailureSeverity.HIGH
+        assert "137" in out.root_cause_hypothesis
+
+    @pytest.mark.asyncio
+    async def test_nan_loss_in_stderr(self):
+        tool = FailureDetectorTool()
+        run = self._make_run(
+            status=ExperimentStatus.FAILED,
+            exit_code=1,
+            stderr="Epoch 5: loss: nan encountered",
+        )
+        inp = FailureDetectorInput(run=run, metrics=[])
+        out = await tool.execute(inp)
+        assert out.detected_failure is True
+        assert out.failure_mode == "numerical_instability"
+
+    @pytest.mark.asyncio
+    async def test_timeout_failure_mode(self):
+        tool = FailureDetectorTool()
+        run = self._make_run(
+            status=ExperimentStatus.TIMEOUT,
+            exit_code=None,
+            stderr="",
+        )
+        inp = FailureDetectorInput(run=run, metrics=[])
+        out = await tool.execute(inp)
+        assert out.detected_failure is True
+        assert out.failure_mode == "timeout"
         assert len(out.recommendations) > 0
 
     @pytest.mark.asyncio

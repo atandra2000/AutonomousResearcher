@@ -24,6 +24,13 @@ class ExperimentType(StrEnum):
     DRY_RUN = "dry_run"
 
 
+class ExecutionMode(StrEnum):
+    """Mode of experiment execution."""
+
+    REAL = "real"
+    DRY_RUN = "dry_run"
+
+
 class ExperimentStatus(StrEnum):
     """Status of an experiment run."""
 
@@ -111,6 +118,12 @@ class ExperimentRun(BaseModel):
     duration_seconds: float = Field(0.0, description="Run duration in seconds")
     error_message: str | None = Field(None, description="Error message if any")
     killed: bool = Field(False, description="Whether process was killed")
+    memory_limit_mb: float | None = Field(
+        None, description="Max memory limit set in MB"
+    )
+    execution_mode: ExecutionMode = Field(
+        ExecutionMode.REAL, description="Execution mode used"
+    )
 
     def is_success(self) -> bool:
         """Return True if the experiment completed successfully."""
@@ -141,6 +154,12 @@ class ExperimentRunnerInput(BaseModel):
         default_factory=dict, description="Additional env vars"
     )
     dry_run: bool = Field(True, description="If True, do not execute")
+    execution_mode: ExecutionMode | None = Field(
+        None, description="Optional execution mode override"
+    )
+    memory_limit_mb: float | None = Field(
+        None, ge=1.0, description="Memory limit in MB"
+    )
     capture_output: bool = Field(True, description="Capture stdout/stderr")
     max_output_bytes: int = Field(
         10_000_000, ge=1024, description="Max output bytes"
@@ -590,6 +609,12 @@ class ExperimentConfig(BaseModel):
     )
     dry_run_default: bool = Field(
         True, description="Dry run by default"
+    )
+    real_execution: bool = Field(
+        False, description="Whether to execute real runs by default"
+    )
+    memory_limit_mb: float | None = Field(
+        None, description="Default memory limit in MB"
     )
 
 
