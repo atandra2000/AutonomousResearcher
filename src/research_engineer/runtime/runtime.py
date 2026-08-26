@@ -115,6 +115,9 @@ class AgentRuntime:
             checkpointing (E2). When provided, the runtime checkpoints after
             each completed step and before terminal transitions, and exposes
             :meth:`resume` for crash recovery.
+        tool_gateway: optional :class:`ToolGateway` (E3). When provided,
+            :meth:`call_tool` routes every tool invocation through the
+            gateway's policy/permission/budget/approval/sandbox chain.
     """
 
     def __init__(
@@ -128,6 +131,7 @@ class AgentRuntime:
         on_step: Callable[[AgentStep], None] | None = None,
         event_bus: Any | None = None,
         checkpoint_store: CheckpointStore | None = None,
+        tool_gateway: Any | None = None,
     ) -> None:
         self.planner = planner
         self.actor = actor
@@ -138,6 +142,7 @@ class AgentRuntime:
         self._on_step = on_step
         self._event_bus = event_bus
         self._checkpoint_store = checkpoint_store
+        self._tool_gateway = tool_gateway
         self._cancel_event: asyncio.Event | None = None
         self._resume_lock_held = False
 
@@ -169,6 +174,7 @@ class AgentRuntime:
         if metadata:
             ctx.metadata.update(metadata)
         self._cancel_event = asyncio.Event()
+        self._active_execution_id = ctx.execution_id
         start = time.monotonic()
         ctx.state = AgentState.RUNNING
         ctx.started_at = datetime.now()
@@ -296,6 +302,59 @@ class AgentRuntime:
         """
         if self._cancel_event is not None:
             self._cancel_event.set()
+
+    # ------------------------------------------------------------------
+    # Tool gateway integration (E3)
+    # ------------------------------------------------------------------
+
+    @property
+    def tool_gateway(self) -> Any | None:
+        """The configured :class:`ToolGateway`, if any."""
+        return self._tool_gateway
+
+    async def call_tool(
+        self,
+        tool_name: str,
+        input: Any,
+        *,
+        agent_name: str = "",
+        run_id: str = "",
+        metadata: dict[str, Any] | None = None,
+    ) -> Any:
+        """Invoke a tool through the configured gateway (E3).
+
+        When a :class:`ToolGateway` is configured, the invocation passes
+        through its full policy/permission/budget/approval/sandbox chain
+        and returns a :class:`ToolExecutionResult`. When no gateway is
+        configured, this raises :class:`RuntimeError` to make it clear that
+        tool calls must be routed through a gateway.
+
+        Args:
+            tool_name: Stable tool identifier registered with the gateway.
+            input: Tool input (a pydantic model or dict).
+            agent_name: Optional agent identifier for observability.
+            run_id: Optional parent run identifier for observability.
+            metadata: Optional caller metadata attached to the call context.
+
+        Returns:
+            A :class:`ToolExecutionResult` from the gateway.
+        """
+        if self._tool_gateway is None:
+            raise RuntimeError(
+                "No ToolGateway configured on this AgentRuntime; "
+                "tool calls must be routed through a gateway."
+            )
+        return await self._tool_gateway.execute(
+            tool_name,
+            input,
+            agent_name=agent_name,
+            run_id=run_id or self._current_run_id(),
+            metadata=metadata,
+        )
+
+    def _current_run_id(self) -> str:
+        """Return the execution id of the active run, if any."""
+        return getattr(self, "_active_execution_id", "")
 
     # ------------------------------------------------------------------
     # Loop internals
