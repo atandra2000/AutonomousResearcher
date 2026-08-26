@@ -63,6 +63,9 @@ class AgentTermination(StrEnum):
     CANCELLED = "cancelled"
     ERROR = "error"
     NO_PROGRESS = "no_progress"
+    # E5 - Autonomy & Safety Controls.
+    SAFETY_TERMINATED = "safety_terminated"
+    APPROVAL_REQUIRED = "approval_required"
 
 
 # ---------------------------------------------------------------------------

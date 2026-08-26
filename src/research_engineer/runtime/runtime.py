@@ -93,6 +93,16 @@ def classify_error(exc: BaseException) -> bool:
     return False
 
 
+#: E5: map safety control triggers to deterministic runtime terminations.
+_SAFETY_TERMINATIONS: dict[str, AgentTermination] = {
+    "no_progress": AgentTermination.NO_PROGRESS,
+    "diminishing_returns": AgentTermination.NO_PROGRESS,
+    "budget_exceeded": AgentTermination.BUDGET_EXCEEDED,
+    "approval_required": AgentTermination.APPROVAL_REQUIRED,
+    "approval_denied": AgentTermination.APPROVAL_REQUIRED,
+}
+
+
 class AgentRuntime:
     """Generic async-first orchestration runtime for autonomous agents.
 
@@ -118,6 +128,14 @@ class AgentRuntime:
         tool_gateway: optional :class:`ToolGateway` (E3). When provided,
             :meth:`call_tool` routes every tool invocation through the
             gateway's policy/permission/budget/approval/sandbox chain.
+        safety_controller: optional
+            :class:`~research_engineer.safety.controller.SafetyController`
+            (E5). When provided, every completed step is evaluated by the
+            deterministic safety/autonomy policy, which may CONTINUE,
+            REPLAN, PAUSE_FOR_APPROVAL (resolved via the controller's
+            approval gate), or TERMINATE the run. Tool invocations made
+            through :meth:`call_tool` are recorded into the controller for
+            duplicate-call and risk-escalation analysis.
     """
 
     def __init__(
@@ -132,6 +150,7 @@ class AgentRuntime:
         event_bus: Any | None = None,
         checkpoint_store: CheckpointStore | None = None,
         tool_gateway: Any | None = None,
+        safety_controller: Any | None = None,
     ) -> None:
         self.planner = planner
         self.actor = actor
@@ -143,8 +162,10 @@ class AgentRuntime:
         self._event_bus = event_bus
         self._checkpoint_store = checkpoint_store
         self._tool_gateway = tool_gateway
+        self._safety_controller = safety_controller
         self._cancel_event: asyncio.Event | None = None
         self._resume_lock_held = False
+        self._active_ctx: AgentContext | None = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -175,6 +196,7 @@ class AgentRuntime:
             ctx.metadata.update(metadata)
         self._cancel_event = asyncio.Event()
         self._active_execution_id = ctx.execution_id
+        self._active_ctx = ctx
         start = time.monotonic()
         ctx.state = AgentState.RUNNING
         ctx.started_at = datetime.now()
@@ -281,6 +303,13 @@ class AgentRuntime:
             if ctx.state != AgentState.RUNNING:
                 return False
 
+        # E5: autonomy/safety evaluation. Deterministic controls are
+        # authoritative and may terminate even when the evaluator claims
+        # completion (safety trumps success claims).
+        if self._safety_controller is not None:
+            if not await self._evaluate_safety(ctx, step):
+                return False
+
         # The evaluator may signal completion by returning a sentinel
         # or by mutating the context; check for a done flag.
         if self._evaluator_says_done(step):
@@ -302,6 +331,42 @@ class AgentRuntime:
         """
         if self._cancel_event is not None:
             self._cancel_event.set()
+
+    # ------------------------------------------------------------------
+    # Autonomy & safety controls (E5)
+    # ------------------------------------------------------------------
+
+    async def _evaluate_safety(self, ctx: AgentContext, step: AgentStep) -> bool:
+        """Run the safety controller on one step; return True to continue."""
+        controller = self._safety_controller
+        assert controller is not None  # caller checks
+        try:
+            decision = await controller.observe_step(
+                ctx, step, budget=self.policy.budget
+            )
+        except Exception as exc:  # noqa: BLE001 - safety must not crash the run
+            logger.warning(
+                "Safety evaluation failed for %s at step %d: %s",
+                ctx.execution_id,
+                step.step,
+                exc,
+            )
+            return True
+
+        if decision.action is not None and decision.is_terminal:
+            termination = _SAFETY_TERMINATIONS.get(
+                decision.trigger, AgentTermination.SAFETY_TERMINATED
+            )
+            reason = f"safety:{decision.reason_code}: {decision.reason}"
+            await self._terminate(ctx, termination, reason)
+            return False
+        return True
+
+    @property
+    def safety_controller(self) -> Any | None:
+        """The configured E5 safety controller, if any."""
+        return self._safety_controller
+
 
     # ------------------------------------------------------------------
     # Tool gateway integration (E3)
@@ -344,13 +409,31 @@ class AgentRuntime:
                 "No ToolGateway configured on this AgentRuntime; "
                 "tool calls must be routed through a gateway."
             )
-        return await self._tool_gateway.execute(
+        result = await self._tool_gateway.execute(
             tool_name,
             input,
             agent_name=agent_name,
             run_id=run_id or self._current_run_id(),
             metadata=metadata,
         )
+        # E5: feed the safety controller (best-effort, never breaks dispatch).
+        if self._safety_controller is not None and self._active_ctx is not None:
+            risk_level = None
+            registry = getattr(self._tool_gateway, "registry", None)
+            policy = registry.get(tool_name) if registry is not None else None
+            if policy is not None:
+                risk_level = policy.risk_level
+            try:
+                self._safety_controller.record_tool_call(
+                    self._active_ctx,
+                    tool_name,
+                    input,
+                    result,
+                    risk_level=risk_level,
+                )
+            except Exception as exc:  # noqa: BLE001 - recording never breaks
+                logger.debug("Safety tool-call recording failed: %s", exc)
+        return result
 
     def _current_run_id(self) -> str:
         """Return the execution id of the active run, if any."""
