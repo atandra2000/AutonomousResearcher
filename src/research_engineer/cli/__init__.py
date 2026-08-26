@@ -3022,6 +3022,15 @@ eval_harness_app = typer.Typer(
 )
 app.add_typer(eval_harness_app, name="eval-harness")
 
+improve_app = typer.Typer(
+    name="improve",
+    help=(
+        "Continuous agent improvement loop: mine failures from E4 reports, "
+        "propose/evaluate/approve/promote candidates (E8)"
+    ),
+)
+app.add_typer(improve_app, name="improve")
+
 
 
 @review_app.command("plan")
@@ -3648,6 +3657,315 @@ def eval_harness_compare(
     typer.echo("\n✅ No regressions detected.")
     return 0
 
+
+# ---------------------------------------------------------------------------
+# E8 - Continuous Agent Improvement sub-application
+# ---------------------------------------------------------------------------
+
+
+from research_engineer.improve import (  # noqa: E402
+    ImprovementPipeline,
+    ImprovementStore,
+    RuleBasedProposalSource,
+    candidate_eval_runner_builder,
+    mine_report,
+)
+from research_engineer.eval.models import EvalReport  # noqa: E402
+
+
+def _improve_pipeline(store_dir: str) -> ImprovementPipeline:
+    return ImprovementPipeline(ImprovementStore(store_dir))
+
+
+def _print_candidate(candidate: Any) -> None:
+    mark = {
+        "passed": "✅",
+        "failed": "❌",
+        "promoted": "🚀",
+        "rejected": "🚫",
+        "approved": "👍",
+        "canary": "🐤",
+    }.get(candidate.status.value, "•")
+    typer.echo(
+        f"  {mark} {candidate.candidate_id} [{candidate.status.value}] "
+        f"{candidate.component.value} parent={candidate.parent_baseline_id}"
+    )
+
+
+@improve_app.command("propose")
+def improve_propose(
+    report_file: str = typer.Argument(..., help="Baseline E4 EvalReport JSON"),
+    baseline_label: str = typer.Option(
+        "baseline", "--baseline-label", help="Version label for the baseline"
+    ),
+    config_json: str = typer.Option(
+        "{}", "--config", help="Production config snapshot as JSON "
+        '(dotted keys, e.g. {"budget.max_steps": 2})'
+    ),
+    store_dir: str = typer.Option(
+        "output/improvements", "--store-dir", help="Candidate registry directory"
+    ),
+    min_runs: int = typer.Option(
+        2, "--min-runs", help="Distinct runs affected before a pattern counts"
+    ),
+) -> int:
+    """Mine failure patterns from an eval report and propose candidates."""
+    import json as _json
+
+    from research_engineer.eval import load_report
+    from research_engineer.improve import MiningConfig
+
+    try:
+        config = _json.loads(config_json)
+        if not isinstance(config, dict):
+            raise ValueError("--config must be a JSON object")
+    except Exception as e:
+        typer.echo(f"❌ Invalid --config JSON: {e}", err=True)
+        return 1
+    try:
+        report = load_report(report_file)
+        pipeline = _improve_pipeline(store_dir)
+        tagged = report.model_copy(
+            update={"label": report.label or baseline_label}
+        )
+        baseline = pipeline.register_baseline(baseline_label, tagged, config)
+        patterns = mine_report(tagged, config=MiningConfig(min_affected_runs=min_runs))
+        proposals = RuleBasedProposalSource().propose(patterns, baseline)
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+
+    typer.echo(
+        f"\n🔎 Baseline '{baseline_label}' ({baseline.baseline_id}): "
+        f"success={baseline.metrics.success_rate:.2f} "
+        f"quality={baseline.metrics.quality_score:.3f} | "
+        f"{len(patterns)} failure pattern(s)"
+    )
+    for p in patterns:
+        typer.echo(
+            f"   • {p.kind.value}: {p.affected_runs} run(s), "
+            f"{p.total_events} event(s) — {p.description}"
+        )
+    created: list[Any] = []
+    for proposal in proposals:
+        try:
+            cand = pipeline.create_candidate(proposal, baseline.baseline_id)
+        except Exception as e:  # noqa: BLE001 - one bad proposal != CLI failure
+            typer.echo(f"   ⚠ rejected proposal '{proposal.title}': {e}")
+            continue
+        created.append(cand)
+    typer.echo(f"\n💡 Candidates in registry ({len(created)} new-or-existing):")
+    for cand in created:
+        _print_candidate(cand)
+    return 0
+
+
+@improve_app.command("evaluate")
+def improve_evaluate(
+    candidate_id: str = typer.Argument(...),
+    suite_file: str = typer.Option(..., "--suite", help="YAML/JSON eval suite"),
+    factory: str = typer.Option("scripted", "--factory"),
+    seed: int = typer.Option(0, "--seed"),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Evaluate a candidate against its baseline via the regression gate."""
+    try:
+        from research_engineer.eval import EvalRunner, load_suite
+
+        pipeline = _improve_pipeline(store_dir)
+        candidate = pipeline.store.load_candidate(candidate_id)
+        if candidate is None:
+            raise KeyError(f"unknown candidate {candidate_id!r}")
+        suite = load_suite(suite_file)
+        if suite.suite_id != candidate.suite_id:
+            raise ValueError(
+                f"suite mismatch: candidate needs '{candidate.suite_id}', "
+                f"got '{suite.suite_id}'"
+            )
+        builder = candidate_eval_runner_builder(factory)
+
+        async def run_eval(cand: Any) -> EvalReport:
+            runner = EvalRunner(builder(cand), label=cand.version, seed=seed)
+            return await runner.run_suite(suite)
+
+        updated = _asyncio.run(pipeline.evaluate_candidate(candidate_id, run_eval))
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    assert updated.evaluation is not None
+    ev = updated.evaluation
+    b, c = ev.baseline, ev.candidate
+    typer.echo(
+        f"\n⚖ Candidate {candidate_id}: gate "
+        f"{'PASSED ✅' if ev.verdict.passed else 'FAILED ❌'}"
+    )
+    rows = (
+        ("success_rate", ".3f"), ("quality_score", ".3f"),
+        ("failure_rate", ".3f"), ("human_interventions", ".3f"),
+        ("safety_interventions", ".4g"), ("total_cost_usd", ".4f"),
+        ("total_tokens", ".0f"), ("avg_latency_seconds", ".4g"),
+    )
+    typer.echo(f"   {'metric':<22}{'baseline':>12}{'candidate':>12}{'delta':>12}")
+    for name, fmt in rows:
+        bv, cv = getattr(b, name), getattr(c, name)
+        typer.echo(f"   {name:<22}{bv:>12{fmt}}{cv:>12{fmt}}{cv - bv:>+12.3g}")
+    typer.echo("   termination reasons (cand): "
+               + str(dict(ev.candidate.termination_reasons)))
+    for v in ev.verdict.violations:
+        typer.echo(f"   ⚠ {v}")
+    return 0 if ev.verdict.passed else 2
+
+
+@improve_app.command("compare")
+def improve_compare(
+    candidate_id: str = typer.Argument(...),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Show the stored baseline-vs-candidate comparison and verdict."""
+    pipeline = _improve_pipeline(store_dir)
+    candidate = pipeline.store.load_candidate(candidate_id)
+    if candidate is None or candidate.evaluation is None:
+        typer.echo("❌ No evaluation recorded for this candidate.", err=True)
+        return 1
+    ev = candidate.evaluation
+    typer.echo(f"Baseline -> Candidate deltas ({list(ev.deltas)} keys):")
+    for name in sorted(ev.deltas):
+        typer.echo(f"   {name:<24}{ev.deltas[name]:>+10.4g}")
+    for warn in ev.verdict.warnings:
+        typer.echo(f"   ℹ {warn}")
+    if not ev.verdict.passed:
+        for v in ev.verdict.violations:
+            typer.echo(f"   ⚠ {v}")
+        return 2
+    typer.echo("✅ Regression gate passed.")
+    return 0
+
+
+@improve_app.command("approve")
+def improve_approve(
+    candidate_id: str = typer.Argument(...),
+    approved_by: str = typer.Option(..., "--approved-by", help="Approver id"),
+    note: str = typer.Option("", "--note"),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Explicitly approve a candidate that passed the gate."""
+    try:
+        updated = _improve_pipeline(store_dir).approve(candidate_id, approved_by, note=note)
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    typer.echo(f"👍 {updated.candidate_id} approved by {approved_by}.")
+    return 0
+
+
+@improve_app.command("canary")
+def improve_canary(
+    candidate_id: str = typer.Argument(...),
+    start_pct: float | None = typer.Option(None, "--start-pct", help="Start canary at N%% of runs"),
+    outcome: str | None = typer.Option(None, "--outcome", help="Record an outcome: ok|fail"),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Start a canary rollout and/or record canary outcomes."""
+    pipeline = _improve_pipeline(store_dir)
+    try:
+        if start_pct is not None:
+            pipeline.start_canary(candidate_id, start_pct)
+            typer.echo(
+                f"🐤 Canary started for {candidate_id} at {start_pct:g}% "
+                "(deterministic hash-bucket run assignment)."
+            )
+        if outcome is not None:
+            ok = outcome.lower() in {"ok", "success", "pass"}
+            updated = pipeline.record_canary_outcome(candidate_id, ok)
+            outcomes = updated.metadata.get("canary_outcomes", {})
+            typer.echo(
+                f"   canary outcomes so far: ok={outcomes.get('ok', 0)} "
+                f"/ total={outcomes.get('total', 0)}"
+            )
+        if start_pct is None and outcome is None:
+            typer.echo("Nothing to do: pass --start-pct and/or --outcome.")
+            return 1
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    return 0
+
+
+@improve_app.command("promote")
+def improve_promote(
+    candidate_id: str = typer.Argument(...),
+    approved_by: str = typer.Option(..., "--approved-by", help="Promotion approver"),
+    note: str = typer.Option("", "--note"),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Promote an approved candidate (records the production pointer change)."""
+    try:
+        updated = _improve_pipeline(store_dir).promote(candidate_id, approved_by, note=note)
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    active = ImprovementStore(store_dir).get_active(updated.component.value)
+    typer.echo(
+        f"🚀 {updated.candidate_id} PROMOTED; active[{updated.component.value}]={active}. "
+        f"Roll back anytime with 'research-engineer improve rollback {updated.candidate_id}'."
+    )
+    return 0
+
+
+@improve_app.command("rollback")
+def improve_rollback(
+    candidate_id: str = typer.Argument(...),
+    rolled_back_by: str = typer.Option("", "--by", help="Operator id"),
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+) -> int:
+    """Roll a promoted candidate back to its parent version."""
+    try:
+        _, restored = _improve_pipeline(store_dir).rollback(
+            candidate_id, rolled_back_by=rolled_back_by,
+        )
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    typer.echo(
+        f"⏪ Rolled back {candidate_id}; production restored to {restored or 'parent'}."
+    )
+    return 0
+
+
+@improve_app.command("status")
+def improve_status(
+    store_dir: str = typer.Option("output/improvements", "--store-dir"),
+    candidate_id: str | None = typer.Argument(None),
+) -> int:
+    """List candidates/baselines/pointers, or show one candidate in detail."""
+    pipeline = _improve_pipeline(store_dir)
+    if candidate_id:
+        candidate = pipeline.store.load_candidate(candidate_id)
+        if candidate is None:
+            typer.echo("❌ Unknown candidate.", err=True)
+            return 1
+        typer.echo(candidate.model_dump_json(indent=2))
+        return 0
+    baselines = pipeline.store.list_baselines()
+    candidates = pipeline.store.list_candidates()
+    decisions = pipeline.store.list_decisions()
+    typer.echo(f"Baselines ({len(baselines)}):")
+    for b in baselines:
+        typer.echo(f"   📌 {b.baseline_id} [{b.label}] success={b.metrics.success_rate:.2f}")
+    typer.echo(f"Candidates ({len(candidates)}):")
+    for c in candidates:
+        _print_candidate(c)
+    active_table = {}
+    path = ImprovementStore(store_dir)._active_path
+    if path.exists():
+        import json as _json
+
+        active_table = _json.loads(path.read_text())
+    for comp, slot in sorted(active_table.items()):
+        typer.echo(f"Active pointer [{comp}]: {slot.get('active')} "
+                   f"(previous={slot.get('previous')})")
+    typer.echo(f"Audit decisions: {len(decisions)} entries.")
+    return 0
 
 
 if __name__ == "__main__":
