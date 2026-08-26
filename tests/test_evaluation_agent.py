@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from research_engineer.agents.evaluation_agent import EvaluationAgent
-from research_engineer.tools.evaluation_storage import EvaluationStorageTool
 from research_engineer.models.evaluation import (
     EvaluationConfig,
+    ResearchOutputEvaluationOutput,
 )
 from research_engineer.models.experiment import (
     ExperimentRecord,
@@ -15,6 +15,7 @@ from research_engineer.models.experiment import (
     ExperimentType,
     MetricSeries,
 )
+from research_engineer.tools.evaluation_storage import EvaluationStorageTool
 
 
 def _record(
@@ -79,12 +80,14 @@ def evaluation_agent(mock_memory_agent, mock_literature_agent, tmp_path):
         update_graph=True,
         recommend_papers=True,
     )
-    return EvaluationAgent(
+    agent = EvaluationAgent(
         memory_agent=mock_memory_agent,
         literature_agent=mock_literature_agent,
         storage_tool=EvaluationStorageTool(db_path=str(tmp_path / "evaluations.db")),
         config=config,
     )
+    agent.llm_provider = None  # Disable LLM to avoid real API calls in tests.
+    return agent
 
 
 @pytest.fixture
@@ -92,10 +95,12 @@ def evaluation_agent_no_deps(tmp_path):
     config = EvaluationConfig(
         output_dir=str(tmp_path / "evaluations"),
     )
-    return EvaluationAgent(
+    agent = EvaluationAgent(
         storage_tool=EvaluationStorageTool(db_path=str(tmp_path / "evaluations.db")),
         config=config,
     )
+    agent.llm_provider = None  # Disable LLM to avoid real API calls in tests.
+    return agent
 
 
 class TestEvaluationAgentInit:
@@ -333,3 +338,133 @@ class TestPaperSuggestions:
         out = await agent.analyze(experiments=[a])
         assert out.next_experiments is not None
         assert len(out.next_experiments.paper_suggestions) >= 1
+
+
+# ---------------------------------------------------------------------------
+# B3: Research-output evaluation tests
+# ---------------------------------------------------------------------------
+
+
+class TestEvaluateResearchOutput:
+    """Tests for EvaluationAgent.evaluate_research_output() (B3)."""
+
+    @pytest.mark.asyncio
+    async def test_basic_evaluation(self, evaluation_agent_no_deps):
+        """Rule-based evaluation returns non-zero scores."""
+        report = (
+            "# Research Report: test goal\n\n"
+            "## Abstract\n\nThis report investigates test goal.\n\n"
+            "## Literature\n\nRelated work on test goal.\n\n"
+            "## Hypothesis\n\nHypothesis: attention improves accuracy.\n\n"
+            "## Experiment\n\nExperiment: exp_001 completed with loss=0.5.\n\n"
+            "## Result\n\nResult: loss improved by 20% over baseline.\n\n"
+            "## Conclusion\n\nConclusion: therefore, attention improves accuracy.\n"
+        )
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            hypotheses=["attention improves accuracy"],
+            research_goal="test goal",
+        )
+        assert isinstance(out, ResearchOutputEvaluationOutput)
+        assert out.overall_score > 0.0
+        assert out.grade in ("A", "B", "C", "D", "F")
+
+    @pytest.mark.asyncio
+    async def test_hypothesis_coverage(self, evaluation_agent_no_deps):
+        """Hypothesis coverage scores higher when hypotheses are addressed."""
+        report = "# Report\n\nHypothesis: attention improves accuracy. Conclusion: supported.\n"
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            hypotheses=["attention improves accuracy"],
+        )
+        assert out.hypothesis_coverage >= 0.5
+
+    @pytest.mark.asyncio
+    async def test_hypothesis_coverage_empty(self, evaluation_agent_no_deps):
+        """When no hypotheses are given and none mentioned, score is 0.5."""
+        report = "# Report\n\nSome general content."
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            hypotheses=None,
+        )
+        assert out.hypothesis_coverage == 0.5
+
+    @pytest.mark.asyncio
+    async def test_hypothesis_coverage_none_mentioned(self, evaluation_agent_no_deps):
+        """When hypotheses don't appear in report, coverage is 0."""
+        report = "# Report\n\nCompletely unrelated content about training."
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            hypotheses=["quantum entanglement for neural networks"],
+        )
+        assert out.hypothesis_coverage < 0.5
+
+    @pytest.mark.asyncio
+    async def test_evidence_support_with_metrics(self, evaluation_agent_no_deps):
+        """Evidence support increases when metrics are mentioned."""
+        report = (
+            "Report with experiment result loss accuracy baseline "
+            "comparison significance statistical metrics. "
+            "Hypothesis: attention improves. Conclusion: supported. "
+            "Experiment: exp_001 completed. Result: loss improved."
+        )
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            experiment_count=2,
+            analyses=[{"conclusion": "supported", "hypothesis_status": "supported"}],
+        )
+        assert out.evidence_support > 0.5
+
+    @pytest.mark.asyncio
+    async def test_completeness_short_report(self, evaluation_agent_no_deps):
+        """Short report gets a completeness recommendation."""
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown="short",
+        )
+        assert out.completeness < 0.5
+        assert any("abstract" in r.lower() or "expand" in r.lower() for r in out.recommendations)
+
+    @pytest.mark.asyncio
+    async def test_grade_letters(self, evaluation_agent_no_deps):
+        """Letter grades follow the score thresholds."""
+        assert EvaluationAgent._letter_grade(0.95) == "A"
+        assert EvaluationAgent._letter_grade(0.85) == "B"
+        assert EvaluationAgent._letter_grade(0.75) == "C"
+        assert EvaluationAgent._letter_grade(0.65) == "D"
+        assert EvaluationAgent._letter_grade(0.50) == "F"
+
+    @pytest.mark.asyncio
+    async def test_findings_populated(self, evaluation_agent_no_deps):
+        """Findings list is always populated."""
+        report = "# Report\n\nSome content with conclusion and results."
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+        )
+        assert len(out.findings) > 0
+
+    @pytest.mark.asyncio
+    async def test_recommendations_for_low_scores(self, evaluation_agent_no_deps):
+        """Low-scoring reports generate recommendations."""
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown="x",
+        )
+        assert len(out.recommendations) > 0
+
+    @pytest.mark.asyncio
+    async def test_summary_populated(self, evaluation_agent_no_deps):
+        """Summary is always populated."""
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown="# Report\n\nSome content.",
+        )
+        assert len(out.summary) > 0
+
+    @pytest.mark.asyncio
+    async def test_no_llm_provider_still_works(self, evaluation_agent_no_deps):
+        """Evaluation works without an LLM provider (rule-based only)."""
+        report = "# Test report with experiment loss result"
+        out = await evaluation_agent_no_deps.evaluate_research_output(
+            report_markdown=report,
+            research_goal="test",
+        )
+        assert out.overall_score >= 0.0
+        assert "Report quality" in out.summary

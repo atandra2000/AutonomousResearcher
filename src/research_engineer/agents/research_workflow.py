@@ -257,6 +257,12 @@ class ResearchWorkflowFramework:
         kwargs: dict[str, Any] = {}
         if stream_sink is not None:
             kwargs["stream_sink"] = stream_sink
+
+        # B3: For report generation, first build a draft, evaluate it,
+        # then re-generate with the evaluation for reasoned conclusions.
+        if stage_type == ResearchStageType.REPORT_GENERATION:
+            kwargs.update(await self._evaluate_draft(ctx, agent))
+
         try:
             result = await agent.execute(ctx, **kwargs)
             record.status = ResearchStageStatus.COMPLETED
@@ -274,6 +280,39 @@ class ResearchWorkflowFramework:
             record.duration_seconds = round(time.time() - t0, 3)
             record.error = str(e)
         return record
+
+    async def _evaluate_draft(
+        self,
+        ctx: SharedResearchContext,
+        report_agent: Any,
+    ) -> dict[str, Any]:
+        """Evaluate a draft report before regeneration (B3).
+
+        Returns extra kwargs to pass to the report generation stage
+        when an evaluation is available; empty dict otherwise.
+        """
+        try:
+            from research_engineer.agents.evaluation_agent import EvaluationAgent
+
+            evaluation_agent = EvaluationAgent()
+            # Build the draft report.
+            draft = report_agent._build_report(ctx)
+            hypotheses = [h.statement for h in ctx.hypotheses] if ctx.hypotheses else []
+            analyses_data = (
+                [a.model_dump() for a in ctx.analyses] if ctx.analyses else []
+            )
+            ev = await evaluation_agent.evaluate_research_output(
+                report_markdown=draft,
+                hypotheses=hypotheses,
+                analyses=analyses_data,
+                experiment_count=len(ctx.experiment_outcomes),
+                paper_count=len(ctx.papers),
+                research_goal=ctx.research_goal,
+            )
+            ctx.output_evaluation = ev.model_dump()
+            return {"evaluation": ev.model_dump()}
+        except Exception:
+            return {}
 
 
 __all__ = ["ResearchWorkflowFramework", "ResearchConfig"]

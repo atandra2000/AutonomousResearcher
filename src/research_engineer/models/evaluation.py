@@ -450,6 +450,69 @@ class EvaluationQueryOutput(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Research Output Evaluation (B3)
+# ---------------------------------------------------------------------------
+
+
+class ResearchOutputEvaluationInput(BaseModel):
+    """Input for evaluating the quality of a research report/output."""
+
+    report_markdown: str = Field(
+        ..., description="The research report to evaluate"
+    )
+    hypotheses: list[str] = Field(
+        default_factory=list,
+        description="Hypothesis statements posed in the research",
+    )
+    analyses: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Result analyses (conclusion, hypothesis_status, etc.)",
+    )
+    experiment_count: int = Field(
+        0, ge=0, description="Number of experiments executed"
+    )
+    paper_count: int = Field(
+        0, ge=0, description="Number of papers discovered"
+    )
+    research_goal: str = Field("", description="Original research goal")
+
+
+class ResearchOutputEvaluationOutput(BaseModel):
+    """Scores and findings from research-output quality evaluation."""
+
+    hypothesis_coverage: float = Field(
+        0.0, ge=0.0, le=1.0,
+        description="Fraction of hypotheses addressed in the report",
+    )
+    evidence_support: float = Field(
+        0.0, ge=0.0, le=1.0,
+        description="Fraction of conclusions backed by experiment results",
+    )
+    conclusion_coherence: float = Field(
+        0.0, ge=0.0, le=1.0,
+        description="Whether conclusions logically follow from the data",
+    )
+    completeness: float = Field(
+        0.0, ge=0.0, le=1.0,
+        description="Report completeness (sections, length, structure)",
+    )
+    overall_score: float = Field(
+        0.0, ge=0.0, le=1.0,
+        description="Weighted overall quality score",
+    )
+    grade: str = Field(
+        "", description="Letter grade (A/B/C/D/F) based on overall_score"
+    )
+    findings: list[str] = Field(
+        default_factory=list, description="Specific observations"
+    )
+    recommendations: list[str] = Field(
+        default_factory=list, description="How to improve the output"
+    )
+    summary: str = Field("", description="One-line evaluation summary")
+
+
+# ---------------------------------------------------------------------------
 # Top-Level Result
 # ---------------------------------------------------------------------------
 

@@ -263,6 +263,12 @@ class SharedResearchContext(BaseModel):
         default="", description="Path to saved report file"
     )
 
+    # B3: Research-output quality evaluation (populated by ReportGeneratorAgent).
+    output_evaluation: dict[str, Any] | None = Field(
+        default=None,
+        description="Serialized ResearchOutputEvaluationOutput for the report",
+    )
+
     # Metadata.
     max_papers: int = Field(default=20, description="Max papers to discover")
     max_hypotheses: int = Field(default=5, description="Max hypotheses to generate")

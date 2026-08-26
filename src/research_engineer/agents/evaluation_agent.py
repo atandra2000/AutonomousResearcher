@@ -28,6 +28,7 @@ from research_engineer.models.evaluation import (
     NextExperimentInput,
     NextExperimentOutput,
     PaperSuggestion,
+    ResearchOutputEvaluationOutput,
     StatisticalSignificanceInput,
     StatisticalSignificanceOutput,
     TrainingDynamicsInput,
@@ -212,6 +213,87 @@ class EvaluationAgent:
         result.processing_time_seconds = round(time.time() - start, 2)
         return result
 
+    async def evaluate_research_output(
+        self,
+        report_markdown: str,
+        hypotheses: list[str] | None = None,
+        analyses: list[dict[str, str]] | None = None,
+        experiment_count: int = 0,
+        paper_count: int = 0,
+        research_goal: str = "",
+    ) -> ResearchOutputEvaluationOutput:
+        """Evaluate the quality of a research report (B3).
+
+        Scores the report against the original hypotheses and experiment
+        results using a rule-based rubric.  When an LLM provider is
+        available, also generates a qualitative summary via the model.
+
+        Args:
+            report_markdown: The full research report markdown.
+            hypotheses: Hypothesis statements posed in the research.
+            analyses: Result analyses dicts with 'conclusion' and
+                'hypothesis_status' keys.
+            experiment_count: Number of experiments executed.
+            paper_count: Number of papers discovered.
+            research_goal: Original research goal.
+
+        Returns:
+            ResearchOutputEvaluationOutput with rubric scores, grade,
+            findings, and recommendations.
+        """
+        report_lower = report_markdown.lower()
+        findings: list[str] = []
+        recommendations: list[str] = []
+
+        hyp_score = self._score_hypothesis_coverage(
+            report_lower, hypotheses, findings
+        )
+        ev_score = self._score_evidence_support(
+            report_lower, experiment_count, analyses, findings
+        )
+        coh_score = self._score_conclusion_coherence(
+            report_lower, findings
+        )
+        comp_score = self._score_completeness(
+            report_markdown, report_lower, experiment_count, paper_count,
+            research_goal, findings, recommendations,
+        )
+
+        overall = round(
+            0.25 * hyp_score
+            + 0.25 * ev_score
+            + 0.20 * coh_score
+            + 0.30 * comp_score,
+            3,
+        )
+        grade = self._letter_grade(overall)
+
+        self._generate_recommendations(
+            hyp_score, ev_score, coh_score, comp_score, recommendations
+        )
+
+        summary = (
+            f"Report quality: {grade} ({overall:.2f}). "
+            f"Hypothesis coverage: {hyp_score:.0%}, Evidence: {ev_score:.0%}, "
+            f"Coherence: {coh_score:.0%}, Completeness: {comp_score:.0%}."
+        )
+        if self.llm_provider is not None:
+            summary = await self._llm_summary(
+                report_markdown, summary, overall, grade, findings
+            )
+
+        return ResearchOutputEvaluationOutput(
+            hypothesis_coverage=hyp_score,
+            evidence_support=ev_score,
+            conclusion_coherence=coh_score,
+            completeness=comp_score,
+            overall_score=overall,
+            grade=grade,
+            findings=findings,
+            recommendations=recommendations,
+            summary=summary,
+        )
+
     async def evaluate_single(
         self,
         experiment: ExperimentRecord,
@@ -344,6 +426,264 @@ class EvaluationAgent:
         if isinstance(out, EvaluationQueryOutput):
             return out
         return EvaluationQueryOutput()
+
+    # --- B3: Research-output rubric helpers ---
+
+    @staticmethod
+    def _score_hypothesis_coverage(
+        report_lower: str,
+        hypotheses: list[str] | None,
+        findings: list[str],
+    ) -> float:
+        """Score how thoroughly hypotheses are addressed in the report."""
+        if not hypotheses:
+            if "hypothesis" in report_lower:
+                findings.append("No hypotheses provided; report mentions 'hypothesis'.")
+                return 1.0
+            findings.append("No hypotheses provided or referenced.")
+            return 0.5
+
+        covered = 0
+        for i, hyp in enumerate(hypotheses, 1):
+            key_words = [w for w in hyp.split() if len(w) > 4][:3]
+            if not key_words:
+                key_words = hyp.split()[:3]
+            hits = sum(1 for w in key_words if w.lower() in report_lower)
+            if hits >= max(1, len(key_words) // 2):
+                covered += 1
+                findings.append(f"Hypothesis {i} appears addressed.")
+            else:
+                findings.append(f"Hypothesis {i} may not be fully addressed.")
+
+        score = covered / len(hypotheses) if hypotheses else 0.0
+        findings.append(
+            f"Hypothesis coverage: {covered}/{len(hypotheses)} hypotheses addressed."
+        )
+        return round(score, 3)
+
+    @staticmethod
+    def _score_evidence_support(
+        report_lower: str,
+        experiment_count: int,
+        analyses: list[dict[str, str]] | None,
+        findings: list[str],
+    ) -> float:
+        """Score whether conclusions are backed by experimental evidence."""
+        score = 0.0
+
+        evidence_keywords = [
+            "experiment", "result", "metric", "accuracy", "loss",
+            "baseline", "comparison", "significance", "statistical",
+        ]
+        kw_hits = sum(1 for kw in evidence_keywords if kw in report_lower)
+        kw_score = min(1.0, kw_hits / len(evidence_keywords))
+        score += kw_score * 0.4
+        findings.append(f"Evidence keywords: {kw_hits}/{len(evidence_keywords)}.")
+
+        if experiment_count > 0:
+            exp_mentions = sum(
+                1 for i in range(1, experiment_count + 1)
+                if f"experiment {i}" in report_lower
+                or "experiment:" in report_lower
+                or "exp_" in report_lower
+            )
+            exp_score = min(1.0, exp_mentions / experiment_count)
+            score += exp_score * 0.3
+            findings.append(
+                f"Experiment references: {exp_mentions}/{experiment_count}."
+            )
+        else:
+            findings.append("No experiments to reference.")
+
+        if analyses and len(analyses) > 0:
+            has_analysis = any(
+                a.get("conclusion", "") in report_lower
+                or a.get("hypothesis_status", "") in report_lower
+                for a in analyses
+            )
+            if has_analysis:
+                score += 0.3
+                findings.append("Report references analysis conclusions.")
+            else:
+                score += 0.1
+                findings.append("Analyses present but may not be well cited.")
+        else:
+            score += 0.15
+            findings.append("No result analyses to check against.")
+
+        return round(min(1.0, score), 3)
+
+    @staticmethod
+    def _score_conclusion_coherence(
+        report_lower: str,
+        findings: list[str],
+    ) -> float:
+        """Score whether conclusions logically follow from the data."""
+        score = 0.0
+
+        has_conclusion = "conclusion" in report_lower
+        if has_conclusion:
+            score += 0.4
+            findings.append("Report has a conclusion section.")
+
+        logical_words = [
+            "therefore", "thus", "hence", "because", "as a result",
+            "this shows", "this suggests", "demonstrated by", "supported by",
+            "indicates that", "implies that",
+        ]
+        lw_hits = sum(1 for w in logical_words if w in report_lower)
+        lw_score = min(1.0, lw_hits / 3)
+        score += lw_score * 0.3
+        if lw_hits:
+            findings.append(f"Logical connectors found: {lw_hits}.")
+
+        speculation_words = [
+            "maybe", "perhaps", "possibly", "might be", "it could be",
+        ]
+        spec_hits = sum(1 for w in speculation_words if w in report_lower)
+        if spec_hits >= 2:
+            score -= 0.1 * spec_hits
+            findings.append(
+                f"Detected {spec_hits} speculative phrases; conclusions "
+                "should be grounded in evidence."
+            )
+        else:
+            score += 0.3
+            findings.append("Conclusions appear well-grounded.")
+
+        return round(min(1.0, max(0.0, score)), 3)
+
+    @staticmethod
+    def _score_completeness(
+        report_markdown: str,
+        report_lower: str,
+        experiment_count: int,
+        paper_count: int,
+        research_goal: str,
+        findings: list[str],
+        recommendations: list[str],
+    ) -> float:
+        """Score report completeness (sections, length, structure)."""
+        score = 0.0
+
+        expected_sections = {
+            "abstract": ["abstract", "executive summary", "overview"],
+            "literature": ["literature", "related work", "prior work", "papers"],
+            "method": ["method", "approach", "design", "experiment"],
+            "results": ["result", "finding", "outcome", "experiment"],
+            "conclusion": ["conclusion", "summary"],
+        }
+        for section, variants in expected_sections.items():
+            if any(v in report_lower for v in variants):
+                score += 0.12
+            else:
+                findings.append(f"Missing section: {section}.")
+                recommendations.append(f"Add a {section} section to the report.")
+
+        if len(report_markdown) < 200:
+            findings.append("Report is very short (<200 chars).")
+            recommendations.append("Expand the report with more detail.")
+        elif len(report_markdown) < 1000:
+            score += 0.1
+            findings.append("Report is short (<1000 chars).")
+        else:
+            score += 0.2
+            findings.append(f"Report length: {len(report_markdown)} chars.")
+
+        if experiment_count > 0:
+            score += 0.1
+            findings.append(f"Report references {experiment_count} experiments.")
+
+        if research_goal and research_goal.lower() in report_lower:
+            score += 0.1
+            findings.append("Research goal is referenced in the report.")
+
+        return round(min(1.0, score), 3)
+
+    @staticmethod
+    def _letter_grade(score: float) -> str:
+        """Convert a 0-1 score to a letter grade."""
+        if score >= 0.9:
+            return "A"
+        if score >= 0.8:
+            return "B"
+        if score >= 0.7:
+            return "C"
+        if score >= 0.6:
+            return "D"
+        return "F"
+
+    @staticmethod
+    def _generate_recommendations(
+        hyp_score: float,
+        ev_score: float,
+        coh_score: float,
+        comp_score: float,
+        recommendations: list[str],
+    ) -> None:
+        """Generate targeted recommendations from rubric scores."""
+        if hyp_score < 0.7:
+            recommendations.append(
+                "Improve hypothesis coverage: explicitly state which "
+                "hypotheses are supported, refuted, or inconclusive."
+            )
+        if ev_score < 0.7:
+            recommendations.append(
+                "Strengthen evidence support: cite experiment results, "
+                "metrics, and statistical tests in the conclusions."
+            )
+        if coh_score < 0.7:
+            recommendations.append(
+                "Improve conclusion coherence: use logical connectors "
+                "and reduce speculative language."
+            )
+        if comp_score < 0.7:
+            recommendations.append(
+                "Improve completeness: ensure all standard sections "
+                "(abstract, literature, methods, results, conclusion) "
+                "are present and sufficiently detailed."
+            )
+
+    async def _llm_summary(
+        self,
+        report: str,
+        rule_summary: str,
+        overall: float,
+        grade: str,
+        findings: list[str],
+    ) -> str:
+        """Generate an enhanced summary via the LLM."""
+        from research_engineer.llm import LLMMessage, LLMRequest, LLMRole
+
+        try:
+            provider = self.llm_provider
+            if provider is None:
+                return rule_summary
+            system = (
+                "You are a research quality evaluator. Given a research "
+                "report's rubric scores and findings, write a concise "
+                "2-3 sentence quality assessment."
+            )
+            findings_text = "; ".join(findings[:10])
+            user = (
+                f"Rule-based assessment: {rule_summary}\n"
+                f"Findings: {findings_text}\n\n"
+                f"Report excerpt:\n{report[:2000]}"
+            )
+            req = LLMRequest(
+                messages=[
+                    LLMMessage(role=LLMRole.SYSTEM, content=system),
+                    LLMMessage(role=LLMRole.USER, content=user),
+                ],
+                temperature=0.3,
+                max_tokens=256,
+            )
+            resp = await provider.complete(req)
+            if resp.content:
+                return resp.content.strip()
+        except Exception:
+            pass
+        return rule_summary
 
     # --- LiteratureAgent Integration ---
 
