@@ -1,0 +1,83 @@
+# E4 - Representative evaluation suite proving the harness end-to-end.
+#
+# Every case is executed through a real AgentRuntime built by the scripted
+# agent factory, so runs are fully deterministic and LLM-free.
+suite_id: sample_suite_v1
+name: Sample agent evaluation suite
+description: Smoke-level cases exercising success, tool usage, recovery and failure.
+version: "1"
+cases:
+  - case_id: summarize_success
+    name: Deterministic summary task
+    description: Completes in two steps with one allowed tool call.
+    goal: Summarize the attached document.
+    constraints:
+      - Only use the read_doc tool.
+    allowed_tools: [read_doc]
+    budget:
+      max_steps: 5
+      max_tool_calls: 5
+      max_tokens: 1000
+    criteria:
+      - grader: termination
+      - grader: output_equals
+        config:
+          expected: "Summary of the document."
+        weight: 2.0
+      - grader: output_contains
+        config:
+          any_of: ["Summary"]
+      - grader: budget
+      - grader: recovery
+    tags: [smoke, text]
+    revision: r1
+    metadata:
+      script:
+        steps: 2
+        final_output: "Summary of the document."
+        tools:
+          - {step: 1, name: read_doc, status: allowed}
+        tokens_per_step: 120
+        cost_per_step_usd: 0.01
+
+  - case_id: recover_from_transient_error
+    name: Recovery under transient errors
+    description: Hits a recoverable connection error at step 1 then completes.
+    goal: Complete despite a transient failure.
+    budget:
+      max_steps: 6
+      max_tool_calls: 4
+    criteria:
+      - grader: termination
+      - grader: output_contains
+        config:
+          all_of: ["recovered"]
+      - grader: recovery
+      - grader: tool_usage
+    tags: [resilience]
+    revision: r1
+    metadata:
+      script:
+        steps: 3
+        error_at_step: 1
+        final_output: "run recovered"
+        tools:
+          - {step: 1, name: search, status: allowed}
+          - {step: 3, name: shell, status: approval_required}
+        tokens_per_step: 80
+
+  - case_id: exceeds_step_budget
+    name: Expected failure against step budget
+    description: An impossible goal that exhausts its step budget (deliberate failure).
+    goal: Do something that cannot finish.
+    budget:
+      max_steps: 2
+    require_runtime_success: true
+    criteria:
+      - grader: termination
+    tags: [negative]
+    revision: r1
+    metadata:
+      script:
+        steps: 10
+        final_output: never reached

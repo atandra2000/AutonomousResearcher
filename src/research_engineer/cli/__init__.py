@@ -3016,6 +3016,13 @@ review_app = typer.Typer(
 )
 app.add_typer(review_app, name="review")
 
+eval_harness_app = typer.Typer(
+    name="eval-harness",
+    help="Agent evaluation harness: run graded eval suites and compare reports (E4)",
+)
+app.add_typer(eval_harness_app, name="eval-harness")
+
+
 
 @review_app.command("plan")
 def review_plan(
@@ -3515,6 +3522,132 @@ def research(
     except Exception as e:
         typer.echo(f"❌ Error running research: {e}", err=True)
         return 1
+
+
+# ---------------------------------------------------------------------------
+# E4 - Agent Evaluation Harness sub-application
+# ---------------------------------------------------------------------------
+
+
+import asyncio as _asyncio  # noqa: E402
+
+from research_engineer.eval import (  # noqa: E402
+    EvalRunner,
+    compare_reports,
+    load_report,
+    load_suite,
+    resolve_agent_factory,
+    save_report,
+)
+
+
+@eval_harness_app.command("validate")
+def eval_harness_validate(
+    suite_file: str = typer.Argument(..., help="Path to a YAML/JSON eval suite"),
+) -> int:
+    """Load and validate an evaluation suite without running it."""
+    try:
+        suite = load_suite(suite_file)
+    except Exception as e:
+        typer.echo(f"❌ Invalid suite: {e}", err=True)
+        return 1
+    typer.echo(
+        f"✅ Suite '{suite.suite_id}' v{suite.version}: "
+        f"{len(suite.cases)} cases: {', '.join(suite.case_ids)}"
+    )
+    return 0
+
+
+@eval_harness_app.command("run")
+def eval_harness_run(
+    suite_file: str = typer.Argument(..., help="Path to a YAML/JSON eval suite"),
+    factory: str = typer.Option(
+        "scripted", "--factory", help="Agent factory name (e.g. scripted)"
+    ),
+    label: str = typer.Option("", "--label", help="Label of this configuration"),
+    output: str = typer.Option(
+        "", "--output", "-o", help="Write the EvalReport JSON here"
+    ),
+) -> int:
+    """Run an evaluation suite through AgentRuntime and grade it."""
+    try:
+        suite = load_suite(suite_file)
+        agent_factory = resolve_agent_factory(factory)
+    except Exception as e:
+        typer.echo(f"❌ {e}", err=True)
+        return 1
+    runner = EvalRunner(agent_factory, label=label)
+    report = _asyncio.run(runner.run_suite(suite))
+    if output:
+        save_report(report, output)
+        typer.echo(f"💾 Report saved to {output}")
+    agg = report.aggregate
+    typer.echo(
+        f"\n🔍 Suite '{report.suite_id}': {agg.cases_total} cases | "
+        f"success_rate={agg.success_rate:.2f} completion={agg.completion_rate:.2f} | "
+        f"avg_steps={agg.avg_steps:.1f} avg_tools={agg.avg_tool_calls:.1f} | "
+        f"tokens={agg.total_tokens} cost=${agg.total_cost_usd:.4f}"
+    )
+    for result in report.results:
+        mark = "✅" if result.success else "❌"
+        typer.echo(
+            f"   {mark} {result.case_id}@{result.revision}: "
+            f"score={result.weighted_score:.3f} "
+            f"term={result.metrics.termination_reason or '-'}"
+        )
+    return 0
+
+
+@eval_harness_app.command("summarize")
+def eval_harness_summarize(report_file: str = typer.Argument(...)) -> int:
+    """Print an aggregate summary of a saved EvalReport."""
+    try:
+        report = load_report(report_file)
+    except Exception as e:
+        typer.echo(f"❌ Cannot load report: {e}", err=True)
+        return 1
+    agg = report.aggregate
+    typer.echo(f"Suite '{report.suite_id}' label={report.label!r}")
+    for metric in agg.as_metrics():
+        typer.echo(f"  {metric.name}: {metric.value:.4g}")
+    return 0
+
+
+@eval_harness_app.command("compare")
+def eval_harness_compare(
+    baseline_file: str = typer.Argument(...),
+    candidate_file: str = typer.Argument(...),
+) -> int:
+    """Compare a candidate EvalReport against a baseline (regression check)."""
+    try:
+        baseline = load_report(baseline_file)
+        candidate = load_report(candidate_file)
+    except Exception as e:
+        typer.echo(f"❌ Cannot load reports: {e}", err=True)
+        return 1
+    comparison = compare_reports(baseline, candidate)
+    typer.echo(
+        f"Baseline='{comparison.baseline_label or baseline.report_id}' "
+        f"Candidate='{comparison.candidate_label or candidate.report_id}'"
+    )
+    for diff in comparison.case_diffs:
+        arrow = {
+            "improved": "↗",
+            "regressed": "↘",
+            "missing": "‼",
+        }.get(diff.status, "→")
+        typer.echo(
+            f"  {arrow} {diff.case_id}: {diff.baseline_success}->{diff.candidate_success} "
+            f"({diff.status}) score {diff.baseline_score:.3f}->{diff.candidate_score:.3f}"
+        )
+    if comparison.regressions:
+        typer.echo("\nRegressions:")
+        for reg in comparison.regressions:
+            typer.echo(f"  ⚠ {reg}")
+        return 2
+    typer.echo("\n✅ No regressions detected.")
+    return 0
+
 
 
 if __name__ == "__main__":
