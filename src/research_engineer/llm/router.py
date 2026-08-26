@@ -21,6 +21,7 @@ from research_engineer.llm.base import (
     LLMResponse,
     ToolDefinition,
 )
+from research_engineer.llm.cost import PricingTable
 from research_engineer.llm.factory import ProviderFactory, get_factory
 
 
@@ -45,6 +46,7 @@ class _BoundProvider(LLMProvider):
             self._delegate,
             request,
             agent_name=f"{self._delegate.name}/{self._model or 'default'}",
+            on_complete=self._stamp_cost_record_and_emit,
         )
 
     async def complete_with_tools(
@@ -61,7 +63,46 @@ class _BoundProvider(LLMProvider):
             request,
             agent_name=f"{self._delegate.name}/{self._model or 'default'}",
             tools=tools,
+            on_complete=self._stamp_cost_record_and_emit,
         )
+
+    def _stamp_cost_record_and_emit(
+        self, request: LLMRequest, response: LLMResponse, latency_seconds: float
+    ) -> None:
+        """Stamp USD cost, record into the UsageTracker, and emit an event.
+
+        Combines D1 (cost accounting) and D2 (observability) into a single
+        best-effort hook invoked once per completed call.
+        """
+        from research_engineer.llm.cost import compute_usage_cost, get_usage_tracker
+        from research_engineer.observability import get_event_bus
+
+        model = response.model or self._model or self._delegate.default_model
+        # Stamp cost in place so callers see it on the returned response.
+        response.usage = compute_usage_cost(
+            response.usage, model, self._pricing_table()
+        )
+        label = f"{self._delegate.name}/{self._model or 'default'}"
+        get_usage_tracker().record(label, response.usage)
+        # Emit a structured event for observability (best-effort).
+        try:
+            get_event_bus().emit_llm_call(
+                agent_name=label,
+                request=request,
+                response=response,
+                latency_seconds=latency_seconds,
+            )
+        except Exception:
+            pass
+
+    def _pricing_table(self) -> PricingTable | None:
+        """Resolve the pricing table from the factory (best-effort)."""
+        try:
+            from research_engineer.llm.factory import get_factory
+
+            return get_factory().pricing_table
+        except Exception:
+            return None
 
     async def stream(self, request: LLMRequest) -> Any:
         if request.model is None and self._model is not None:

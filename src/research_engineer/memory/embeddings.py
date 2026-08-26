@@ -87,4 +87,78 @@ class HashingEmbedder(EmbedderBackend):
         return self.embed(texts)
 
 
-__all__ = ["EmbedderBackend", "HashingEmbedder"]
+class SentenceTransformerEmbedder(EmbedderBackend):
+    """Semantic embedder backed by ``sentence-transformers`` (optional, D4).
+
+    Loads a real transformer model (default: ``all-MiniLM-L6-v2``) to produce
+    semantically meaningful embeddings, unlike the lexical :class:`HashingEmbedder`.
+    The dependency is imported lazily on first use so the module imports cleanly
+    even when ``sentence-transformers`` is not installed; construction raises a
+    clear :class:`ImportError` only when the embedder is actually instantiated.
+
+    The output dimension matches the loaded model (384 for MiniLM). Vectors are
+    L2-normalized by the underlying model so they interoperate directly with the
+    cosine-similarity :class:`~research_engineer.memory.vector_store.VectorBackend`.
+    """
+
+    name = "sentence_transformer"
+
+    def __init__(
+        self,
+        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        *,
+        device: str | None = None,
+        normalize_embeddings: bool = True,
+    ) -> None:
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as e:  # pragma: no cover - optional dep
+            raise ImportError(
+                "SentenceTransformerEmbedder requires the 'sentence-transformers' "
+                "package. Install it with: uv pip install sentence-transformers"
+            ) from e
+        self._model_name = model_name
+        self._normalize = normalize_embeddings
+        # Load eagerly so failures surface at construction time. ``device=None``
+        # lets the library auto-select CPU/GPU.
+        self._model = SentenceTransformer(model_name, device=device)
+        # Cache the dimension. Prefer the non-deprecated method name; fall
+        # back to the legacy one for older sentence-transformers versions.
+        get_dim = getattr(self._model, "get_embedding_dimension", None)
+        if get_dim is None:
+            get_dim = getattr(self._model, "get_sentence_embedding_dimension")
+        self.dim = int(get_dim())
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        vecs = self._model.encode(
+            texts,
+            normalize_embeddings=self._normalize,
+            convert_to_numpy=True,
+        )
+        return [list(map(float, row)) for row in vecs]
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed([text])[0]
+
+    def embed_chunks(self, chunks: Iterable[CodeChunk]) -> list[list[float]]:
+        texts = [f"{c.name} {c.kind.value} {c.text[:1000]}" for c in chunks]
+        return self.embed(texts)
+
+
+def is_sentence_transformer_available() -> bool:
+    """Return True if ``sentence-transformers`` can be imported."""
+    try:
+        import sentence_transformers  # noqa: F401
+    except Exception:
+        return False
+    return True
+
+
+__all__ = [
+    "EmbedderBackend",
+    "HashingEmbedder",
+    "SentenceTransformerEmbedder",
+    "is_sentence_transformer_available",
+]

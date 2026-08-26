@@ -51,6 +51,51 @@ from research_engineer.tools.stopping_condition import (
 ApprovalCallback = Callable[[ApprovalRequest], Awaitable[bool]]
 
 
+def format_approval_prompt(request: ApprovalRequest) -> str:
+    """Render an :class:`ApprovalRequest` as a human-readable review block.
+
+    Used by the interactive CLI review commands and by approval callbacks
+    that print a summary before prompting the operator. The block surfaces
+    the gate, summary, plan diff (if present), expected cost, risk, and
+    metric snapshot so a reviewer can decide without reading raw model dumps.
+    """
+    lines: list[str] = [
+        f"=== Approval Gate: {request.gate.value} ===",
+        f"Loop: {request.loop_id} | Iteration: {request.iteration_number}",
+        f"Request ID: {request.request_id}",
+        f"Summary: {request.summary or '(none)'}",
+    ]
+    if request.model_name:
+        lines.append(f"Model: {request.model_name}")
+    if request.expected_cost_usd is not None:
+        lines.append(f"Expected cost: ${request.expected_cost_usd:.4f}")
+    if request.expected_gpu_hours is not None:
+        lines.append(f"Expected GPU-hours: {request.expected_gpu_hours:.3f}")
+    if request.risk_level:
+        label = request.risk_level
+        marker = "🔴" if label.lower() == "high" else ("🟡" if label.lower() == "medium" else "🟢")
+        lines.append(f"Risk: {marker} {label}")
+        if request.risk_summary:
+            lines.append(f"  {request.risk_summary}")
+    if request.metric_snapshot:
+        parts = ", ".join(f"{k}={v}" for k, v in request.metric_snapshot.items())
+        lines.append(f"Metrics: {parts}")
+    if request.artifacts:
+        arts = ", ".join(f"{k}={v}" for k, v in request.artifacts.items())
+        lines.append(f"Artifacts: {arts}")
+    if request.plan_diff:
+        lines.append("--- Plan diff ---")
+        # Truncate very long diffs to keep the prompt readable.
+        diff = request.plan_diff
+        if len(diff) > 2000:
+            diff = diff[:2000] + "\n... (truncated)"
+        lines.append(diff)
+        lines.append("--- end diff ---")
+    options = "/".join(request.options) if request.options else "approve/modify/stop"
+    lines.append(f"Options: {options}")
+    return "\n".join(lines)
+
+
 def _format_memory_context(memories: list[MemoryResult]) -> str:
     """Format recalled memories into a compact, readable context string.
 
@@ -264,6 +309,10 @@ class ResearchLoopAgent:
                 cost_hours = self._estimate_cost_hours(iteration)
                 state.cumulative_cost_hours += cost_hours
                 state.cumulative_cost_usd += cost_hours * cfg.cost_per_gpu_hour
+                # Fold in real LLM token cost tracked by the UsageTracker
+                # (D1 cost accounting). This is additive to the GPU-hour
+                # estimate and only non-zero when LLM providers are in use.
+                state.cumulative_cost_usd += self._tracked_llm_cost_usd()
 
                 # Store in memory + update graph
                 iter_mem_ids = await self._store_iteration_in_memory(
@@ -674,14 +723,34 @@ class ResearchLoopAgent:
         summary: str,
         artifacts: dict[str, str],
         approval_callback: ApprovalCallback | None,
+        *,
+        plan_diff: str | None = None,
+        expected_cost_usd: float | None = None,
+        expected_gpu_hours: float | None = None,
+        risk_summary: str | None = None,
+        risk_level: str | None = None,
+        metric_snapshot: dict[str, float] | None = None,
+        model_name: str | None = None,
     ) -> bool:
-        """Request approval at a gate. Returns True if approved."""
+        """Request approval at a gate. Returns True if approved.
+
+        Extended (D3) to populate the rich context fields on the
+        :class:`ApprovalRequest` so a reviewer can see the plan diff,
+        expected cost, risk, and metric snapshot before deciding.
+        """
         request = ApprovalRequest(
             loop_id=state.loop_id,
             iteration_number=iteration_number,
             gate=gate,
             summary=summary,
             artifacts=artifacts,
+            plan_diff=plan_diff,
+            expected_cost_usd=expected_cost_usd,
+            expected_gpu_hours=expected_gpu_hours,
+            risk_summary=risk_summary,
+            risk_level=risk_level,
+            metric_snapshot=metric_snapshot or {},
+            model_name=model_name,
         )
         if approval_callback is not None:
             try:
@@ -893,8 +962,29 @@ class ResearchLoopAgent:
 
     @staticmethod
     def _estimate_cost_hours(iteration: LoopIteration) -> float:
-        """Estimate GPU-hours from an iteration (rough heuristic)."""
+        """Estimate GPU-hours from an iteration (rough heuristic).
+
+        Returns the original ``0.5`` GPU-hour heuristic. Real LLM token cost
+        is tracked separately by the :class:`~research_engineer.llm.cost.UsageTracker`
+        and folded into ``cumulative_cost_usd`` by :meth:`_add_tracked_llm_cost`,
+        so the GPU-hour estimate and the LLM cost accounting do not double-count.
+        """
         return 0.5
+
+    @staticmethod
+    def _tracked_llm_cost_usd() -> float:
+        """Return the LLM token cost (USD) tracked since the last reset.
+
+        Reads the process-wide :class:`UsageTracker`. Returns ``0.0`` when
+        no LLM calls have been tracked (offline / rule-based runs), so the
+        original heuristic-only budget math is preserved.
+        """
+        try:
+            from research_engineer.llm.cost import get_usage_tracker
+
+            return get_usage_tracker().total_cost_usd()
+        except Exception:
+            return 0.0
 
     @staticmethod
     def _derive_next_command(

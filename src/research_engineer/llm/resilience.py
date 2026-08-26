@@ -21,6 +21,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from collections.abc import Callable
 
 from research_engineer.llm.base import (
     LLMProvider,
@@ -36,6 +37,14 @@ logger = logging.getLogger(__name__)
 _MAX_TOKENS_CAP = 16_384
 
 _HTTP_CODE_RE = re.compile(r"HTTP (\d{3})")
+
+#: Optional callback invoked with the final (non-retried) response before it
+#: is returned to the caller. Receives the original request (for prompt
+#: hashing), the response, and the measured wall-clock latency in seconds.
+#: Used by the router to stamp cost + record usage (D1) and to emit a
+#: structured observability event (D2). Best-effort: exceptions are logged
+#: and never propagated so hooks cannot break the completion path.
+OnComplete = Callable[[LLMRequest, LLMResponse, float], None]
 
 
 def is_permanent_provider_error(error: BaseException) -> bool:
@@ -112,6 +121,7 @@ async def complete_with_retry(
     base_delay: float = 1.0,
     agent_name: str = "",
     tools: list[ToolDefinition] | None = None,
+    on_complete: OnComplete | None = None,
 ) -> LLMResponse:
     """Call ``provider.complete`` with retries and truncation handling.
 
@@ -123,8 +133,17 @@ async def complete_with_retry(
     to ``_MAX_TOKENS_CAP``. Non-truncated, non-empty responses are
     returned immediately.
 
+    When ``on_complete`` is provided it is invoked exactly once with the
+    final response (the one returned to the caller) before that response
+    is returned. The callback is best-effort: exceptions it raises are
+    logged and never propagated so observability/cost hooks cannot break
+    the completion path.
+
     Raises the last observed error when all attempts are exhausted.
     """
+    import time
+
+    start = time.monotonic()
     last_error: BaseException | None = None
     last_response: LLMResponse | None = None
     escalated_tokens = False
@@ -147,6 +166,9 @@ async def complete_with_retry(
         else:
             # Normal completion: non-empty content and not truncated.
             if response.content.strip() and not response.truncated:
+                _invoke_on_complete(
+                    on_complete, request, response, time.monotonic() - start, agent_name
+                )
                 return response
             last_response = response
             # Truncated (empty or non-empty) or empty: escalate the budget
@@ -166,12 +188,35 @@ async def complete_with_retry(
     if last_response is not None:
         # Return the final (empty) response rather than fabricating one;
         # callers already handle empty content defensively.
+        _invoke_on_complete(
+            on_complete, request, last_response, time.monotonic() - start, agent_name
+        )
         return last_response
     raise ProviderError(
         f"LLM completion failed after {max_attempts} attempts for "
         f"{agent_name or type(provider).__name__}: {last_error}",
         cause=last_error if isinstance(last_error, Exception) else None,
     )
+
+
+def _invoke_on_complete(
+    on_complete: OnComplete | None,
+    request: LLMRequest,
+    response: LLMResponse,
+    latency_seconds: float,
+    agent_name: str,
+) -> None:
+    """Best-effort invocation of the ``on_complete`` callback."""
+    if on_complete is None:
+        return
+    try:
+        on_complete(request, response, latency_seconds)
+    except Exception:  # noqa: BLE001 - observability hooks must not break callers
+        logger.warning(
+            "on_complete callback failed for %s",
+            agent_name or "unknown",
+            exc_info=True,
+        )
 
 
 async def _call_once(

@@ -309,6 +309,20 @@ class ResearchWorkflowFramework:
             record.finished_at = datetime.now()
             record.duration_seconds = round(time.time() - t0, 3)
             record.error = str(e)
+        # D2 observability: emit a structured stage event (best-effort).
+        try:
+            from research_engineer.observability import get_event_bus
+
+            get_event_bus().emit_stage(
+                stage_id=stage_id,
+                stage_type=stage_type.value,
+                status=record.status.value,
+                duration_seconds=record.duration_seconds or 0.0,
+                workflow_id=getattr(ctx, "workflow_id", None),
+                error=record.error,
+            )
+        except Exception:
+            pass
         return record
 
     async def _evaluate_draft(

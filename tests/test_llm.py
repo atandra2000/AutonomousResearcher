@@ -27,6 +27,7 @@ from research_engineer.llm import (
     register_provider_type,
     reset_factory,
     reset_router,
+    reset_usage_tracker,
 )
 
 # ---------------------------------------------------------------------------
@@ -578,3 +579,66 @@ class TestAgentLLMWiring:
         custom = _FakeProvider(default_model="custom-model")
         agent = RepositoryAgent(llm_enabled=True, llm=custom)
         assert agent.llm_provider is custom
+
+
+# ---------------------------------------------------------------------------
+# D1 - Cost accounting: router stamps cost + records into UsageTracker
+# ---------------------------------------------------------------------------
+
+
+class TestRouterCostAccounting:
+    """The bound provider stamps USD cost and records into the global tracker."""
+
+    def setup_method(self):
+        reset_factory()
+        reset_router()
+        reset_usage_tracker()
+
+    def teardown_method(self):
+        reset_factory()
+        reset_router()
+        reset_usage_tracker()
+
+    @pytest.mark.asyncio
+    async def test_bound_provider_stamps_cost_on_known_model(self):
+        from research_engineer.llm.cost import get_usage_tracker, reset_usage_tracker
+
+        reset_usage_tracker()
+        register_provider_type("fake", _FakeProvider)
+        cfg = {
+            "default_provider": "fake",
+            "default_model": "gpt-4o",  # known in the pricing table
+            "providers": {"fake": {"type": "fake"}},
+            "agents": {"CodingAgent": {"provider": "fake", "model": "gpt-4o"}},
+        }
+        f = ProviderFactory(cfg)
+        router = ModelRouter(f)
+        prov = router.for_agent("CodingAgent")
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        # _FakeProvider.complete returns a response with zero-usage default.
+        resp = await prov.complete(req)
+        # With zero tokens the cost is zero even for a known model.
+        assert resp.usage.cost_usd == 0.0
+        # Tracker recorded one call.
+        assert get_usage_tracker().total_calls() == 1
+
+    @pytest.mark.asyncio
+    async def test_unknown_model_zero_cost_recorded(self):
+        from research_engineer.llm.cost import get_usage_tracker, reset_usage_tracker
+
+        reset_usage_tracker()
+        register_provider_type("fake", _FakeProvider)
+        cfg = {
+            "default_provider": "fake",
+            "default_model": "unknown-model",
+            "providers": {"fake": {"type": "fake"}},
+            "agents": {"ResearchAgent": {"provider": "fake", "model": "unknown-model"}},
+        }
+        f = ProviderFactory(cfg)
+        router = ModelRouter(f)
+        prov = router.for_agent("ResearchAgent")
+        req = LLMRequest(messages=[LLMMessage(role=LLMRole.USER, content="hi")])
+        resp = await prov.complete(req)
+        assert resp.usage.cost_usd == 0.0
+        assert get_usage_tracker().total_cost_usd() == 0.0
+        assert get_usage_tracker().total_calls() == 1

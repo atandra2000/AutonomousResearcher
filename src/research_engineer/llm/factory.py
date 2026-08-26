@@ -42,6 +42,7 @@ from typing import Any
 
 from research_engineer.llm.anthropic_provider import AnthropicProvider
 from research_engineer.llm.base import LLMProvider, ProviderError
+from research_engineer.llm.cost import PricingTable, load_pricing_table
 from research_engineer.llm.local_ollama_provider import LocalOllamaProvider
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
 from research_engineer.llm.openai_provider import OpenAIProvider
@@ -94,6 +95,7 @@ class ProviderFactory:
         self._providers: dict[str, LLMProvider] = {}
         self._specs: dict[str, AgentModelSpec] = {}
         self._initialized = False
+        self._pricing_table: PricingTable | None = None
 
     # ------------------------------------------------------------------
     # Construction / config
@@ -102,6 +104,19 @@ class ProviderFactory:
     @property
     def config(self) -> dict[str, Any]:
         return self._config
+
+    @property
+    def pricing_table(self) -> PricingTable:
+        """Token price table built from the config ``pricing`` section.
+
+        Built lazily and cached. Includes the built-in fallback prices; any
+        ``pricing`` entries in the config override or extend them. Callers
+        (the router, the usage tracker) use this to compute USD cost per
+        completion.
+        """
+        if self._pricing_table is None:
+            self._pricing_table = load_pricing_table(self._config)
+        return self._pricing_table
 
     def initialize(self) -> None:
         """Parse the config dict eagerly into providers and agent specs."""

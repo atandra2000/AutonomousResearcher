@@ -4,9 +4,9 @@
 > pipeline orchestrator into a fully autonomous, industry-grade, deployable
 > agentic research system.
 >
-> **Status:** In progress — **Tier 1 (A1–A4), Tier 2 (B1, B3), and Tier 3 (C1) complete.** The remaining
-> workstreams (Tier 2–4) are queued and will be implemented one at a time in
-> subsequent sessions.
+> **Status:** ✅ **Complete.** All 14 workstreams across all four tiers
+> (Tier 1 A1–A4, Tier 2 B1–B3, Tier 3 C1–C3, Tier 4 D1–D4) are implemented
+> and validated; the full test suite is green (1087 passing, gate ≥ 960).
 
 ---
 
@@ -248,7 +248,7 @@ next action.
 
 ---
 
-### 4.2 Workstream B2 — Memory-driven iteration
+### 4.2 Workstream B2 — Memory-driven iteration ✅ COMPLETE
 
 **Goal:** Make each loop iteration actually use prior memory (insights,
 successes, failures) to inform planning and implementation.
@@ -285,7 +285,7 @@ successes, failures) to inform planning and implementation.
 
 ---
 
-### 4.3 Workstream B3 — Research-output evaluation
+### 4.3 Workstream B3 — Research-output evaluation ✅ COMPLETE
 
 **Goal:** Evaluate the *quality of the research output itself* (not just
 experiment metrics) — e.g. whether the report is coherent, the hypothesis is
@@ -301,12 +301,23 @@ tested, and the conclusions follow from the data.
 
 **Effort:** 1.5 days. **Dependency:** none.
 
+**Status (complete):**
+- Added `ResearchOutputEvaluationInput` / `ResearchOutputEvaluationOutput`
+  models to `models/evaluation.py`.
+- Implemented `EvaluationAgent.evaluate_research_output()` with a rule-based
+  rubric: hypothesis coverage, evidence support, conclusion coherence, and
+  completeness scoring → weighted grade + findings + recommendations
+  (LLM summary when a provider is available).
+- Wired into `research_workflow.py` so the report generator consumes the
+  evaluation and emits reasoned synthesis.
+- Unit tests in `tests/test_evaluation_agent.py`.
+
 
 ---
 
 ## 5. Tier 3 — Real grounding
 
-### 5.1 Workstream C1 — Real experiment execution
+### 5.1 Workstream C1 — Real experiment execution ✅ COMPLETE
 
 **Goal:** Move from dry-run-only to real, sandboxed training execution with
 proper failure detection and resource limits.
@@ -321,6 +332,18 @@ proper failure detection and resource limits.
 - `tests/test_experiment_runner.py` — integration tests with a tiny fake training script.
 
 **Effort:** 2 days. **Dependency:** none.
+
+**Status (complete):**
+- `ExperimentRunnerTool.execute()` launches real subprocesses when
+  `dry_run=False`: command allowlist enforcement, working-directory
+  confinement, wall-clock timeout, and RLIMIT memory limits via preexec.
+- Dry-run remains the safe default (`reason="dry_run"` placeholder output).
+- Added `run_many()` / `run_batch()` concurrent execution helpers (also
+  serving C2) plus per-experiment process tracking and `cancel()`.
+- `FailureDetectorTool` classifies OOM-killer, NaN loss, timeouts,
+  cancellations, crashes, and metric anomalies (NaN/inf/divergence).
+- Real-execution integration tests in `tests/test_experiment_agent.py`
+  (fake training scripts with `dry_run=False`).
 
 ---
 
@@ -358,7 +381,7 @@ proper failure detection and resource limits.
 
 ## 6. Tier 4 — Production
 
-### 6.1 Workstream D1 — Cost accounting
+### 6.1 Workstream D1 — Cost accounting ✅ COMPLETE
 
 **Goal:** Track token usage and estimate USD cost per agent, per loop, per run.
 
@@ -373,9 +396,25 @@ proper failure detection and resource limits.
 
 **Effort:** 1 day. **Dependency:** A3 (multi-provider pricing).
 
+**Status (complete):**
+- Added `cost_usd` field to `LLMUsage` in `llm/base.py`.
+- New `llm/cost.py` with `PricingTable` (case-insensitive prefix matching),
+  `load_pricing_table` (config `pricing` section + built-in fallbacks),
+  `compute_usage_cost`, and a thread-safe `UsageTracker` with a
+  process-wide singleton (`get_usage_tracker`).
+- `llm/factory.py` exposes a `pricing_table` property built from config.
+- `llm/router.py`'s `_BoundProvider` stamps cost onto each response and
+  records into the tracker via an `on_complete` hook.
+- `agents/research_loop_agent.py` now folds tracked LLM USD into
+  `cumulative_cost_usd` via `_tracked_llm_cost_usd()` (the GPU-hour
+  heuristic is preserved as a fallback for offline runs).
+- Added a `pricing` section to `llm_config.yaml`.
+- New `tests/test_cost.py` (35 tests) + router cost-accounting tests in
+  `tests/test_llm.py`.
+
 ---
 
-### 6.2 Workstream D2 — Observability
+### 6.2 Workstream D2 — Observability ✅ COMPLETE
 
 **Goal:** Structured, queryable logs of every LLM call, tool call, and stage.
 
@@ -390,9 +429,24 @@ proper failure detection and resource limits.
 
 **Effort:** 1.5 days. **Dependency:** D1 (cost in logs).
 
+**Status (complete):**
+- Added an `on_complete` callback hook to `llm/resilience.py`'s
+  `complete_with_retry`, invoked once with `(request, response, latency)`
+  before the response is returned (best-effort, never breaks callers).
+- New `observability/` module with `EventBus`, `JSONLSink`,
+  `SQLiteSink`, and `NullSink`; a process-wide singleton via
+  `get_event_bus`. `emit_llm_call` records prompt hash, latency, tokens,
+  cost, and finish_reason; `emit_stage` records stage lifecycle.
+- `llm/router.py`'s `_BoundProvider` emits an `llm_call` event per
+  completion (combined with D1 cost stamping in one hook).
+- `agents/research_workflow.py`'s `_run_stage` emits a `stage` event on
+  completion/failure with duration and workflow id.
+- New `tests/test_observability.py` (14 tests) covering sinks, the bus,
+  the global singleton, and router event emission.
+
 ---
 
-### 6.3 Workstream D3 — Human-in-the-loop UX
+### 6.3 Workstream D3 — Human-in-the-loop UX ✅ COMPLETE
 
 **Goal:** Better approval gates and interactive review of plans, patches, and
 experiments.
@@ -407,9 +461,24 @@ experiments.
 
 **Effort:** 1.5 days. **Dependency:** B1, D1.
 
+**Status (complete):**
+- Extended `ApprovalRequest` in `models/loop.py` with `plan_diff`,
+  `expected_cost_usd`, `expected_gpu_hours`, `risk_summary`, `risk_level`,
+  `metric_snapshot`, and `model_name` (all optional; backward-compatible).
+- Added `format_approval_prompt()` to `agents/research_loop_agent.py`
+  rendering a human-readable review block (gate, summary, cost, risk with
+  severity markers, metric snapshot, plan diff with truncation).
+- Extended `_request_approval()` to accept and populate the rich context
+  fields.
+- Added a `review` CLI sub-application with `review plan`, `review patch`,
+  and `review experiment` commands (console + JSON output, `--yes`
+  auto-approve, file-based diff/patch input, metric-snapshot parsing).
+- New `tests/test_review_cli.py` (17 tests) covering the model fields, the
+  prompt formatter, and all three review commands.
+
 ---
 
-### 6.4 Workstream D4 — Better memory
+### 6.4 Workstream D4 — Better memory ✅ COMPLETE
 
 **Goal:** Replace the weak offline embedder with a real semantic vector store.
 
@@ -423,6 +492,29 @@ experiments.
 - `tests/test_memory_*.py` — backend-agnostic tests.
 
 **Effort:** 2 days. **Dependency:** none.
+
+**Status (complete):**
+- Added `SentenceTransformerEmbedder` to `memory/embeddings.py` (lazy
+  import, raises a clear `ImportError` only when instantiated without the
+  optional dependency; L2-normalized output; dimension auto-detected).
+- New `memory/vector_backend.py` with `ChromaDBBackend` implementing the
+  `VectorBackend` interface (`add`/`search`/`delete`/`count`/`clear`),
+  with cosine distance, optional disk persistence, and None/empty
+  metadata coercion.
+- `HybridRetriever` is already backend-agnostic (takes a `VectorBackend`
+  and `EmbedderBackend`), so it works with the new backend unchanged.
+- Exported the new classes and `is_*_available()` helpers from
+  `memory/__init__.py`.
+- Documented `embedding` / `vector_store` settings in `llm_config.yaml`.
+- New `memory/factory.py` with `build_repository_memory()`: reads the
+  `embedding` / `vector_store` sections of `llm_config.yaml` (honoring
+  `RE_LLM_CONFIG`) and wires the configured backends, falling back to the
+  offline defaults when sections are missing or optional deps are absent.
+  All five `memory` CLI commands now construct repository memory via the
+  factory.
+- New `tests/test_memory_backends.py` (20 tests) — interface conformance,
+  functional ChromaDB (in-memory + persistence), gated sentence-transformer
+  tests, and `HybridRetriever`-with-ChromaDB integration.
 
 
 ---
@@ -453,17 +545,19 @@ D4 (independent)
 | A3 Multi-provider | 1 | 2 days | A1 (done) |
 | A4 Truncation handling | 1 | 0.5 day | — (done) |
 | B1 `_derive_next_command()` | 2 | 1 day | — (done) |
-| B2 Memory-driven iteration | 2 | 1 day | B1 |
+| B2 Memory-driven iteration | 2 | 1 day | B1 (done) |
 | B3 Research-output evaluation | 2 | 1.5 days | — (done) |
 | C1 Real experiment execution | 3 | 2 days | — (done) |
-| C2 Parallelization | 3 | 1.5 days | C1 |
-| C3 Artifact management | 3 | 1 day | C1 |
-| D1 Cost accounting | 4 | 1 day | A3 |
-| D2 Observability | 4 | 1.5 days | D1 |
-| D3 Human-in-the-loop UX | 4 | 1.5 days | B1, D1 |
-| D4 Better memory | 4 | 2 days | — |
+| C2 Parallelization | 3 | 1.5 days | C1 (done) |
+| C3 Artifact management | 3 | 1 day | C1 (done) |
+| D1 Cost accounting | 4 | 1 day | A3 (done) |
+| D2 Observability | 4 | 1.5 days | D1 (done) |
+| D3 Human-in-the-loop UX | 4 | 1.5 days | B1, D1 (done) |
+| D4 Better memory | 4 | 2 days | — (done) |
 
-**Total:** ~19.5 days of focused implementation (Tier 1, A1–A4, done ≈ 4 days; B1 done ≈ 1 day; B3 done ≈ 1.5 days; C1 done ≈ 2 days; **~11.5 days remaining** across Tiers 2–4).
+**Total:** ~19.5 days of focused implementation. **All workstreams are
+complete** (Tier 1 ≈ 4 days; Tier 2 ≈ 3.5 days; Tier 3 ≈ 4.5 days;
+Tier 4 ≈ 6 days).
 
 ---
 
@@ -484,15 +578,17 @@ Every workstream must pass, in order, before being declared complete:
 2. ~~**A4** Truncation handling (small, independent).~~ ✅ done
 3. ~~**A3** Multi-provider support (unlocks D1).~~ ✅ done
 4. ~~**B1** `_derive_next_command()` (unlocks the feedback loop).~~ ✅ done
-5. **B2** Memory-driven iteration.
-6. **B3** Research-output evaluation.
-7. **C1** Real experiment execution.
-8. **C2** Parallelization.
-9. **C3** Artifact management.
-10. **D1** Cost accounting.
-11. **D2** Observability.
-12. **D3** Human-in-the-loop UX.
-13. **D4** Better memory.
+5. ~~**B2** Memory-driven iteration.~~ ✅ done
+6. ~~**B3** Research-output evaluation.~~ ✅ done
+7. ~~**C1** Real experiment execution.~~ ✅ done
+8. ~~**C2** Parallelization.~~ ✅ done
+9. ~~**C3** Artifact management.~~ ✅ done
+10. ~~**D1** Cost accounting.~~ ✅ done
+11. ~~**D2** Observability.~~ ✅ done
+12. ~~**D3** Human-in-the-loop UX.~~ ✅ done
+13. ~~**D4** Better memory.~~ ✅ done
+
+All 14 workstreams across all four tiers are implemented and validated.
 
 ---
 

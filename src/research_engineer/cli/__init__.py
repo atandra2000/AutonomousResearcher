@@ -1134,9 +1134,10 @@ def memory_build(
         research-engineer memory build --repo . --format json
     """
     from research_engineer.memory import RepositoryMemory
+    from research_engineer.memory.factory import build_repository_memory
 
     try:
-        mem = RepositoryMemory(repo)
+        mem = build_repository_memory(repo)
         stats = mem.build()
         if output_format == "json":
             typer.echo(stats.model_dump_json(indent=2))
@@ -1173,10 +1174,10 @@ def memory_refresh(
     Examples:
         research-engineer memory refresh --repo ./my_repo
     """
-    from research_engineer.memory import RepositoryMemory
+    from research_engineer.memory.factory import build_repository_memory
 
     try:
-        mem = RepositoryMemory(repo)
+        mem = build_repository_memory(repo)
         if not mem.store.has_index(str(Path(repo).resolve())):
             typer.echo("⚠️  No existing index. Run `memory build` first.")
             return 1
@@ -1221,10 +1222,10 @@ def memory_stats_repo(
     Examples:
         research-engineer memory stats --repo ./my_repo
     """
-    from research_engineer.memory import RepositoryMemory
+    from research_engineer.memory.factory import build_repository_memory
 
     try:
-        mem = RepositoryMemory(repo, auto_load=True)
+        mem = build_repository_memory(repo)
         stats = mem.stats()
         if stats is None:
             typer.echo("⚠️  No index found. Run `memory build` first.")
@@ -1267,10 +1268,10 @@ def memory_query(
         research-engineer memory query "EMA checkpoint support" --repo ./my_repo
         research-engineer memory query "training loop" --limit 5 --format json
     """
-    from research_engineer.memory import RepositoryMemory
+    from research_engineer.memory.factory import build_repository_memory
 
     try:
-        mem = RepositoryMemory(repo, auto_load=True)
+        mem = build_repository_memory(repo)
         if not mem.store.has_index(str(Path(repo).resolve())):
             typer.echo("⚠️  No index found. Run `memory build` first.")
             return 1
@@ -1328,10 +1329,10 @@ def memory_graph_cmd(
         research-engineer memory graph "Trainer" --repo ./my_repo
         research-engineer memory graph "save_checkpoint" --format json
     """
-    from research_engineer.memory import RepositoryMemory
+    from research_engineer.memory.factory import build_repository_memory
 
     try:
-        mem = RepositoryMemory(repo, auto_load=True)
+        mem = build_repository_memory(repo)
         if not mem.store.has_index(str(Path(repo).resolve())):
             typer.echo("⚠️  No index found. Run `memory build` first.")
             return 1
@@ -2997,6 +2998,171 @@ def loop_report(
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)
         return 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 9 - Human-in-the-loop review commands (D3)
+# ---------------------------------------------------------------------------
+#
+# `review` is a sub-application for interactively inspecting the artifacts
+# produced by the autonomous loop and the coding agent before approving
+# them. Each command builds an ApprovalRequest from the supplied context,
+# renders it with format_approval_prompt, and (unless `--yes` is passed)
+# prompts the operator to approve / modify / stop.
+
+review_app = typer.Typer(
+    name="review",
+    help="Interactively review plans, patches, and experiments before approval",
+)
+app.add_typer(review_app, name="review")
+
+
+@review_app.command("plan")
+def review_plan(
+    loop_id: str = typer.Option("loop_manual", "--loop", help="Loop ID"),
+    iteration: int = typer.Option(1, "--iteration", help="Iteration number"),
+    summary: str = typer.Option("", "--summary", help="Plan summary"),
+    diff: str = typer.Option("", "--diff", help="Path to a plan/patch diff file"),
+    cost_usd: float | None = typer.Option(None, "--cost-usd", help="Expected USD cost"),
+    gpu_hours: float | None = typer.Option(None, "--gpu-hours", help="Expected GPU-hours"),
+    risk_level: str = typer.Option("", "--risk-level", help="low/medium/high"),
+    risk_summary: str = typer.Option("", "--risk-summary", help="Risk summary"),
+    metric: str = typer.Option("", "--metric", help="metric=value snapshot"),
+    model_name: str = typer.Option("", "--model", help="Model name"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Auto-approve without prompt"),
+    output_format: str = typer.Option("console", "--format", help="Output: console, json"),
+):
+    """Review a plan before approval."""
+    from pathlib import Path
+
+    from research_engineer.agents.research_loop_agent import format_approval_prompt
+    from research_engineer.models.loop import ApprovalGate, ApprovalRequest
+
+    plan_diff: str | None = None
+    if diff:
+        try:
+            plan_diff = Path(diff).read_text()
+        except Exception as e:
+            typer.echo(f"❌ Could not read diff file {diff}: {e}", err=True)
+            raise typer.Exit(code=1)
+    snapshot: dict[str, float] = {}
+    if metric:
+        for pair in metric.split(","):
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                try:
+                    snapshot[k.strip()] = float(v)
+                except ValueError:
+                    pass
+    request = ApprovalRequest(
+        loop_id=loop_id,
+        iteration_number=iteration,
+        gate=ApprovalGate.PLAN,
+        summary=summary,
+        plan_diff=plan_diff,
+        expected_cost_usd=cost_usd,
+        expected_gpu_hours=gpu_hours,
+        risk_level=risk_level or None,
+        risk_summary=risk_summary or None,
+        metric_snapshot=snapshot,
+        model_name=model_name or None,
+    )
+    if output_format == "json":
+        typer.echo(request.model_dump_json(indent=2))
+        return 0
+    typer.echo(format_approval_prompt(request))
+    if yes:
+        typer.echo("\n✅ Auto-approved (--yes)")
+        return 0
+    decision = typer.prompt("\nDecision", default="approve")
+    typer.echo("✅ Approved" if decision.lower() == "approve" else ("✏️  Modify requested" if decision.lower() == "modify" else "🛑 Stopped"))
+    return 0
+
+
+@review_app.command("patch")
+def review_patch(
+    loop_id: str = typer.Option("loop_manual", "--loop", help="Loop ID"),
+    iteration: int = typer.Option(1, "--iteration", help="Iteration number"),
+    diff: str = typer.Option(..., "--diff", help="Path to a unified-diff patch file"),
+    summary: str = typer.Option("", "--summary", help="Patch summary"),
+    risk_level: str = typer.Option("", "--risk-level", help="low/medium/high"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Auto-approve without prompt"),
+    output_format: str = typer.Option("console", "--format", help="Output: console, json"),
+):
+    """Review a code patch before approval."""
+    from pathlib import Path
+
+    from research_engineer.agents.research_loop_agent import format_approval_prompt
+    from research_engineer.models.loop import ApprovalGate, ApprovalRequest
+
+    try:
+        plan_diff = Path(diff).read_text()
+    except Exception as e:
+        typer.echo(f"❌ Could not read patch file {diff}: {e}", err=True)
+        raise typer.Exit(code=1)
+    request = ApprovalRequest(
+        loop_id=loop_id,
+        iteration_number=iteration,
+        gate=ApprovalGate.IMPLEMENTATION,
+        summary=summary,
+        plan_diff=plan_diff,
+        risk_level=risk_level or None,
+    )
+    if output_format == "json":
+        typer.echo(request.model_dump_json(indent=2))
+        return 0
+    typer.echo(format_approval_prompt(request))
+    if yes:
+        typer.echo("\n✅ Auto-approved (--yes)")
+        return 0
+    decision = typer.prompt("\nDecision", default="approve")
+    typer.echo("✅ Approved" if decision.lower() == "approve" else ("✏️  Modify requested" if decision.lower() == "modify" else "🛑 Stopped"))
+    return 0
+
+
+@review_app.command("experiment")
+def approve_experiment(
+    loop_id: str = typer.Option("loop_manual", "--loop", help="Loop ID"),
+    iteration: int = typer.Option(1, "--iteration", help="Iteration number"),
+    summary: str = typer.Option("", "--summary", help="Experiment summary"),
+    cost_usd: float | None = typer.Option(None, "--cost-usd", help="Expected USD cost"),
+    gpu_hours: float | None = typer.Option(None, "--gpu-hours", help="Expected GPU-hours"),
+    metric: str = typer.Option("", "--metric", help="metric=value snapshot"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Auto-approve without prompt"),
+    output_format: str = typer.Option("console", "--format", help="Output: console, json"),
+):
+    """Approve an experiment before it runs."""
+    from research_engineer.agents.research_loop_agent import format_approval_prompt
+    from research_engineer.models.loop import ApprovalGate, ApprovalRequest
+
+    snapshot: dict[str, float] = {}
+    if metric:
+        for pair in metric.split(","):
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                try:
+                    snapshot[k.strip()] = float(v)
+                except ValueError:
+                    pass
+    request = ApprovalRequest(
+        loop_id=loop_id,
+        iteration_number=iteration,
+        gate=ApprovalGate.NEXT_ITERATION,
+        summary=summary,
+        expected_cost_usd=cost_usd,
+        expected_gpu_hours=gpu_hours,
+        metric_snapshot=snapshot,
+    )
+    if output_format == "json":
+        typer.echo(request.model_dump_json(indent=2))
+        return 0
+    typer.echo(format_approval_prompt(request))
+    if yes:
+        typer.echo("\n✅ Auto-approved (--yes)")
+        return 0
+    decision = typer.prompt("\nDecision", default="approve")
+    typer.echo("✅ Approved" if decision.lower() == "approve" else ("✏️  Modify requested" if decision.lower() == "modify" else "🛑 Stopped"))
+    return 0
 
 
 # ---------------------------------------------------------------------------

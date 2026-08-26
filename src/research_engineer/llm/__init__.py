@@ -46,6 +46,16 @@ from research_engineer.llm.base import (
     ToolDefinition,
     ToolResult,
 )
+from research_engineer.llm.cost import (
+    PricingTable,
+    UsageRecord,
+    UsageTracker,
+    compute_usage_cost,
+    default_pricing_table,
+    get_usage_tracker,
+    load_pricing_table,
+    reset_usage_tracker,
+)
 from research_engineer.llm.factory import (
     AgentModelSpec,
     ProviderFactory,
@@ -100,4 +110,13 @@ __all__ = [
     "ReActStep",
     "ReActResult",
     "ReActTermination",
+    # Cost accounting (D1)
+    "PricingTable",
+    "UsageRecord",
+    "UsageTracker",
+    "compute_usage_cost",
+    "default_pricing_table",
+    "load_pricing_table",
+    "get_usage_tracker",
+    "reset_usage_tracker",
 ]

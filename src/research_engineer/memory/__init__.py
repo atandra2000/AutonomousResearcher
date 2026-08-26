@@ -25,7 +25,13 @@ Typical usage::
     context = mem.get_context("Add EMA checkpoint support")
 """
 
-from research_engineer.memory.embeddings import EmbedderBackend, HashingEmbedder
+from research_engineer.memory.embeddings import (
+    EmbedderBackend,
+    HashingEmbedder,
+    SentenceTransformerEmbedder,
+    is_sentence_transformer_available,
+)
+from research_engineer.memory.factory import build_repository_memory
 from research_engineer.memory.indexer import IndexResult, RepositoryIndexer
 from research_engineer.memory.models import (
     CodeChunk,
@@ -40,6 +46,10 @@ from research_engineer.memory.repository_memory import RepositoryMemory
 from research_engineer.memory.retriever import HybridRetriever
 from research_engineer.memory.storage import RepositoryMemoryStore
 from research_engineer.memory.symbol_graph import SymbolGraph
+from research_engineer.memory.vector_backend import (
+    ChromaDBBackend,
+    is_chromadb_available,
+)
 from research_engineer.memory.vector_store import (
     InMemoryVectorBackend,
     VectorBackend,
@@ -49,6 +59,7 @@ from research_engineer.memory.vector_store import (
 __all__ = [
     # Facade
     "RepositoryMemory",
+    "build_repository_memory",
     # Components
     "RepositoryIndexer",
     "IndexResult",
@@ -57,8 +68,12 @@ __all__ = [
     "RepositoryMemoryStore",
     "EmbedderBackend",
     "HashingEmbedder",
+    "SentenceTransformerEmbedder",
+    "is_sentence_transformer_available",
     "VectorBackend",
     "InMemoryVectorBackend",
+    "ChromaDBBackend",
+    "is_chromadb_available",
     "chunk_payload",
     # Models
     "Symbol",

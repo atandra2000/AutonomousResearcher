@@ -23,6 +23,25 @@ default_provider: ollama
 # not declare its own ``default_model``).
 default_model: glm-5.2:cloud
 
+# --- Repository memory settings (D4) -------------------------------------
+#
+# Selects the embedder and vector backend used by Phase 12 repository
+# memory. Both options are optional; when omitted, the dependency-free
+# HashingEmbedder + InMemoryVectorBackend defaults are used so the system
+# works offline and in CI.
+#
+# embedding:
+#   # "hashing" (default, offline) or "sentence_transformer" (semantic).
+#   backend: sentence_transformer
+#   # Model name (only used when backend == sentence_transformer).
+#   model: sentence-transformers/all-MiniLM-L6-v2
+# vector_store:
+#   # "inmemory" (default, lost on exit) or "chromadb" (persistent).
+#   backend: chromadb
+#   # Directory for the persistent ChromaDB index (only chromadb).
+#   persist_path: ./data/vector_store
+#   collection: repository_memory
+
 # --- Provider connection settings ----------------------------------------
 providers:
   ollama:
@@ -66,6 +85,27 @@ providers:
   #   base_url: http://localhost:11434
   #   default_model: llama3
   #   timeout: 60
+
+# --- Token pricing (USD per 1M tokens) -----------------------------------
+#
+# Used by the UsageTracker (see llm/cost.py) to compute USD cost per LLM
+# completion. Each entry maps a model id to [prompt_per_1m, completion_per_1m].
+# Matching is case-insensitive prefix, so ``gpt-4o-2024-08-06`` resolves to
+# the ``gpt-4o`` entry. The built-in fallback table (llm/cost.py) already
+# covers the models below; entries here override or extend it.
+pricing:
+  glm-5.2:cloud: [0.50, 1.50]
+  kimi-k2.7-code: [0.60, 2.20]
+  minimax-m3:cloud: [0.40, 1.20]
+  # OpenAI / OpenAI-compatible
+  gpt-4o: [2.50, 10.00]
+  gpt-4o-mini: [0.15, 0.60]
+  o1: [15.00, 60.00]
+  # Anthropic
+  claude-3-5-sonnet: [3.00, 15.00]
+  claude-3-opus: [15.00, 75.00]
+  # Local models are free
+  llama3: [0.0, 0.0]
 
 # --- Per-agent model assignments -----------------------------------------
 #

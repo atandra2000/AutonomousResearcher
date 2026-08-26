@@ -132,7 +132,13 @@ class LoopConfig(BaseModel):
 
 
 class ApprovalRequest(BaseModel):
-    """A human-approval gate request."""
+    """A human-approval gate request.
+
+    Extended (D3) with rich context fields so a reviewer can see the plan
+    diff, expected cost, risk summary, and metric snapshot before deciding.
+    All context fields are optional so existing rule-based callers that
+    construct a bare request keep working.
+    """
 
     request_id: str = Field(
         default_factory=lambda: str(uuid4()),
@@ -148,6 +154,30 @@ class ApprovalRequest(BaseModel):
     options: list[str] = Field(
         default_factory=lambda: ["approve", "modify", "stop"],
         description="Available decisions",
+    )
+    # --- D3 context fields (optional, populated by richer approval flows) ---
+    plan_diff: str | None = Field(
+        default=None,
+        description="Unified diff of the proposed plan/patch for review",
+    )
+    expected_cost_usd: float | None = Field(
+        default=None, ge=0.0, description="Expected USD cost for this iteration"
+    )
+    expected_gpu_hours: float | None = Field(
+        default=None, ge=0.0, description="Expected GPU-hours for this iteration"
+    )
+    risk_summary: str | None = Field(
+        default=None, description="Short summary of the top risks"
+    )
+    risk_level: str | None = Field(
+        default=None, description="Risk severity label (low/medium/high)"
+    )
+    metric_snapshot: dict[str, float] = Field(
+        default_factory=dict,
+        description="Current best/primary metric values at gate time",
+    )
+    model_name: str | None = Field(
+        default=None, description="Model that would be used for this step"
     )
 
 

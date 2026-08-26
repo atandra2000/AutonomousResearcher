@@ -121,11 +121,21 @@ class LLMRequest(BaseModel):
 
 
 class LLMUsage(BaseModel):
-    """Token usage accounting."""
+    """Token usage accounting.
+
+    ``total_tokens`` is *not* auto-computed (callers set it explicitly from the
+    provider payload) so that partial / streamed accounting remains faithful.
+    ``cost_usd`` is computed from a per-model price table by
+    :func:`~research_engineer.llm.cost.compute_usage_cost` when a pricing
+    table is available; absent a price entry it stays at ``0.0``.
+    """
 
     prompt_tokens: int = Field(default=0, ge=0)
     completion_tokens: int = Field(default=0, ge=0)
     total_tokens: int = Field(default=0, ge=0)
+    cost_usd: float = Field(
+        default=0.0, ge=0.0, description="Estimated USD cost for this call"
+    )
 
 
 class LLMResponse(BaseModel):
