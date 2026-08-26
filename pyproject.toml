@@ -21,6 +21,13 @@ dependencies = [
 [project.scripts]
 research-engineer = "research_engineer.cli:app"
 
+[project.optional-dependencies]
+# E6 - optional OpenTelemetry export (never required at runtime).
+telemetry = [
+    "opentelemetry-api>=1.20",
+    "opentelemetry-sdk>=1.20",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

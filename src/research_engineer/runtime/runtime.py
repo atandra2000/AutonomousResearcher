@@ -37,6 +37,16 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
+from research_engineer.observability.context import (
+    CorrelationContext,
+    get_correlation,
+    new_run_id,
+    new_span_id,
+    new_trace_id,
+    reset_correlation,
+    set_correlation,
+)
+from research_engineer.observability.otel import start_span
 from research_engineer.runtime.checkpoint import (
     CHECKPOINT_SCHEMA_VERSION,
     Checkpoint,
@@ -200,15 +210,37 @@ class AgentRuntime:
         start = time.monotonic()
         ctx.state = AgentState.RUNNING
         ctx.started_at = datetime.now()
+
+        # E6: seed the trace/correlation hierarchy for this run. A resumed
+        # checkpoint keeps its original run_id/trace_id via ``ctx.metadata``.
+        run_id = str(ctx.metadata.get("run_id") or new_run_id())
+        trace_id = str(ctx.metadata.get("trace_id") or new_trace_id())
+        ctx.metadata["run_id"] = run_id
+        ctx.metadata["trace_id"] = trace_id
+        self._base_correlation = CorrelationContext(
+            run_id=run_id,
+            execution_id=ctx.execution_id,
+            trace_id=trace_id,
+            span_id=new_span_id(),
+        )
+        _corr_token = set_correlation(self._base_correlation)
         self._emit("start", ctx)
 
         try:
-            while ctx.state == AgentState.RUNNING:
-                # Budget/timeout/cancellation checks run before each step.
-                if await self._check_termination(ctx, start):
-                    break
-                if not await self._process_step(ctx, start):
-                    break
+            with start_span(
+                "agent.run",
+                {
+                    "research_engineer.goal": str(goal),
+                    "research_engineer.execution_id": ctx.execution_id,
+                    "research_engineer.run_id": run_id,
+                },
+            ):
+                while ctx.state == AgentState.RUNNING:
+                    # Budget/timeout/cancellation checks run before each step.
+                    if await self._check_termination(ctx, start):
+                        break
+                    if not await self._process_step(ctx, start):
+                        break
         except asyncio.CancelledError:
             await self._terminate(ctx, AgentTermination.CANCELLED, "Run cancelled")
         except Exception as exc:  # noqa: BLE001 - top-level safety net
@@ -226,10 +258,16 @@ class AgentRuntime:
                 except Exception:  # noqa: BLE001 - best-effort
                     logger.debug("Failed to release resume lock", exc_info=True)
                 self._resume_lock_held = False
+            reset_correlation(_corr_token)
 
         ctx.finished_at = datetime.now()
         ctx.duration_seconds = round(time.monotonic() - start, 6)
-        self._emit("end", ctx)
+        self._emit(
+            "end",
+            ctx,
+            duration_seconds=ctx.duration_seconds,
+            run_id=run_id,
+        )
         return AgentExecution(
             context=ctx,
             termination=ctx.termination or AgentTermination.ERROR,
@@ -279,6 +317,29 @@ class AgentRuntime:
 
     async def _process_step(self, ctx: AgentContext, start: float) -> bool:
         """Run one step and post-process it; return False to stop the loop."""
+        # E6: give each step its own correlation scope (same trace, new
+        # span/step ids) so nested LLM/tool/safety events correlate here.
+        step_number = ctx.current_step + 1
+        base = get_correlation() or getattr(self, "_base_correlation", None)
+        step_corr = (
+            base.child(step_id=f"{ctx.execution_id}:step:{step_number}")
+            if base is not None
+            else None
+        )
+        token = set_correlation(step_corr) if step_corr is not None else None
+        try:
+            return await self._process_step_inner(ctx, start, step_number, step_corr)
+        finally:
+            if token is not None:
+                reset_correlation(token)
+
+    async def _process_step_inner(
+        self,
+        ctx: AgentContext,
+        start: float,
+        step_number: int,
+        step_corr: Any | None,
+    ) -> bool:
         step = await self._run_step(ctx)
         ctx.steps.append(step)
         ctx.current_step += 1
@@ -287,7 +348,19 @@ class AgentRuntime:
         ctx.cost_usd = round(ctx.cost_usd + step.cost_usd, 6)
         if self._on_step is not None:
             self._on_step(step)
-        self._emit("step", ctx, step=step)
+        self._emit(
+            "step",
+            ctx,
+            step=step,
+            step_number=step_number,
+            step_id=getattr(step_corr, "step_id", None),
+            score=step.score,
+            best_score=ctx.best_score,
+            duration_seconds=step.duration_seconds,
+            tokens_used=step.tokens,
+            cost_used=step.cost_usd,
+            tool_calls_used=step.tool_calls,
+        )
 
         # A fatal error during the step terminates the run.
         if ctx.state != AgentState.RUNNING:
@@ -296,6 +369,9 @@ class AgentRuntime:
         # Re-check budgets after the step consumed resources.
         if await self._check_termination(ctx, start):
             return False
+
+        # E6: capture the evaluation outcome as its own event.
+        self._emit_evaluation(ctx, step_number, step)
 
         # Progress tracking from the evaluation score.
         if step.score is not None:
@@ -409,11 +485,19 @@ class AgentRuntime:
                 "No ToolGateway configured on this AgentRuntime; "
                 "tool calls must be routed through a gateway."
             )
+        # Prefer the E6 correlation run_id; fall back to the legacy
+        # active-execution identifier.
+        correlation = get_correlation()
+        effective_run_id = (
+            run_id
+            or (getattr(correlation, "run_id", "") if correlation else "")
+            or self._current_run_id()
+        )
         result = await self._tool_gateway.execute(
             tool_name,
             input,
             agent_name=agent_name,
-            run_id=run_id or self._current_run_id(),
+            run_id=effective_run_id,
             metadata=metadata,
         )
         # E5: feed the safety controller (best-effort, never breaks dispatch).
@@ -626,6 +710,10 @@ class AgentRuntime:
             return float(evaluation)
         if hasattr(evaluation, "score") and isinstance(evaluation.score, (int, float)):
             return float(evaluation.score)
+        if isinstance(evaluation, dict):
+            score = evaluation.get("score")
+            if isinstance(score, (int, float)) and not isinstance(score, bool):
+                return float(score)
         return None
 
     @staticmethod
@@ -652,7 +740,7 @@ class AgentRuntime:
         ctx.termination = termination
         ctx.termination_reason = reason
         ctx.output = self._final_output(ctx)
-        self._emit("terminate", ctx, termination=termination)
+        self._emit("terminate", ctx, termination=termination, reason=reason)
         # Persist the terminal state so a resume can observe it.
         await self._checkpoint(ctx)
 
@@ -710,6 +798,7 @@ class AgentRuntime:
                 "kind": "agent_runtime",
                 "event": kind,
                 "execution_id": ctx.execution_id,
+                "run_id": ctx.metadata.get("run_id"),
                 "goal": ctx.goal,
                 "state": ctx.state.value,
                 "phase": ctx.phase.value if ctx.phase else None,
@@ -722,6 +811,22 @@ class AgentRuntime:
             bus.emit(event)
         except Exception:  # noqa: BLE001 - observability must not break the run
             logger.debug("Failed to emit agent_runtime event", exc_info=True)
+
+    def _emit_evaluation(self, ctx: AgentContext, step_number: int, step: Any) -> None:
+        """Emit a structured ``evaluation`` event for one completed step."""
+        try:
+            evaluation_text = str(step.evaluation)[:500]
+        except Exception:  # noqa: BLE001 - best-effort summary only
+            evaluation_text = "<unserializable evaluation>"
+        self._emit(
+            "evaluation",
+            ctx,
+            step=step_number,
+            score=step.score,
+            done=self._evaluator_says_done(step),
+            duration_seconds=step.duration_seconds,
+            evaluation_summary=evaluation_text,
+        )
 
 
 __all__ = [

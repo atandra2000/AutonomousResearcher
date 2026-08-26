@@ -18,6 +18,28 @@ from typing import Any
 
 from research_engineer.llm.base import LLMRequest, LLMResponse
 
+# E6 - Production Observability & Telemetry re-exports
+from research_engineer.observability.context import (
+    CorrelationContext,
+    get_correlation,
+    new_run_id,
+    new_span_id,
+    new_trace_id,
+    reset_correlation,
+    set_correlation,
+    stamp_correlation,
+)
+from research_engineer.observability.metrics import MetricsRegistry, MetricsSink
+from research_engineer.observability.otel import opentelemetry_available
+from research_engineer.observability.privacy import (
+    TelemetryConfig,
+    configure_telemetry,
+    hash_text,
+    redact,
+    sanitize_llm_content,
+)
+from research_engineer.observability.summary import RunAggregator, RunSummary
+
 
 def _now_iso() -> str:
     """Return the current UTC time as an ISO-8601 string."""
@@ -127,9 +149,21 @@ class SQLiteSink(EventSink):
 class EventBus:
     """Fans events out to zero or more sinks (best-effort)."""
 
-    def __init__(self, sinks: list[EventSink] | None = None) -> None:
+    def __init__(
+        self,
+        sinks: list[EventSink] | None = None,
+        config: TelemetryConfig | None = None,
+        correlate: bool = True,
+    ) -> None:
         self._sinks: list[EventSink] = list(sinks) if sinks else []
         self._lock = threading.Lock()
+        self._config = config or TelemetryConfig()
+        self._correlate = correlate
+
+    @property
+    def config(self) -> TelemetryConfig:
+        """Telemetry configuration (privacy/redaction/payload limits)."""
+        return self._config
 
     def add_sink(self, sink: EventSink) -> None:
         with self._lock:
@@ -149,12 +183,31 @@ class EventBus:
             return list(self._sinks)
 
     def emit(self, event: dict[str, Any]) -> None:
-        """Send ``event`` to every sink. Sink failures are swallowed."""
+        """Send ``event`` to every sink. Sink failures are swallowed.
+
+        Before fan-out the bus (1) stamps current trace/correlation
+        identifiers from the ambient :class:`CorrelationContext` and
+        (2) applies privacy scrubbing (secret redaction + payload limits)
+        according to its :class:`TelemetryConfig`. Both steps are
+        best-effort and never alter dispatch semantics for consumers.
+        """
         with self._lock:
             sinks = list(self._sinks)
+            cfg = self._config
+            correlate = self._correlate
+        outgoing = dict(event)
+        try:
+            if correlate:
+                stamp_correlation(outgoing)
+            if not outgoing.get("ts"):
+                outgoing["ts"] = _now_iso()
+            if cfg.enabled:
+                outgoing = redact(outgoing, cfg)
+        except Exception:  # noqa: BLE001 - enrichment must not break emission
+            pass
         for sink in sinks:
             try:
-                sink.emit(event)
+                sink.emit(outgoing)
             except Exception:
                 pass
 
@@ -245,4 +298,23 @@ __all__ = [
     "EventBus",
     "get_event_bus",
     "reset_event_bus",
+    # E6 - Production Observability & Telemetry
+    "CorrelationContext",
+    "get_correlation",
+    "set_correlation",
+    "reset_correlation",
+    "new_run_id",
+    "new_span_id",
+    "new_trace_id",
+    "stamp_correlation",
+    "TelemetryConfig",
+    "configure_telemetry",
+    "hash_text",
+    "redact",
+    "sanitize_llm_content",
+    "MetricsRegistry",
+    "MetricsSink",
+    "RunAggregator",
+    "RunSummary",
+    "opentelemetry_available",
 ]
