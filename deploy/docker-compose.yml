@@ -1,0 +1,70 @@
+name: research-engineer
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-research}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-research_engineer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.128.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &service_env
+      RE_POSTGRES_DSN: postgresql://${POSTGRES_USER:-research}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-research_engineer}
+      RE_SERVICE_API_TOKEN: ${RE_SERVICE_API_TOKEN:?set RE_SERVICE_API_TOKEN in .env}
+      RE_SERVICE_CORS_ORIGINS: ${RE_SERVICE_CORS_ORIGINS:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      RE_WORKER_CONCURRENCY: ${RE_WORKER_CONCURRENCY:-4}
+      RE_STALE_RUN_TIMEOUT_SECONDS: ${RE_STALE_RUN_TIMEOUT_SECONDS:-120}
+      RE_STEP_DELAY_SECONDS: ${RE_STEP_DELAY_SECONDS:-0}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - artifacts:/app/data/artifacts
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    # No privileged mode, no extra capabilities.
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: ["python", "-m", "research_engineer.service.serve", "worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: *service_env
+    volumes:
+      - artifacts:/app/data/artifacts
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  artifacts:

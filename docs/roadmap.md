@@ -139,3 +139,11 @@ This project follows [semantic versioning](https://semver.org/):
 ---
 
 *Last updated: v2.0 · 15/15 phases complete*
+
+## E7 — Production Deployment & Service Architecture ✅ COMPLETE
+
+Docker Compose stack (`deploy/`) with API + worker containers, PostgreSQL
+(runs table, `SKIP LOCKED` queue, E2 checkpoints), an artifact volume, and an
+OpenTelemetry collector. The FastAPI service lives in
+`research_engineer.service` and reuses every E1–E6 layer unchanged.
+See `docs/deployment.md`; the container smoke test is `scripts/smoke_test.sh`.
