@@ -46,6 +46,7 @@ Icon
 data/*.db
 data/vector_store/
 output/
+artifacts/
 
 # Environment
 .env
