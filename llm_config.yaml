@@ -13,7 +13,7 @@
 #
 # Agent-specific model assignments (terminal-first autonomous coding agent):
 #   - kimi-k2.7-code  -> coding (CodingAgent, TaskAgent impl phase)
-#   - glm-5.2:cloud           -> reasoning (Research/Planner/Literature/Eval)
+#   - glm-5.3-flash           -> reasoning (Research/Planner/Literature/Eval)
 #   - minimax-m3:cloud        -> orchestration (TaskAgent, ResearchLoopAgent)
 # ---------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@
 default_provider: ollama
 # Model used when an agent config omits ``model`` (and the provider does
 # not declare its own ``default_model``).
-default_model: glm-5.2:cloud
+default_model: glm-5.3-flash
 
 # --- Repository memory settings (D4) -------------------------------------
 #
@@ -52,7 +52,7 @@ providers:
     # API key. Leave as ${OLLAMA_API_KEY} so the secret stays out of git.
     api_key: ${OLLAMA_API_KEY}
     # Model used when a request does not specify one.
-    default_model: glm-5.2:cloud
+    default_model: glm-5.3-flash
     # Per-request HTTP timeout, in seconds.
     timeout: 60
 
@@ -94,7 +94,7 @@ providers:
 # the ``gpt-4o`` entry. The built-in fallback table (llm/cost.py) already
 # covers the models below; entries here override or extend it.
 pricing:
-  glm-5.2:cloud: [0.50, 1.50]
+  glm-5.3-flash: [0.50, 1.50]
   kimi-k2.7-code: [0.60, 2.20]
   minimax-m3:cloud: [0.40, 1.20]
   # OpenAI / OpenAI-compatible
@@ -115,54 +115,54 @@ pricing:
 #
 # The router resolves a model per agent via research_engineer.llm.router.
 agents:
-  # --- Reasoning agents (glm-5.2:cloud) ---------------------------------
+  # --- Reasoning agents (glm-5.3-flash) ---------------------------------
   ResearchAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ExperimentPlannerAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   LiteratureAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   EvaluationAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   MemoryAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ArchitectAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ReviewerAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   FailureAnalyzer:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   RepairStrategist:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
 
-  # --- Phase 15: Research workflow agents (glm-5.2:cloud for reasoning) ---
+  # --- Phase 15: Research workflow agents (glm-5.3-flash for reasoning) ---
   LiteratureDiscoveryAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   KnowledgeSynthesisAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   HypothesisGeneratorAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ResearchExperimentPlannerAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ResultAnalyzerAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
   ReportGeneratorAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
 
   # --- Phase 15: Orchestration (minimax-m3:cloud) ---
   ExperimentExecutorAgent:
@@ -194,4 +194,4 @@ agents:
   # --- Repository analysis (rule-based by default; LLM optional) -------
   RepositoryAgent:
     provider: ollama
-    model: glm-5.2:cloud
+    model: glm-5.3-flash
