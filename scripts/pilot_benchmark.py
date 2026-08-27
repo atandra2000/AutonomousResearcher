@@ -120,7 +120,25 @@ def _await_terminal(record: Callable[[], dict]) -> tuple[dict, int]:
 
 
 def _crash_worker() -> str:
-    """SIGKILL the compose worker container; compose restarts it."""
+    """Crash the compose worker container mid-flight, then restore it.
+
+    Two Docker engine realities constrain this probe:
+
+    * ``os.kill(1, SIGKILL)`` executed *inside* the container is a no-op:
+      a PID-namespace's init is immune to signals sent from within its
+      own namespace, so docker-exec kills never land.
+    * ``docker kill`` (from outside) does kill the container, but engines
+      treat it as a manual stop, so the ``restart: unless-stopped``
+      policy does not re-launch it.
+
+    The probe therefore performs the crash with ``docker kill`` and then
+    performs the supervisor restart step explicitly (``compose up -d
+    worker``) - identical semantics to the local mode's kill-then-spawn
+    and to any orchestrator restarting a crashed worker. The recovery
+    behavior under test (checkpoint takeover, stale-lease expiry,
+    claim_count >= 2) lives in the worker/manager code, not in the
+    engine's restart policy.
+    """
     ps = subprocess.run(
         ["docker", "compose", "-f", str(COMPOSE_FILE),
          "ps", "-q", "worker"],
@@ -129,7 +147,12 @@ def _crash_worker() -> str:
     cid = ps.stdout.strip().splitlines()[0]
     subprocess.run(["docker", "kill", "--signal=SIGKILL", cid],
                    check=True, capture_output=True)
-    return f"container:{cid[:12]}"
+    subprocess.run(["docker", "rm", "-f", cid], check=True,
+                   capture_output=True)
+    subprocess.run(
+        ["docker", "compose", "-f", str(COMPOSE_FILE), "up", "-d", "worker"],
+        check=True, capture_output=True, cwd=str(COMPOSE_FILE.parent))
+    return f"container:{cid[:12]}:sigkill+respawn"
 
 
 def _spawn_local_worker(env: dict[str, str], procs: list) -> subprocess.Popen:
