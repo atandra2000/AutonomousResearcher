@@ -60,3 +60,5 @@ htmlcov/
 # Logs
 *.log
 logs/
+# Vendored CPU torch wheels - see deploy/wheels/README.md
+deploy/wheels/*.whl

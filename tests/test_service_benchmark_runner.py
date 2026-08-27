@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,50 @@ def _outcome(**overrides: object) -> CaseOutcome:
     )
     base.update(overrides)
     return CaseOutcome(**base)
+
+
+class TestStepDelayThrottle:
+    """P1 regression: step throttle reaches benchmark adapters too."""
+
+    def test_step_delay_applies_to_all_agent_kinds(self) -> None:
+        import asyncio
+
+        from research_engineer.service.agents import AgentFactoryRegistry
+        from research_engineer.service.bench_agents import (
+            KIND_BENCH_FLAKY,
+            register_benchmark_kinds,
+        )
+        from research_engineer.service.bench_agents import (
+            RuntimeAwareAdapter as _RuntimeAware,
+        )
+
+        async def _check() -> None:
+            registry = AgentFactoryRegistry(
+                config_max_steps=10, config_step_delay_seconds=0.5,
+            )
+            register_benchmark_kinds(registry)
+            adapter, _policy = await registry.build(
+                KIND_BENCH_FLAKY, {"bench_fail_calls": 0},
+            )
+            assert getattr(adapter, "step_delay_seconds", 0.0) == 0.5
+
+            # Throttle is honored per acting step (exercise a standalone
+            # stub so no runtime/tool wiring is needed).
+            class _Stub(_RuntimeAware):
+                def __init__(self) -> None:
+                    super().__init__(agent_name="stub_throttle")
+
+                async def _act(self, ctx: object) -> str:
+                    return "ok"
+
+            stub = _Stub()
+            stub.step_delay_seconds = 0.5
+            started = time.monotonic()
+            await stub.actor(object(), None)
+            elapsed = time.monotonic() - started
+            assert elapsed >= 0.45, f"actor returned too fast: {elapsed:.3f}s"
+
+        asyncio.run(_check())
 
 
 class TestStoredViewsAndTaxonomy:

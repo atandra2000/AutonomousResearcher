@@ -57,6 +57,7 @@ def _status_payload(record: RunRecord, has_checkpoint: bool) -> dict[str, Any]:
         "error": record.error,
         "termination_reason": record.termination_reason,
         "has_checkpoint": has_checkpoint,
+        "claim_count": record.claim_count,
         "artifacts": record.artifacts,
     }
 
@@ -65,6 +66,9 @@ def _result_payload(record: RunRecord) -> ResultResponse:
     if not record.status.is_terminal():
         return ResultResponse(run_id=record.run_id, status=record.status)
     result = record.result or {}
+    ctx = result.get("context") or {}
+    if not isinstance(ctx, dict):
+        ctx = {}
     duration = None
     if record.started_at is not None and record.finished_at is not None:
         duration = (record.finished_at - record.started_at).total_seconds()
@@ -73,8 +77,13 @@ def _result_payload(record: RunRecord) -> ResultResponse:
         status=record.status,
         output=result.get("output"),
         termination_reason=result.get("reason") or record.termination_reason,
-        steps=int(result.get("steps", 0)),
+        termination=result.get("termination"),
         duration_seconds=duration,
+        steps=int(result.get("steps", 0)),
+        tokens=int(ctx.get("tokens", 0)),
+        tool_calls=int(ctx.get("tool_calls", 0)),
+        recoverable_errors=int(ctx.get("recoverable_errors", 0)),
+        fatal_errors=int(ctx.get("fatal_errors", 0)),
         artifacts=record.artifacts,
         available=True,
     )

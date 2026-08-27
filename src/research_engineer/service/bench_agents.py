@@ -22,6 +22,7 @@ ones, keeping default-deny meaningful.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from pathlib import Path
 from typing import Any
@@ -170,6 +171,11 @@ class RuntimeAwareAdapter(AgentAdapter):
     The worker injects the runtime right after construction so the actor
     can route every tool invocation through
     :meth:`AgentRuntime.call_tool`, i.e. the full gateway+safety chain.
+
+    ``step_delay_seconds`` throttles each acting step so crash/recovery
+    probes get a deterministic mid-flight observation window; production
+    wiring injects the service-wide value via
+    ``AgentFactoryRegistry.config_step_delay_seconds``.
     """
 
     @staticmethod
@@ -177,9 +183,12 @@ class RuntimeAwareAdapter(AgentAdapter):
         """Subclasses override ``actor``; this stub only satisfies init."""
         return None
 
-    def __init__(self, agent_name: str) -> None:
+    def __init__(
+        self, agent_name: str, step_delay_seconds: float = 0.0,
+    ) -> None:
         super().__init__(agent_name=agent_name, invoke=self._unused_invoke)
         self._runtime: Any | None = None
+        self.step_delay_seconds = max(0.0, float(step_delay_seconds))
 
     def attach_runtime(self, runtime: Any) -> None:
         self._runtime = runtime
@@ -197,6 +206,8 @@ class RuntimeAwareAdapter(AgentAdapter):
     async def actor(self, ctx: Any, plan: Any) -> Any:
         # Base.AgentAdapter.actor ignores subclass overrides unless we
         # redefine invoke; simpler to override actor directly.
+        if self.step_delay_seconds > 0:
+            await asyncio.sleep(self.step_delay_seconds)
         return await self._act(ctx)
 
     async def _act(self, ctx: Any) -> Any:  # pragma: no cover - abstract

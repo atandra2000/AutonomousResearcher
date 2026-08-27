@@ -136,6 +136,7 @@ class RunStatusResponse(BaseModel):
     error: str | None = None
     termination_reason: str | None = None
     has_checkpoint: bool = False
+    claim_count: int = 0
     artifacts: list[ArtifactReference] = Field(default_factory=list)
 
 
@@ -162,8 +163,16 @@ class ResultResponse(BaseModel):
     status: RunStatus
     output: Any = None
     termination_reason: str | None = None
+    termination: str | None = Field(
+        default=None,
+        description="AgentTermination value when the run terminalized",
+    )
     duration_seconds: float | None = None
     steps: int = 0
+    tokens: int = 0
+    tool_calls: int = 0
+    recoverable_errors: int = 0
+    fatal_errors: int = 0
     artifacts: list[ArtifactReference] = Field(default_factory=list)
     available: bool = Field(
         default=False, description="True when the run has reached a terminal state"

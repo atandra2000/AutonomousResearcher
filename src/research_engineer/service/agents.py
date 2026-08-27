@@ -130,6 +130,13 @@ class AgentFactoryRegistry:
         if factory is None:
             raise ValueError(f"Unknown agent_kind {agent_kind!r}")
         adapter, _base_policy = await factory(overrides)
+        # P1: apply the configured per-step throttle to every adapter kind
+        # (not just the default one) so crash/resume pilots observe a real
+        # mid-flight window. Adapters opt in by exposing the attribute.
+        if self.config_step_delay_seconds > 0 and hasattr(
+            adapter, "step_delay_seconds"
+        ):
+            adapter.step_delay_seconds = float(self.config_step_delay_seconds)
         budget = AgentBudget(
             max_steps=int(
                 overrides.get("max_steps", self.config_max_steps)

@@ -141,7 +141,7 @@ def _spawn_local_worker(env: dict[str, str], procs: list) -> subprocess.Popen:
     return proc
 
 
-def _local_env(args: argparse.Namespace) -> dict[str, str]:
+def _local_env(args: argparse.Namespace, artifacts_dir: Path) -> dict[str, str]:
     """Env shared by every locally spawned process (one backend)."""
     env = dict(os.environ)
     env["RE_POSTGRES_DSN"] = args.postgres_dsn
@@ -150,7 +150,14 @@ def _local_env(args: argparse.Namespace) -> dict[str, str]:
     for stale in ("RE_SERVICE_DB_PATH", "RE_CHECKPOINT_DB"):
         env.pop(stale, None)
     env["RE_STALE_RUN_TIMEOUT_SECONDS"] = "4"
-    env["RE_STEP_DELAY_SECONDS"] = "0.2"
+    # Generous per-step throttle so the SIGKILL lands reliably mid-flight
+    # (bench adapters honor this via AgentFactoryRegistry injection).
+    env["RE_STEP_DELAY_SECONDS"] = "1"
+    # P1 §1: the pilot is a production probe - mirror the compose stack and
+    # run the worker fail-closed with the full E3+E5 safety chain.
+    env["RE_SERVICE_ENFORCE_SAFETY"] = "1"
+    # Both processes must share one artifact workspace for sandbox tools.
+    env["RE_SERVICE_ARTIFACT_DIR"] = str(artifacts_dir)
     return env
 
 
@@ -174,6 +181,27 @@ def _crash_and_replace(
     _spawn_local_worker(local_env, procs)
     time.sleep(4.0)  # stale-lease expiry margin
     return victim
+
+
+def _await_running(record: Callable[[], dict]) -> None:
+    """Block until the run is claimed and executing on a worker.
+
+    Raises if the run terminalizes first: with a correctly throttled worker
+    the mid-flight window always exists, so this indicates a config problem
+    rather than something to paper over.
+    """
+    while True:
+        record_now = record()
+        status_now = str(record_now.get("status"))
+        if status_now == "running":
+            return
+        if status_now in ("completed", "failed", "cancelled"):
+            raise RuntimeError(
+                f"run reached terminal state {status_now!r} before a "
+                "mid-flight window existed; cannot exercise crash "
+                "recovery. Check RE_STEP_DELAY_SECONDS on workers."
+            )
+        time.sleep(0.05)
 
 
 def main() -> int:
@@ -201,7 +229,7 @@ def main() -> int:
     try:
         local_env: dict[str, str] | None = None
         if args.mode == "local":
-            local_env = _local_env(args)
+            local_env = _local_env(args, base / "artifacts")
             _spawn_local_api(local_env, procs)
             _spawn_local_worker(local_env, procs)
         else:
@@ -219,8 +247,7 @@ def main() -> int:
         def record() -> dict:
             return _get_record(args.api_url, args.api_token, run_id)
 
-        while record()["status"] != "running":
-            time.sleep(0.2)
+        _await_running(record)
         timeline.append({"event": "running_on_first_worker"})
 
         victim = _crash_and_replace(args, procs, local_env)
@@ -237,17 +264,19 @@ def main() -> int:
         status, result = _http("GET",
                                f"{args.api_url}/runs/{run_id}/result",
                                token=args.api_token)
-        payload = (result or {}).get("result") or {}
-        ctx = payload.get("context") or {}
+        payload = result or {}
         report["termination"] = payload.get("termination")
-        report["steps"] = ctx.get("current_step")
-        report["recoverable_errors"] = ctx.get("recoverable_errors")
-        report["fatal_errors"] = ctx.get("fatal_errors")
+        report["steps"] = payload.get("steps")
+        report["tokens"] = payload.get("tokens")
+        report["tool_calls"] = payload.get("tool_calls")
+        report["recoverable_errors"] = payload.get("recoverable_errors")
+        report["fatal_errors"] = payload.get("fatal_errors")
 
         ok = (
             report["final_status"] == "completed"
             and claim_max >= 2
             and report["termination"] == "success"
+            and int(report.get("recoverable_errors") or 0) > 0
         )
         report["verdict"] = "PASS" if ok else "FAIL"
     finally:

@@ -26,7 +26,7 @@ def tmp_store(tmp_path: Path) -> SQLiteRunStore:
 
 
 @pytest.fixture()
-def env(tmp_path: Path):
+def env(tmp_path: Path) -> tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]:
     queue = InMemoryQueue()
     store = SQLiteRunStore(tmp_path / "runs.db")
     manager = RunManager(store, queue, ServiceTelemetry(),
@@ -53,7 +53,7 @@ async def _drive(worker: AgentWorker, cycles: int = 8) -> None:
 
 class TestPersistence:
     @pytest.mark.asyncio
-    async def test_run_record_round_trip(self, tmp_store) -> None:
+    async def test_run_record_round_trip(self, tmp_store: SQLiteRunStore) -> None:
         rec = RunRecord(run_id="run_x", goal="g", status=RunStatus.QUEUED)
         await tmp_store.create(rec)
         loaded = await tmp_store.get_required("run_x")
@@ -61,7 +61,7 @@ class TestPersistence:
         assert loaded.status == RunStatus.QUEUED
 
     @pytest.mark.asyncio
-    async def test_terminal_transition_guard(self, tmp_store) -> None:
+    async def test_terminal_transition_guard(self, tmp_store: SQLiteRunStore) -> None:
         rec = RunRecord(run_id="run_y", goal="g", status=RunStatus.CANCELLED)
         await tmp_store.create(rec)
         with pytest.raises(InvalidTransitionError):
@@ -69,7 +69,7 @@ class TestPersistence:
             await tmp_store.update(rec)
 
     @pytest.mark.asyncio
-    async def test_status_counts(self, tmp_store) -> None:
+    async def test_status_counts(self, tmp_store: SQLiteRunStore) -> None:
         await tmp_store.create(
             RunRecord(run_id="a", goal="g", status=RunStatus.QUEUED)
         )
@@ -79,7 +79,7 @@ class TestPersistence:
 
 class TestWorkerExecution:
     @pytest.mark.asyncio
-    async def test_full_lifecycle_completion(self, env) -> None:
+    async def test_full_lifecycle_completion(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, worker = env
         created = await manager.submit(
             CreateRunRequest(goal="Step one. Step two.")
@@ -92,7 +92,7 @@ class TestWorkerExecution:
         assert len(final.artifacts) == 1
 
     @pytest.mark.asyncio
-    async def test_failing_factory_marks_failed(self, env) -> None:
+    async def test_failing_factory_marks_failed(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, worker = env
 
         async def boom(_overrides: dict) -> object:
@@ -110,7 +110,7 @@ class TestWorkerExecution:
         assert "RuntimeError" in (final.error or "")
 
     @pytest.mark.asyncio
-    async def test_cancellation_of_running_run(self, env) -> None:
+    async def test_cancellation_of_running_run(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, worker = env
         long_goal = ". ".join(f"step {i}" for i in range(40)) + "."
         created = await manager.submit(CreateRunRequest(goal=long_goal))
@@ -125,7 +125,7 @@ class TestWorkerExecution:
 
 class TestRecovery:
     @pytest.mark.asyncio
-    async def test_crash_then_recover_and_resume(self, env) -> None:
+    async def test_crash_then_recover_and_resume(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, worker = env
         created = await manager.submit(CreateRunRequest(goal="Crash me."))
         record = await store.get_required(created.run_id)
@@ -144,7 +144,7 @@ class TestRecovery:
         assert final.status == RunStatus.COMPLETED
 
     @pytest.mark.asyncio
-    async def test_heartbeat_prevents_false_recovery(self, env) -> None:
+    async def test_heartbeat_prevents_false_recovery(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, _manager, _worker = env
         live = RunRecord(
             run_id="live",
@@ -160,7 +160,7 @@ class TestRecovery:
 
 class TestConcurrency:
     @pytest.mark.asyncio
-    async def test_concurrent_runs_all_complete(self, env) -> None:
+    async def test_concurrent_runs_all_complete(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, worker = env
         created_runs = [
             await manager.submit(
@@ -175,7 +175,7 @@ class TestConcurrency:
         assert all(s == RunStatus.COMPLETED for s in statuses)
 
     @pytest.mark.asyncio
-    async def test_duplicate_claim_is_suppressed(self, env) -> None:
+    async def test_duplicate_claim_is_suppressed(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, queue, manager, worker = env
         created = await manager.submit(CreateRunRequest(goal="once only."))
         record = await store.get_required(created.run_id)
@@ -219,7 +219,7 @@ class TestConfiguration:
             load_service_config(env={"RE_WORKER_CONCURRENCY": "not-a-number"})
 
     @pytest.mark.asyncio
-    async def test_resume_of_running_run_raises(self, env) -> None:
+    async def test_resume_of_running_run_raises(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         store, _queue, manager, _worker = env
         rec = RunRecord(run_id="busy", goal="g", status=RunStatus.RUNNING)
         await store.create(rec)
@@ -229,7 +229,7 @@ class TestConfiguration:
 
 class TestResumeLockHygiene:
     @pytest.mark.asyncio
-    async def test_maybe_resume_does_not_leak_resume_lock(self, env) -> None:
+    async def test_maybe_resume_does_not_leak_resume_lock(self, env: tuple[SQLiteRunStore, InMemoryQueue, RunManager, AgentWorker]) -> None:
         from research_engineer.runtime.checkpoint import Checkpoint
         from research_engineer.runtime.models import AgentContext, AgentState
 
@@ -331,7 +331,12 @@ class TestProductionSafetyChain:
     """Production autonomous execution requires E3 gateway + E5 safety."""
 
     @staticmethod
-    def _enforcing_worker(store, queue, tmp_path, **kwargs):
+    def _enforcing_worker(
+        store: SQLiteRunStore,
+        queue: InMemoryQueue,
+        tmp_path: Path,
+        **kwargs: object,
+    ) -> AgentWorker:
         return AgentWorker(
             store=store,
             queue=queue,
@@ -344,8 +349,14 @@ class TestProductionSafetyChain:
             **kwargs,
         )
 
-    async def _submit(self, store, queue, tmp_path, goal="Step one. Step two.",
-                      metadata=None):
+    async def _submit(
+        self,
+        store: SQLiteRunStore,
+        queue: InMemoryQueue,
+        tmp_path: Path,
+        goal: str = "Step one. Step two.",
+        metadata: dict | None = None,
+    ) -> RunRecord:
         manager = RunManager(store, queue, ServiceTelemetry())
         return await manager.submit(
             CreateRunRequest(goal=goal, metadata=metadata or {})
@@ -353,7 +364,7 @@ class TestProductionSafetyChain:
 
     @pytest.mark.asyncio
     async def test_enforce_mode_fails_closed_without_chain(
-        self, tmp_store, tmp_path
+        self, tmp_store: SQLiteRunStore, tmp_path: Path
     ) -> None:
         """No gateway/controller wired -> run refuses to execute agent code."""
         from research_engineer.service.queue import InMemoryQueue
@@ -374,7 +385,7 @@ class TestProductionSafetyChain:
 
     @pytest.mark.asyncio
     async def test_enforce_mode_fails_closed_gateway_only(
-        self, tmp_store, tmp_path
+        self, tmp_store: SQLiteRunStore, tmp_path: Path
     ) -> None:
         """Gateway alone is insufficient; the pair is REQUIRED."""
         from research_engineer.gateway.gateway import ToolGateway
@@ -396,7 +407,7 @@ class TestProductionSafetyChain:
 
     @pytest.mark.asyncio
     async def test_full_chain_executes_tool_calls_through_gateway(
-        self, tmp_store, tmp_path
+        self, tmp_store: SQLiteRunStore, tmp_path: Path
     ) -> None:
         """With both components wired, a bench_tool run completes and its
         tool calls visibly traverse the gateway+safety chain."""
@@ -471,7 +482,7 @@ class TestProductionSafetyChain:
 
     @pytest.mark.asyncio
     async def test_loop_kind_is_stopped_by_safety_controller(
-        self, tmp_store, tmp_path
+        self, tmp_store: SQLiteRunStore, tmp_path: Path
     ) -> None:
         """A looping benchmark run is terminated by the E5 chain."""
         from research_engineer.gateway.gateway import ToolGateway
@@ -525,7 +536,7 @@ class TestProductionSafetyChain:
 
     @pytest.mark.asyncio
     async def test_risky_kind_denied_under_enforced_approvals(
-        self, tmp_store, tmp_path
+        self, tmp_store: SQLiteRunStore, tmp_path: Path
     ) -> None:
         """HIGH-risk approval-gated tools cannot self-approve in production."""
         from research_engineer.gateway.gateway import ToolGateway
