@@ -166,17 +166,35 @@ class OutputRegexGrader(Grader):
 
 
 class OutputJSONFieldGrader(Grader):
-    """Parse the output as JSON and check one field's value."""
+    """Parse the output as JSON and check one field's value.
+
+    ``op`` selects the comparison: ``eq`` (default), ``gte``/``lte``/
+    ``gt``/``lt`` for numeric thresholds. Non-eq comparisons let suites
+    express minimum deliverable counts without over-constraining agents.
+    """
 
     name = "output_json_field"
+
+    _OPS: dict[str, Any] = {
+        "eq": lambda a, b: a == b,
+        "gte": lambda a, b: float(a) >= float(b),
+        "lte": lambda a, b: float(a) <= float(b),
+        "gt": lambda a, b: float(a) > float(b),
+        "lt": lambda a, b: float(a) < float(b),
+    }
 
     def __init__(self) -> None:
         self.field: str = ""
         self.expected: Any = None
+        self.op: str = "eq"
 
     def configure(self, config: dict[str, Any]) -> OutputJSONFieldGrader:
         self.field = str(config.get("field", ""))
         self.expected = config.get("expected")
+        op = str(config.get("op", "eq"))
+        if op not in self._OPS:
+            raise ValueError(f"unknown output_json_field op {op!r}")
+        self.op = op
         return self
 
     async def grade(self, request: GradingRequest) -> GraderResult:
@@ -194,8 +212,16 @@ class OutputJSONFieldGrader(Grader):
                 detail="output is not a JSON object",
             )
         actual = payload.get(self.field)
-        ok = actual == self.expected
-        detail = "" if ok else f"{self.field}={actual!r} != {self.expected!r}"
+        compare = self._OPS[self.op]
+        try:
+            ok = bool(compare(actual, self.expected))
+        except (TypeError, ValueError) as exc:
+            ok = False
+            detail = f"{self.field}={actual!r}: {exc}"
+        else:
+            detail = "" if ok else (
+                f"{self.field}={actual!r} {self.op} {self.expected!r} failed"
+            )
         return GraderResult(
             grader=self.name, score=1.0 if ok else 0.0, passed=ok, detail=detail
         )
