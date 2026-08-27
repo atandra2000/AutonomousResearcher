@@ -45,6 +45,7 @@ _BUILTIN_PRICING: dict[str, tuple[float, float]] = {
     "glm-5.2:cloud": (0.50, 1.50),
     "kimi-k2.7-code": (0.60, 2.20),
     "minimax-m3:cloud": (0.40, 1.20),
+    "deepseek-v4-pro": (0.55, 2.20),
     # Local models are free.
     "llama3": (0.0, 0.0),
 }

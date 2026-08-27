@@ -1,0 +1,20 @@
+# P3-Short arm - model comparison, third candidate. ONLY change: the agent's
+# model id via the scalar ``llm_model`` override; judge stays bound to
+# EvaluationAgent -> glm-5.3-flash so evaluator quality stays constant.
+# deepseek-v4-pro:0813 selected as strongest available non-Kimi/non-GLM
+# family on the configured Ollama Cloud account (current-gen flagship tier).
+arm_id: exp_f_deepseek_v4_pro
+variable: model
+description: >-
+  Agent model swapped from glm-5.3-flash to deepseek-v4-pro:0813
+  (strongest available alternative family; distinct from Zhipu GLM and
+  Moonshot Kimi lineages).
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_model: deepseek-v4-pro:0813
+gate_component: model_provider_config
+gate_changes: {"model_provider.model": "deepseek-v4-pro:0813"}
