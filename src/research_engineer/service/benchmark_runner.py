@@ -139,6 +139,9 @@ class CriterionOutcome(BaseModel):
     passed: bool
     score: float
     detail: str = ""
+    # "" = valid verdict; "judge_error" = evaluator malfunction that must
+    # never be counted as an agent failure (excluded from aggregation).
+    error_kind: str = ""
 
 
 class CaseOutcome(BaseModel):
@@ -228,14 +231,19 @@ async def _grade_case(
             passed=result.passed,
             score=result.score,
             detail=result.detail,
+            error_kind=getattr(result, "error_kind", "") or "",
         ))
     required_ok = all(o.passed for o in outcomes if o.required)
     runtime_success = execution_view.context.is_success()
     graded_success = required_ok and (
         runtime_success if suite_case.require_runtime_success else True
     )
-    total_weight = sum(o.weight for o in outcomes) or 1.0
-    weighted = sum(o.score * o.weight for o in outcomes) / total_weight
+    # Judge errors are evaluator malfunctions, not agent failures: their
+    # weight is excluded (and the remaining weights renormalized) so a
+    # broken judge can neither deflate nor inflate the weighted score.
+    graded = [o for o in outcomes if o.error_kind != "judge_error"]
+    total_weight = sum(o.weight for o in graded) or 1.0
+    weighted = sum(o.score * o.weight for o in graded) / total_weight
     return outcomes, graded_success, round(weighted, 4)
 
 

@@ -169,13 +169,31 @@ class SuiteMetrics(BaseModel):
         return items
 
 class GraderResult(BaseModel):
-    """Outcome of applying one grader."""
+    """Outcome of applying one grader.
+
+    ``error_kind`` distinguishes *evaluator* malfunctions from agent
+    failures: an empty string means the grader produced a valid verdict,
+    while ``"judge_error"`` means the grader itself failed (e.g. an
+    unparseable LLM-judge reply). Judge-error results are NEVER counted
+    as a zero score against the agent — aggregation excludes them.
+    """
 
     grader: str = Field(..., description="Grader identifier")
     score: float = Field(..., ge=0.0, le=1.0, description="Score in [0, 1]")
     passed: bool
     detail: str = ""
     weight: float = Field(default=1.0, gt=0.0)
+    error_kind: str = Field(
+        default="",
+        description=(
+            '"" when the verdict is valid; "judge_error" when the '
+            "grader itself malfunctioned (excluded from aggregation)"
+        ),
+    )
+
+    @property
+    def is_judge_error(self) -> bool:
+        return self.error_kind == "judge_error"
 
 
 class EvalResult(BaseModel):

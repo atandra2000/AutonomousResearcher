@@ -19,6 +19,13 @@
 #   * Tasks are versioned by `revision`; baseline/candidate comparisons must
 #     use identical revisions. Provider/model/configuration fingerprints are
 #     recorded in the run report (see p2_benchmark.py).
+#   * r2 (P4 hardening): brittle exact-string numeric requirements were
+#     replaced with format-tolerant objective graders (`output_number` /
+#     `output_regex`) on design_02, impl_01, e2e_03. Malformed LLM-judge
+#     replies are recorded as explicit JUDGE_ERROR results
+#     (error_kind="judge_error") and are EXCLUDED from weighted scores and
+#     agent-failure accounting — they are evaluator malfunctions, never a
+#     genuine score=0 against the agent.
 #
 # Provider/model selection is configuration-driven (llm_config.yaml /
 # OLLAMA_* env); credentials are never written here.
@@ -402,7 +409,10 @@ cases:
              max_cost_usd: 0.50, max_runtime_seconds: 300}
     timeout_seconds: 420
     tags: [p2_benchmark, llm_agent, experiment_design]
-    revision: r1
+    # r2: replaced the brittle exact-string "50000" requirement with the
+    # format-tolerant `output_number` grader ("$50,000" / "50,000" /
+    # "50000" are all valid renderings of the required total cost).
+    revision: r2
     metadata:
       category: experiment_design
       mode: llm_agent
@@ -418,7 +428,9 @@ cases:
          config: {field: notes_written, op: gte, expected: 1}}
       - {grader: output_contains, weight: 2.0,
          config: {all_of: ["DESIGN:", "COMPUTE_ESTIMATE:", "DECISION_RULE:",
-                           "RISKS:", "50000"]}}
+                           "RISKS:"]}}
+      - {grader: output_number, weight: 2.0,
+         config: {value: 50000}}
       - grader: llm_quality
         weight: 2.0
         required: false
@@ -451,7 +463,11 @@ cases:
              max_cost_usd: 0.50, max_runtime_seconds: 300}
     timeout_seconds: 420
     tags: [p2_benchmark, llm_agent, implementation]
-    revision: r1
+    # r2: replaced the brittle exact substring "(batch, seq" with a
+    # case/spacing-tolerant `output_regex` that still requires explicit
+    # batch and sequence dimensions in the signature ("(batch, seq)",
+    # "(B, S)", "(batch,seq)" all satisfy the task intent).
+    revision: r2
     metadata:
       category: implementation
       mode: llm_agent
@@ -466,8 +482,9 @@ cases:
       - {grader: output_json_field, weight: 1.5,
          config: {field: notes_written, op: gte, expected: 1}}
       - {grader: output_contains, weight: 2.0,
-         config: {all_of: ["INTERFACE:", "PLAN:", "EDGE_CASES:", "TESTS:",
-                           "(batch, seq"]}}
+         config: {all_of: ["INTERFACE:", "PLAN:", "EDGE_CASES:", "TESTS:"]}}
+      - {grader: output_regex, weight: 2.0,
+         config: {pattern: '(?i)\(\s*b(?:atch)?\s*,\s*s(?:eq)?\b'}}
       - grader: llm_quality
         weight: 2.0
         required: false
@@ -987,7 +1004,10 @@ cases:
              max_cost_usd: 0.60, max_runtime_seconds: 300}
     timeout_seconds: 420
     tags: [p2_benchmark, llm_agent, end_to_end]
-    revision: r1
+    # r2: replaced the brittle exact-string "8000" requirement with the
+    # format-tolerant `output_number` grader ("$8,000/month" / "8000" both
+    # satisfy the projected monthly API cost).
+    revision: r2
     metadata:
       category: end_to_end
       mode: llm_agent
@@ -1002,8 +1022,9 @@ cases:
       - {grader: output_json_field, weight: 1.5,
          config: {field: notes_written, op: gte, expected: 1}}
       - {grader: output_contains, weight: 2.0,
-         config: {all_of: ["COST_BENEFIT:", "RISKS:", "FINAL_DECISION:",
-                           "8000"]}}
+         config: {all_of: ["COST_BENEFIT:", "RISKS:", "FINAL_DECISION:"]}}
+      - {grader: output_number, weight: 2.0,
+         config: {value: 8000}}
       - grader: llm_quality
         weight: 2.0
         required: false

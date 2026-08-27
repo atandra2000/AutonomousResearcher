@@ -165,6 +165,69 @@ class OutputRegexGrader(Grader):
         )
 
 
+class OutputNumberGrader(Grader):
+    """A specific numeric value must appear in the output.
+
+    Objective but format-tolerant replacement for brittle exact-string
+    numeric requirements (e.g. ``"50000"`` vs the equally correct
+    ``"$50,000"`` or ``"8,000/month"``). Candidate numbers are extracted
+    from the output with thousands-separator / currency-symbol handling
+    and compared against ``value`` within ``tolerance`` (relative).
+
+    Config:
+        value: the required number (float).
+        tolerance: relative tolerance (default 0.0 = exact after
+            normalization). ``0.001`` allows e.g. 7,999.5..8,000.5.
+    """
+
+    name = "output_number"
+
+    #: $/€/£ symbols, comma/space/underscore thousands separators,
+    #: optional sign, optional decimals; negative lookarounds keep the
+    #: match off surrounding identifier characters.
+    _NUM_RE = re.compile(
+        r"(?<![\w.])[$€£]?\s*[-+]?\d{1,3}(?:[, _]\d{3})+(?:\.\d+)?"
+        r"|(?<![\w.])[$€£]?\s*[-+]?\d+(?:\.\d+)?(?![\w.])"
+    )
+
+    def __init__(self) -> None:
+        self.value: float = 0.0
+        self.tolerance: float = 0.0
+
+    def configure(self, config: dict[str, Any]) -> OutputNumberGrader:
+        self.value = float(config.get("value", 0.0))
+        self.tolerance = max(0.0, float(config.get("tolerance", 0.0)))
+        return self
+
+    async def grade(self, request: GradingRequest) -> GraderResult:
+        text = _stringify(request.output)
+        window = self.value * self.tolerance if self.tolerance else 0.0
+        for raw in self._NUM_RE.findall(text):
+            candidate = _parse_number(raw)
+            if candidate is None:
+                continue
+            if abs(candidate - self.value) <= window + 1e-9:
+                return GraderResult(
+                    grader=self.name, score=1.0, passed=True,
+                    detail=f"found {candidate:g} (required {self.value:g})",
+                )
+        return GraderResult(
+            grader=self.name, score=0.0, passed=False,
+            detail=f"required value {self.value:g} not found "
+                   f"(tolerance={self.tolerance:g})",
+        )
+
+
+def _parse_number(raw: str) -> float | None:
+    """Normalize a matched numeric token (separators, currency) to float."""
+    cleaned = raw.strip().strip("$€£").replace(",", "").replace("_", "")
+    cleaned = cleaned.replace(" ", "")
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
 class OutputJSONFieldGrader(Grader):
     """Parse the output as JSON and check one field's value.
 
@@ -327,6 +390,7 @@ DETERMINISTIC_GRADERS: dict[str, type[Grader]] = {
     OutputEqualsGrader.name: OutputEqualsGrader,
     OutputContainsGrader.name: OutputContainsGrader,
     OutputRegexGrader.name: OutputRegexGrader,
+    OutputNumberGrader.name: OutputNumberGrader,
     OutputJSONFieldGrader.name: OutputJSONFieldGrader,
     BudgetGrader.name: BudgetGrader,
     MaxStepsGrader.name: MaxStepsGrader,
@@ -361,9 +425,13 @@ class LLMPromptGrader(Grader):
 
     async def grade(self, request: GradingRequest) -> GraderResult:
         if self._score_fn is None:
+            # Evaluator malfunction, not an agent failure: mark it as an
+            # explicit JUDGE_ERROR so aggregation can exclude it instead
+            # of recording a misleading score=0.
             return GraderResult(
                 grader=self.name, score=0.0, passed=False,
-                detail="no scoring function provided",
+                detail="JUDGE_ERROR: no scoring function provided",
+                error_kind="judge_error",
             )
         prompt = _stringify(request.output)
         try:
@@ -375,11 +443,16 @@ class LLMPromptGrader(Grader):
             elif isinstance(raw, (int, float)):
                 score = min(1.0, max(0.0, float(raw)))
             else:
-                score = 0.0
+                raise ValueError(
+                    f"scoring function returned non-numeric {type(raw).__name__}"
+                )
         except Exception as exc:  # noqa: BLE001 - graders must not raise
+            # Malformed/failed judge responses become explicit JUDGE_ERROR
+            # results: never a genuine score=0 attributed to the agent.
             return GraderResult(
                 grader=self.name, score=0.0, passed=False,
-                detail=f"scoring function failed: {exc}",
+                detail=f"JUDGE_ERROR: scoring function failed: {exc}",
+                error_kind="judge_error",
             )
         ok = score >= self.threshold
         return GraderResult(
@@ -389,7 +462,13 @@ class LLMPromptGrader(Grader):
 
 
 class CompositeGrader(Grader):
-    """Apply several graders and return their weighted mean as one result."""
+    """Apply several graders and return their weighted mean as one result.
+
+    Sub-grader results marked ``error_kind="judge_error"`` are evaluator
+    malfunctions, not agent failures: they are excluded from the weighted
+    mean and from the pass decision, and the remaining weights are
+    renormalized.
+    """
 
     name = "composite"
 
@@ -402,11 +481,23 @@ class CompositeGrader(Grader):
 
     async def grade(self, request: GradingRequest) -> GraderResult:
         results = [await g.grade(request) for g in self.graders]
-        total_weight = sum(r.weight for r in results) or 1.0
-        weighted = sum(r.score * r.weight for r in results) / total_weight
-        passed = all(r.passed for r in results)
-        failed = [r.grader for r in results if not r.passed]
+        valid = [r for r in results if not r.is_judge_error]
+        errored = [r for r in results if r.is_judge_error]
+        if not valid:
+            detail = "JUDGE_ERROR: " + "; ".join(r.detail for r in errored)
+            return GraderResult(
+                grader=self.name, score=0.0, passed=False,
+                detail=detail, error_kind="judge_error",
+            )
+        total_weight = sum(r.weight for r in valid) or 1.0
+        weighted = sum(r.score * r.weight for r in valid) / total_weight
+        passed = all(r.passed for r in valid)
+        failed = [r.grader for r in valid if not r.passed]
         detail = "" if passed else f"failed sub-graders: {failed}"
+        if errored:
+            detail = (detail + ";" if detail else "") + (
+                f" judge_error excluded: {[r.grader for r in errored]}"
+            )
         return GraderResult(
             grader=self.name, score=weighted, passed=passed, detail=detail
         )
@@ -434,6 +525,7 @@ __all__ = [
     "OutputContainsGrader",
     "OutputEqualsGrader",
     "OutputJSONFieldGrader",
+    "OutputNumberGrader",
     "OutputRegexGrader",
     "RecoveryGrader",
     "TerminationGrader",

@@ -11,7 +11,10 @@ Integrity contract:
 * The rubric is fixed in the suite definition and sent verbatim to the
   judge; the judge never receives hidden ground truth and never uses the
   candidate output *as* ground truth - it only scores it against the rubric.
-* Judge failures fail closed (score 0.0), never fabricate a score.
+* Judge failures fail closed (score 0.0) but are marked explicitly as
+  ``JUDGE_ERROR`` (``error_kind="judge_error"`` on the grader result), so
+  evaluator malfunctions are distinguishable from — and never counted as —
+  a genuine zero score against the agent. No score is ever fabricated.
 * Responses are parsed strictly (``SCORE: <float>``) and clamped to [0, 1].
 """
 

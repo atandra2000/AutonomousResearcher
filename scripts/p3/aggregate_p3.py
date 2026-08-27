@@ -55,7 +55,13 @@ def _judge_events(o: dict[str, Any]) -> tuple[list[float], int]:
         if c.get("grader") != "llm_quality":
             continue
         detail = str(c.get("detail", ""))
-        if "unparseable" in detail or "scoring function failed" in detail:
+        error_kind = str(c.get("error_kind", ""))
+        if (
+            error_kind == "judge_error"
+            or detail.startswith("JUDGE_ERROR")
+            or "unparseable" in detail
+            or "scoring function failed" in detail
+        ):
             bad += 1
             continue
         # A graded pass records an explicit score value.
