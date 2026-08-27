@@ -25,6 +25,7 @@ from typing import Any
 import httpx
 
 from research_engineer.llm.base import (
+    LLMMessage,
     LLMProvider,
     LLMRequest,
     LLMResponse,
@@ -255,7 +256,7 @@ class OllamaCloudProvider(LLMProvider):
     def _build_payload(self, request: LLMRequest, model: str, stream: bool = False) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "model": model,
-            "messages": [m.model_dump(exclude_none=True) for m in request.messages],
+            "messages": [self._wire_message(m) for m in request.messages],
             "temperature": request.temperature,
             "top_p": request.top_p,
         }
@@ -268,6 +269,39 @@ class OllamaCloudProvider(LLMProvider):
         if request.extra:
             payload.update(request.extra)
         return payload
+
+    @staticmethod
+    def _wire_message(message: LLMMessage) -> dict[str, Any]:
+        """Serialize one message into OpenAI wire shape.
+
+        ``tool_calls`` on assistant messages must become the OpenAI
+        ``{"type": "function", "function": {"name", "arguments"}}`` form
+        with JSON-string arguments; sending pydantic's dict form back in
+        multi-turn tool conversations is rejected as invalid by the API.
+        """
+        wire: dict[str, Any] = {
+            "role": str(message.role.value),
+            "content": message.content,
+        }
+        if message.name:
+            wire["name"] = message.name
+        if message.tool_call_id:
+            wire["tool_call_id"] = message.tool_call_id
+        if message.tool_calls:
+            import json
+
+            wire["tool_calls"] = [
+                {
+                    "id": call.id,
+                    "type": "function",
+                    "function": {
+                        "name": call.name,
+                        "arguments": json.dumps(call.arguments),
+                    },
+                }
+                for call in message.tool_calls
+            ]
+        return wire
 
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json", "Accept": "application/json"}

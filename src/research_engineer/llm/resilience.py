@@ -165,7 +165,13 @@ async def complete_with_retry(
             )
         else:
             # Normal completion: non-empty content and not truncated.
-            if response.content.strip() and not response.truncated:
+            # A response that requests tool calls is final even when the
+            # model emitted no visible text alongside them (reasoning-style
+            # models routinely do); retrying it would duplicate the call.
+            if (
+                (response.content.strip() or response.tool_calls)
+                and not response.truncated
+            ):
                 _invoke_on_complete(
                     on_complete, request, response, time.monotonic() - start, agent_name
                 )
