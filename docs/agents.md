@@ -706,28 +706,28 @@ output/research/<workflow_id>/
 
 | Agent | `agent_name` | Default routing |
 |-------|--------------|-----------------|
-| ResearchAgent | `ResearchAgent` | ollama / glm-5.2:cloud |
+| ResearchAgent | `ResearchAgent` | ollama / glm-5.3-flash |
 | RepositoryAgent | `RepositoryAgent` | *(none unless `llm_enabled=True`)* |
-| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| ExperimentPlannerAgent | `ExperimentPlannerAgent` | ollama / glm-5.3-flash |
 | CodingAgent | `CodingAgent` | ollama / kimi-k2.7-code |
-| MemoryAgent | `MemoryAgent` | ollama / glm-5.2:cloud |
-| LiteratureAgent | `LiteratureAgent` | ollama / glm-5.2:cloud |
+| MemoryAgent | `MemoryAgent` | ollama / glm-5.3-flash |
+| LiteratureAgent | `LiteratureAgent` | ollama / glm-5.3-flash |
 | ExperimentAgent | `ExperimentAgent` | ollama / minimax-m3:cloud |
-| EvaluationAgent | `EvaluationAgent` | ollama / glm-5.2:cloud |
+| EvaluationAgent | `EvaluationAgent` | ollama / glm-5.3-flash |
 | ResearchLoopAgent | `ResearchLoopAgent` | ollama / minimax-m3:cloud |
 | TaskAgent | `TaskAgent` | ollama / minimax-m3:cloud |
-| ArchitectAgent | `ArchitectAgent` | ollama / glm-5.2:cloud |
-| ReviewerAgent | `ReviewerAgent` | ollama / glm-5.2:cloud |
+| ArchitectAgent | `ArchitectAgent` | ollama / glm-5.3-flash |
+| ReviewerAgent | `ReviewerAgent` | ollama / glm-5.3-flash |
 | TestAgent | `TestAgent` | ollama / minimax-m3:cloud |
-| FailureAnalyzer | `FailureAnalyzer` | ollama / glm-5.2:cloud |
-| RepairStrategist | `RepairStrategist` | ollama / glm-5.2:cloud |
-| LiteratureDiscoveryAgent | `LiteratureDiscoveryAgent` | ollama / glm-5.2:cloud |
-| KnowledgeSynthesisAgent | `KnowledgeSynthesisAgent` | ollama / glm-5.2:cloud |
-| HypothesisGeneratorAgent | `HypothesisGeneratorAgent` | ollama / glm-5.2:cloud |
-| ResearchExperimentPlannerAgent | `ResearchExperimentPlannerAgent` | ollama / glm-5.2:cloud |
+| FailureAnalyzer | `FailureAnalyzer` | ollama / glm-5.3-flash |
+| RepairStrategist | `RepairStrategist` | ollama / glm-5.3-flash |
+| LiteratureDiscoveryAgent | `LiteratureDiscoveryAgent` | ollama / glm-5.3-flash |
+| KnowledgeSynthesisAgent | `KnowledgeSynthesisAgent` | ollama / glm-5.3-flash |
+| HypothesisGeneratorAgent | `HypothesisGeneratorAgent` | ollama / glm-5.3-flash |
+| ResearchExperimentPlannerAgent | `ResearchExperimentPlannerAgent` | ollama / glm-5.3-flash |
 | ExperimentExecutorAgent | `ExperimentExecutorAgent` | ollama / minimax-m3:cloud |
-| ResultAnalyzerAgent | `ResultAnalyzerAgent` | ollama / glm-5.2:cloud |
-| ReportGeneratorAgent | `ReportGeneratorAgent` | ollama / glm-5.2:cloud |
+| ResultAnalyzerAgent | `ResultAnalyzerAgent` | ollama / glm-5.3-flash |
+| ReportGeneratorAgent | `ReportGeneratorAgent` | ollama / glm-5.3-flash |
 | ResearchOrchestrator | `ResearchOrchestrator` | ollama / minimax-m3:cloud |
 
 Override any agent's model in `llm_config.yaml` — no source changes required.
@@ -740,9 +740,9 @@ agents:
 
 The platform uses three specialized models:
 - **kimi-k2.7-code** — coding
-- **glm-5.2:cloud** — reasoning
+- **glm-5.3-flash** — reasoning
 - **minimax-m3:cloud** — orchestration
 
 ---
 
-*Version: 2.0 · 23 agents · all routed via `resolve_llm()`*
+*Version: 0.9.0 · 23 agents · all routed via `resolve_llm()`*

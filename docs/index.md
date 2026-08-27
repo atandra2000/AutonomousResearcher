@@ -1,8 +1,11 @@
 # Documentation Index
 
-Complete documentation for the **Autonomous ML Research Engineer** v2.0 — a multi-agent platform that automates the full ML research lifecycle.
+Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a multi-agent platform that automates the full ML research lifecycle.
 
-> **Current state:** 15/15 phases complete · 23 agents · 56 tools · 186 Pydantic models · 56 CLI commands · 878 tests passing.
+> **Current state:** 15/15 phases complete · 23 agents · 61 typed tools ·
+> 19 Pydantic v2 schema modules (251 classes) · 56 CLI commands across 18
+> command families · **1427 tests passing** · plus the E4 agent-eval harness,
+> E8 continuous-improvement loop, and P1/P2 research benchmarks.
 
 ---
 
@@ -21,7 +24,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v2.0 — a mu
 | [**System Design**](system_design.md) | Engineers | Detailed design: domain models, tool contracts, storage schema, enums, error handling, testing strategy. |
 | [**Agents**](agents.md) | Engineers | Deep-dive on all 23 agents: responsibilities, constructors, workflows, LLM wiring. |
 | [**Tools**](tools.md) | Engineers, contributors | Reference for all 61 typed tools: input/output models, key logic. |
-| [**Models**](models.md) | Engineers | Reference for all 186 Pydantic models grouped by phase. |
+| [**Models**](models.md) | Engineers | Reference for Pydantic v2 models across 19 schema modules grouped by phase. |
 | [**Memory System**](memory_system.md) | Engineers | Memory types, retrieval strategies, knowledge graph, vector store, repository memory (Phase 12). |
 | [**Storage Schema**](storage_schema.md) | Engineers, DBAs | All SQLite tables, columns, relationships, output directory layout. |
 | [**CLI Reference**](cli_reference.md) | Users, engineers | All 56 CLI commands with flags and examples. |
@@ -47,7 +50,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v2.0 — a mu
 ## Verification commands
 
 ```bash
-uv run pytest -q                              # 878 tests
+uv run python -m pytest -q                     # 1427 tests
 uv run mypy src/research_engineer/llm         # type-check the LLM layer
 uv run ruff check .                            # lint
 research-engineer llm status                   # inspect provider/model routing

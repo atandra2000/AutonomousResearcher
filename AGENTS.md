@@ -7,10 +7,13 @@
 > i.e. `<CoreProjects>/.agents/skills/ml-research-engineer/SKILL.md`).
 
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
-> multi-agent ML research platform · **Stats:** 23 agents · 56 tools ·
-> 186 models · **878 passing tests** · **Stack:** Python 3.12, pydantic v2,
-> typer, httpx, arxiv, pymupdf, chromadb, sentence-transformers,
-> pytest-asyncio, ruff, mypy.
+> multi-agent ML research platform + self-improvement infra · **Version:**
+> 0.9.0 · **Stats:** 23 agents · 61 typed tools · 19 pydantic v2 schema
+> modules (251 classes) · **1427 passing tests** · plus agent-eval harness
+> (`eval/`), continuous-improvement loop (`improve/`), and P1/P2 research
+> benchmarks (`benchmark` CLI). **Stack:** Python 3.12, pydantic v2, typer,
+> httpx, arxiv, pymupdf, chromadb, sentence-transformers, pytest-asyncio,
+> ruff, mypy.
 
 This file is the **developer reference manual** for the platform. It is
 intentionally detailed (architecture diagrams, source tree, CLI command
@@ -54,6 +57,16 @@ research-engineer llm {status|config [--config path]}
 # Top-level workflows
 research-engineer task <goal> --repo <path>      # Phase 11: terminal-first autonomous coding
 research-engineer research <goal>                # Phase 15: end-to-end paper→report
+
+# Agent evaluation & self-improvement
+research-engineer eval-harness --suite <name>    # E4: graded eval suites (deterministic + LLM-judged)
+research-engineer improve <report_id>            # E8: mine failures → propose/promote improvements
+
+# Benchmarks
+research-engineer benchmark {p1|p2|list|compare} # P1 deterministic / P2 LLM-backed suites
+
+# Review gate
+research-engineer review                         # interactive approval of plans/patches/experiments
 
 # Dev — NOTE: bare `uv run pytest` resolves to Homebrew's Python 3.14
 # pytest on this machine and fails collection; always go through python -m.
@@ -296,26 +309,25 @@ CLI → ResearchOrchestrator
 
 ```
 src/research_engineer/
-├── cli/                       # Typer CLI (one file per command family)
-├── agents/                    # 24 files: one per agent + support (_llm_support, _adapters, research_stages, etc.)
-├── memory/                    # Phase 12: indexer, symbol graph, embeddings, retriever, storage
-├── llm/                       # Phase 10: base ABC, ollama_provider, factory, router
-├── models/                    # 14 pydantic v2 schema files (paper, plan, repo, coding, memory, ...)
-└── tools/                     # 63 files: one per tool + base.py, base_cache.py, rate_limiter
+├── cli/                       # Typer CLI (single main.py, 18 command families)
+├── agents/                    # one file per agent + support (_llm_support, _adapters,
+│                              #   _streaming, research_stages, research_workflow, delegation)
+├── memory/                    # Phase 12: indexer, symbol graph, embeddings, retriever,
+│                              #   vector backends, storage
+├── llm/                       # Phase 10: base ABC, factory, router + providers
+│                              #   (ollama cloud/local, openai, anthropic), react_loop,
+│                              #   streaming, resilience, cost
+├── eval/                      # E4 agent-eval harness: graders, metrics, runner, scripted suites
+├── improve/                   # E8 continuous improvement: mining, proposals, gate, pipeline
+├── gateway/ runtime/ service/ safety/ observability/   # platform infra layers
+├── models/                    # 19 pydantic v2 schema modules, 251 classes total
+└── tools/                     # 61 typed tools + base.py, base_cache.py, rate_limiter, _stats.py
 ```
 
-Per-phase model counts (single source per file):
-| File | Classes |
-|------|---------|
-| `models/paper.py` | `Paper`, `Author` |
-| `models/summary.py` | `ResearchSummary` (14 fields) |
-| `models/planner.py` | 27 classes (Phase 3) |
-| `models/loop.py` | 25+ classes (Phase 9) |
-| `models/coding.py` | 15 classes (Phase 4) |
-| `models/memory.py` | 20+ classes (Phase 5) |
-| `models/literature.py` | 30+ classes (Phase 6) |
-| `models/experiment.py` | 30+ classes (Phase 7) |
-| `models/evaluation.py` | 30+ classes (Phase 8) |
+Model schema modules (`models/`): paper, summary, plan, planner, repo,
+coding, memory, literature, experiment, evaluation, loop, task, repair,
+delegation, research, storage, ast_models — the three largest are
+`experiment.py`, `evaluation.py`, and `literature.py` (30+ classes each).
 
 ---
 
@@ -323,7 +335,7 @@ Per-phase model counts (single source per file):
 
 1. **`uv run` everywhere** — never `python` directly (root rule).
 2. **Pytest-then-lint-then-mypy** before declaring any change complete.
-3. **Never** reduce test coverage below 878 passing.
+3. **Never** reduce test coverage below **1427 passing**.
 4. **Repository-agnostic** — never hardcode assumptions about specific repos.
 5. **Paper-agnostic** — must work for any ML paper (attention, MoE,
    diffusion, etc.).
@@ -352,7 +364,7 @@ All tools follow `Tool[Input, Output]` ABC:
 | `RE_LLM_CONFIG` | factory | `llm_config.yaml` at repo root |
 | `OLLAMA_BASE_URL` | OllamaCloudProvider | `https://ollama.com` |
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
-| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
+| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider fallback | `llama3` (routing default comes from `llm_config.yaml`: `glm-5.3-flash`) |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
 
 ## Storage
@@ -363,6 +375,8 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-**878 passing tests** — never reduce. 29 (Phase 10) · 60 (Phase 11) · 51
-(Phase 12) · 31 (Phase 13) · 31 (Phase 14) · 39 (Phase 15). Coverage
-target >90%.
+**1427 passing tests** (verified via `uv run python -m pytest --collect-only`,
+2026-08-27) — never reduce. Includes the original phase suites plus tests for
+the E4 eval harness, E8 improvement loop, LLM layer extensions (openai /
+anthropic / local ollama providers, streaming, resilience), and P1/P2
+benchmarks. Coverage target >90%.

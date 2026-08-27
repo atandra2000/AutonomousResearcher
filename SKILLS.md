@@ -70,14 +70,30 @@ If agents encounter API errors or routing failures:
 Always run before committing any change:
 
 ```bash
-# 1. Tests (878 passing)
-uv run pytest
+# 1. Tests (1427 passing — always via python -m)
+uv run python -m pytest
 
 # 2. Type checking (strict)
 uv run mypy .
 
 # 3. Lint + format
 uv run ruff check .
+```
+
+## Skill 7: Run Agent Evaluations & Improvement Loop (E4 / E8)
+
+Grade agent behavior on scripted suites and mine failures into improvements:
+
+```bash
+uv run research-engineer eval-harness --suite <name>      # E4: run graded suite
+uv run research-engineer improve <report_id>              # E8: propose/approve/promote fixes
+```
+
+## Skill 8: Run Research Benchmarks
+
+```bash
+uv run research-engineer benchmark p1        # deterministic tier (no LLM cost)
+uv run research-engineer benchmark p2        # LLM-backed tier with judge + ReAct agent
 ```
 
 ## Pitfalls
