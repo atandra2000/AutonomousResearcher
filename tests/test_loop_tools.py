@@ -26,7 +26,6 @@ from research_engineer.tools.stopping_condition import (
     StoppingConditionChecker,
 )
 
-
 # --- Helpers ---
 
 

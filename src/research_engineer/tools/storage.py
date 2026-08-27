@@ -214,7 +214,7 @@ class StorageTool(Tool[StorageInput, StorageOutput]):
 
             search_pattern = f"%{query}%"
             cursor.execute("""
-                SELECT * FROM papers 
+                SELECT * FROM papers
                 WHERE title LIKE ? OR authors_json LIKE ?
                 ORDER BY created_at DESC
             """, (search_pattern, search_pattern))

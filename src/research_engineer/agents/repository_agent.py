@@ -6,13 +6,13 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from research_engineer.llm import LLMProvider
 from research_engineer.models import (
     ArchitectureOverview,
     FileImportance,
-    RepositorySummary,
     RepoImplementationTarget,
+    RepositorySummary,
 )
-from research_engineer.llm import LLMProvider
 from research_engineer.tools import (
     ASTAnalysisTool,
     ConfigAnalysisTool,
@@ -63,7 +63,7 @@ class _LLMShim:
 class RepositoryAgent:
     """
     Main agent for analyzing ML repositories and generating documentation.
-    
+
     This agent orchestrates multiple tools to:
     1. Scan repository structure
     2. Analyze Python AST
@@ -207,7 +207,10 @@ class RepositoryAgent:
         dependency_result = await self.dependencies.execute(dep_input)
 
         # Step 4: Analyze training pipeline
-        from research_engineer.tools.training_pipeline import TrainingPipelineInput, TrainingPipelineOutput
+        from research_engineer.tools.training_pipeline import (
+            TrainingPipelineInput,
+            TrainingPipelineOutput,
+        )
         if ast_results:
             train_input = TrainingPipelineInput(
                 ast_outputs=ast_results,
@@ -298,9 +301,9 @@ class RepositoryAgent:
         implementation_targets = self._generate_implementation_targets(ast_results, training_result)
 
         # Step 11: Create repository summary
-        from research_engineer.models.repo import ConfigurationAnalysis, KnowledgeGraph
         from research_engineer.models.ast_models import ModuleInfo
-        
+        from research_engineer.models.repo import ConfigurationAnalysis, KnowledgeGraph
+
         ast_module_list = []
         for r in ast_results:
             module_name = Path(r.file_path).stem
@@ -312,7 +315,7 @@ class RepositoryAgent:
                 line_count=r.line_count,
                 has_tests='test' in r.file_path.lower(),
             ))
-        
+
         summary = RepositorySummary(
             repository_name=path.name,
             project_type=repo_type,
@@ -465,7 +468,7 @@ class RepositoryAgent:
         """Rank files by importance."""
         if not python_files:
             return []
-            
+
         importance_scores = {}
 
         for file_path in python_files:

@@ -1,7 +1,5 @@
 """Tests for Phase 9 - Autonomous Research Loop models."""
 
-import json
-from datetime import datetime
 
 import pytest
 

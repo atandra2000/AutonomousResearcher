@@ -1133,7 +1133,6 @@ def memory_build(
         research-engineer memory build --repo ./my_repo
         research-engineer memory build --repo . --format json
     """
-    from research_engineer.memory import RepositoryMemory
     from research_engineer.memory.factory import build_repository_memory
 
     try:
@@ -3663,6 +3662,7 @@ def eval_harness_compare(
 # ---------------------------------------------------------------------------
 
 
+from research_engineer.eval.models import EvalReport  # noqa: E402
 from research_engineer.improve import (  # noqa: E402
     ImprovementPipeline,
     ImprovementStore,
@@ -3670,7 +3670,6 @@ from research_engineer.improve import (  # noqa: E402
     candidate_eval_runner_builder,
     mine_report,
 )
-from research_engineer.eval.models import EvalReport  # noqa: E402
 
 
 def _improve_pipeline(store_dir: str) -> ImprovementPipeline:

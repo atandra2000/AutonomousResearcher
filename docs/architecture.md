@@ -2,7 +2,7 @@
 
 Technical architecture for the Autonomous ML Research Engineer v2.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
 
-> **Status:** 15/15 phases complete · 23 agents · 56 tools · 186 Pydantic models · 56 CLI commands · 878 tests.
+> **Status:** 15/15 phases complete · 23 agents · 61 tools · 251 Pydantic models across 17 modules · 70+ CLI commands · 1464 tests (1462 passed, 2 network-skipped).
 
 ---
 
@@ -70,7 +70,7 @@ The platform decomposes ML research work into **fifteen cooperating phases**, ea
 │   LLMProvider ABC · OllamaCloudProvider · ProviderFactory      │
 │   ModelRouter · _BoundProvider · resolve_llm                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  Domain Layer  (186 Pydantic models across 18 modules)         │
+│  Domain Layer  (251 Pydantic models across 17 modules across 18 modules)         │
 ├─────────────────────────────────────────────────────────────────┤
 │  Infrastructure Layer                                          │
 │   SQLite · ChromaDB · arXiv API · PyMuPDF · AST · httpx       │
@@ -473,10 +473,10 @@ src/research_engineer/
 ├── agents/      # 23 agents + delegation + self-repair + research workflow + _llm_support.py
 ├── llm/          # Phase 10: base, ollama_provider, factory, router
 ├── memory/       # Phase 12: indexer, symbol_graph, retriever, storage
-├── models/       # 186 Pydantic models across 18 modules
+├── models/       # 251 Pydantic models across 17 modules across 18 modules
 ├── tools/        # 61 typed tools
 └── cli/          # 56 Typer commands
-tests/            # 45+ test files, 878 tests
+tests/            # 70+ test files, 1464 tests (1462 passed, 2 network-skipped)
 llm_config.yaml   # provider + per-agent model config
 docs/             # this documentation set
 ```
@@ -493,14 +493,14 @@ flowchart BT
     INT --> E2E["End-to-end tests<br/>(CLI, full pipelines)"]
 ```
 
-- **878 tests** across 45+ files.
+- **1464 tests (1462 passed, 2 network-skipped)** across 45+ files.
 - Every phase has dedicated model, tool, agent, and CLI test files.
 - `test_integration.py` and `test_integration_phases.py` cover end-to-end pipelines.
 - `test_llm.py` (29 tests) covers the LLM layer with a mock httpx transport.
 - Phase-specific tests: 60 task/terminal, 51 repo memory, 31 delegation, 31 self-repair, 39 research workflow.
 
 ```bash
-uv run pytest -q          # 878 passed
+uv run pytest -q          # 1462 passed, 2 skipped
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check .       # lint
 ```
@@ -517,4 +517,4 @@ uv run ruff check .       # lint
 
 ---
 
-*Version: 2.0 · Phase 15 complete · 878 tests passing*
+*Version: 0.9.0 · Phase 15 complete · 1462 passing, 2 network-skipped*

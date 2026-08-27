@@ -17,15 +17,14 @@ from research_engineer.models.repair import (
     FailureReport,
     FailureSeverity,
     RepairActionType,
-    RepairCycle,
     RepairConfig,
+    RepairCycle,
     RepairOutcome,
     RepairResult,
     RepairStrategy,
     RepairTerminationReason,
 )
 from research_engineer.tools.terminal import TerminalOutput
-
 
 # ---------------------------------------------------------------------------
 # Fakes

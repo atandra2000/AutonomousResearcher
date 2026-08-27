@@ -166,7 +166,7 @@ class ExperimentPlannerAgent:
         # Step 2: Understand repository
         repo_result = await self.repository_agent.analyze(repo_path, output_dir=output_dir)
         repo_summary_data = repo_result
-        
+
         # Convert important_files dicts to FileImportance objects
         important_files_data = repo_summary_data.get("important_files", [])
         important_files = []
@@ -175,7 +175,7 @@ class ExperimentPlannerAgent:
                 important_files.append(FileImportance(**f))
             elif isinstance(f, FileImportance):
                 important_files.append(f)
-        
+
         # Convert implementation_targets dicts to ImplementationTarget objects
         impl_targets_data = repo_summary_data.get("implementation_targets", [])
         impl_targets = []
@@ -184,21 +184,21 @@ class ExperimentPlannerAgent:
                 impl_targets.append(ImplementationTarget(**t))
             elif isinstance(t, ImplementationTarget):
                 impl_targets.append(t)
-        
+
         # Convert knowledge_graph dict to KnowledgeGraph object
         kg_data = repo_summary_data.get("knowledge_graph", {})
         if isinstance(kg_data, dict):
             kg = KnowledgeGraph(**kg_data)
         else:
             kg = kg_data
-        
+
         # Convert configuration_analysis dict to ConfigurationAnalysis object
         config_data = repo_summary_data.get("configuration_analysis", {})
         if isinstance(config_data, dict):
             config = ConfigurationAnalysis(**config_data)
         else:
             config = config_data
-        
+
         repo_summary = RepositorySummary(
             repository_name=repo_summary_data.get("repository_name", Path(repo_path).name),
             project_type=repo_summary_data.get("project_type", "Unknown"),

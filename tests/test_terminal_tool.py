@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
-
 import pytest
 
 from research_engineer.tools.terminal import (
     ALLOWED_COMMAND_PREFIXES,
     TerminalInput,
-    TerminalOutput,
     TerminalTool,
 )
 

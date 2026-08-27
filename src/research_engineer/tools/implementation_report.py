@@ -9,9 +9,6 @@ from pydantic import BaseModel, Field
 
 from research_engineer.models.coding import (
     ImplementationResult,
-    MigrationPlan,
-    ReviewResult,
-    RollbackPlan,
 )
 from research_engineer.tools.base import Tool, ToolError
 

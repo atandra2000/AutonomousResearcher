@@ -1,12 +1,9 @@
 """Tests for Phase 7 experiment models."""
 
-import math
 
-import pytest
 
 from research_engineer.models.experiment import (
     AnomalyIndicator,
-    ArtifactCollectorInput,
     ArtifactCollectorOutput,
     ArtifactPattern,
     ArtifactType,
@@ -23,10 +20,8 @@ from research_engineer.models.experiment import (
     ExperimentStorageInput,
     ExperimentStorageOutput,
     ExperimentType,
-    FailureDetectorInput,
     FailureDetectorOutput,
     FailureSeverity,
-    MetricCollectorInput,
     MetricCollectorOutput,
     MetricPattern,
     MetricReading,

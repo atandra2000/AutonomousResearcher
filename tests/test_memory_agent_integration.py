@@ -3,9 +3,12 @@
 import pytest
 
 from research_engineer.agents import MemoryAgent
-from research_engineer.models.memory import MemoryType, RelationshipType
 from research_engineer.models.paper import Author, Paper
-from research_engineer.models.plan import ComplexityMetrics, EngineeringReport, FileRequirement
+from research_engineer.models.plan import (
+    ComplexityMetrics,
+    EngineeringReport,
+    FileRequirement,
+)
 from research_engineer.models.summary import ResearchSummary
 
 

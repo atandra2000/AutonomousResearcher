@@ -18,13 +18,13 @@ from research_engineer.models.repo import (
     KnowledgeGraph,
     RepositorySummary,
 )
+from research_engineer.tools.literature_review import LiteratureReviewTool
 from research_engineer.tools.paper_comparison import PaperComparisonTool
 from research_engineer.tools.paper_recommendation import PaperRecommendationTool
 from research_engineer.tools.paper_relationship import PaperRelationshipTool
 from research_engineer.tools.paper_search import PaperSearchTool
 from research_engineer.tools.relevance_scoring import RelevanceScoringTool
 from research_engineer.tools.trend_analysis import TrendAnalysisTool
-from research_engineer.tools.literature_review import LiteratureReviewTool
 
 
 def _make_paper(
@@ -177,7 +177,7 @@ class TestPaperComparisonTool:
 
     @pytest.mark.asyncio
     async def test_validate_single_paper(self):
-        tool = PaperComparisonTool()
+        PaperComparisonTool()
         papers = [PaperSummary(paper_id="1", title="A")]
         with pytest.raises(Exception):
             PaperComparisonInput(papers=papers)
@@ -288,11 +288,11 @@ class TestTrendAnalysisTool:
     @pytest.mark.asyncio
     async def test_rising_trend(self):
         tool = TrendAnalysisTool()
-        from research_engineer.tools.trend_analysis import TrendAnalysisTool as TA
         # Patch current_year to 2024 so the window is 2020-2024
-        import research_engineer.tools.trend_analysis as ta_mod
-        from unittest.mock import patch
         from datetime import datetime
+        from unittest.mock import patch
+
+        import research_engineer.tools.trend_analysis as ta_mod
 
         papers = []
         # 2020: 2 papers, 2021: 4, 2022: 8, 2023: 12, 2024: 16

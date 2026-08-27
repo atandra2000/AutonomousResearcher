@@ -9,6 +9,8 @@ from .failure_analyzer import FailureAnalyzer
 from .literature_agent import LiteratureAgent
 from .memory_agent import MemoryAgent
 from .repair_strategist import RepairStrategist
+from .repository_agent import RepositoryAgent
+from .research_agent import ResearchAgent
 from .research_loop_agent import ResearchLoopAgent
 from .research_orchestrator import ResearchOrchestrator
 from .research_stages import (
@@ -21,8 +23,6 @@ from .research_stages import (
     ResultAnalyzerAgent,
 )
 from .research_workflow import ResearchConfig, ResearchWorkflowFramework
-from .repository_agent import RepositoryAgent
-from .research_agent import ResearchAgent
 from .reviewer_agent import ReviewerAgent
 from .self_repair import SelfRepairFramework
 from .task_agent import TaskAgent

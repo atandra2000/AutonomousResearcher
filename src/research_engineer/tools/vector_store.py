@@ -1,5 +1,7 @@
 """Vector store for semantic embeddings."""
 
+from pathlib import Path
+
 import numpy as np
 from pydantic import BaseModel, Field
 
@@ -53,7 +55,6 @@ class VectorStore(Tool):
 
 try:
     import chromadb
-    from chromadb.config import Settings
 
     class ChromaVectorStore(VectorStore):
         """Chroma-based vector store."""
@@ -313,7 +314,5 @@ except ImportError:
         def __init__(self, config: VectorStoreConfig):
             raise ImportError("faiss is required for FAISSVectorStore. Install with: pip install faiss-cpu")
 
-
-from pathlib import Path
 
 VectorStoreImpl = ChromaVectorStore

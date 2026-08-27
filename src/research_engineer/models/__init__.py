@@ -40,6 +40,16 @@ from .coding import (
 from .coding import (
     TestSuite as CodingTestSuite,
 )
+from .delegation import (
+    AgentCapability,
+    AgentDescriptor,
+    AgentRole,
+    DelegationStatus,
+    DelegationStep,
+    Feedback,
+    FeedbackType,
+    SharedTaskContext,
+)
 from .evaluation import (
     DynamicsPattern,
     DynamicsPatternType,
@@ -198,8 +208,8 @@ from .planner import (
     Experiment,
     ExperimentGroup,
     ExperimentMatrix,
-    ExperimentType,
-    FailureMode,
+    ExperimentType,  # noqa: F811 -- deliberate shadow: .research variant must win
+    FailureMode,  # noqa: F811 -- deliberate shadow: .research variant must win
     ImpactDimension,
     ImpactReport,
     ImplementationPlan,
@@ -217,6 +227,18 @@ from .planner import (
     ValidationPlan,
     ValidationTestType,
 )
+from .repair import (
+    FailureCategory,
+    FailureReport,
+    FailureSeverity,  # noqa: F811 -- deliberate shadow: .repair variant must win
+    RepairActionType,
+    RepairConfig,
+    RepairCycle,
+    RepairOutcome,
+    RepairResult,
+    RepairStrategy,
+    RepairTerminationReason,
+)
 from .repo import (
     ArchitectureOverview,
     ConfigurationAnalysis,
@@ -229,38 +251,6 @@ from .repo import (
 )
 from .repo import (
     ImplementationTarget as RepoImplementationTarget,
-)
-from .storage import StoredPaper
-from .summary import ResearchSummary
-from .task import (
-    TaskConfig,
-    TaskResult,
-    TaskStatus,
-    TaskStep,
-    TaskStepType,
-    new_task_id,
-)
-from .delegation import (
-    AgentCapability,
-    AgentDescriptor,
-    AgentRole,
-    DelegationStatus,
-    DelegationStep,
-    Feedback,
-    FeedbackType,
-    SharedTaskContext,
-)
-from .repair import (
-    FailureCategory,
-    FailureReport,
-    FailureSeverity,
-    RepairActionType,
-    RepairCycle,
-    RepairConfig,
-    RepairOutcome,
-    RepairResult,
-    RepairStrategy,
-    RepairTerminationReason,
 )
 from .research import (
     ExperimentDesign,
@@ -277,6 +267,16 @@ from .research import (
     ResultAnalysis,
     SharedResearchContext,
 )
+from .storage import StoredPaper
+from .summary import ResearchSummary
+from .task import (
+    TaskConfig,
+    TaskResult,
+    TaskStatus,
+    TaskStep,
+    TaskStepType,
+    new_task_id,
+)
 
 __all__ = [
     # Paper
@@ -284,6 +284,8 @@ __all__ = [
     "Paper",
     # Summary
     "ResearchSummary",
+    # Experiment (re-export from .experiment)
+    "ArtifactManifest",
     # Plan
     "ComplexityMetrics",
     "FileRequirement",

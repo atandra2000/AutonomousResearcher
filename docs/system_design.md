@@ -426,4 +426,4 @@ Optimization strategies: async I/O, connection pooling, caching (`SimpleCache`/`
 
 ---
 
-*Version: 2.0 · 15/15 phases · 878 tests*
+*Version: 0.9.0 · 15/15 phases · 1464 tests (1462 passed, 2 network-skipped)*

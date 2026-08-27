@@ -24,7 +24,7 @@ research-engineer llm status
 ### Run the checks before every PR
 
 ```bash
-uv run pytest -q                              # 878 tests
+uv run pytest -q                              # 1462 passed, 2 skipped (network)
 uv run ruff check .                            # lint
 uv run mypy src/research_engineer/llm          # type-check the LLM layer
 ```
@@ -77,10 +77,10 @@ src/research_engineer/
 ├── agents/      # 23 agents + delegation + self-repair + research workflow + _llm_support.py
 ├── llm/         # Phase 10: base, ollama_provider, factory, router
 ├── memory/      # Phase 12: indexer, symbol_graph, retriever, storage
-├── models/      # 186 Pydantic models across 18 modules
+├── models/      # 251 Pydantic models across 17 modules across 18 modules
 ├── tools/       # 61 typed tools
 └── cli/         # 56 Typer commands
-tests/           # 45+ test files, 878 tests
+tests/           # 70+ test files, 1464 tests (1462 passed, 2 network-skipped)
 llm_config.yaml  # provider + per-agent model config
 docs/            # 13 documentation files
 ```
@@ -250,4 +250,4 @@ Be kind. Be specific. Assume good intent. Critique code, not people.
 
 ---
 
-*Version: 2.0 · Contributions welcome*
+*Version: 0.9.0 · Contributions welcome*

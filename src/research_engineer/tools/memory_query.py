@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field
 
 from research_engineer.models.memory import MemoryFilters, MemoryResult, MemoryType
-from research_engineer.tools.base import Tool, ToolError
+from research_engineer.tools.base import ToolError
 
 
 class SemanticQuery(BaseModel):
@@ -108,7 +108,10 @@ class QueryProcessor:
     async def _vector_search(self, query: SemanticQuery, vector_store, filters: MemoryFilters) -> list[MemoryResult]:
         """Perform vector similarity search."""
         try:
-            from research_engineer.tools.embedding_strategy import EmbeddingStrategy, EmbeddingConfig
+            from research_engineer.tools.embedding_strategy import (
+                EmbeddingConfig,
+                EmbeddingStrategy,
+            )
 
             strategy = EmbeddingStrategy(EmbeddingConfig())
 

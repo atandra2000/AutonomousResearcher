@@ -59,7 +59,7 @@ class DependencyGraphTool(Tool[DependencyInput, DependencyOutput]):
             depth2 = rel2.count('/')
 
             return abs(depth1 - depth2)
-        except:
+        except Exception:
             return 0
 
     def _resolve_import(self, import_info: ImportInfo, current_file: str, project_root: str) -> list[str]:

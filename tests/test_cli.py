@@ -1,6 +1,5 @@
 """CLI tests for research-engineer commands."""
 
-import pytest
 from typer.testing import CliRunner
 
 from research_engineer.cli import app

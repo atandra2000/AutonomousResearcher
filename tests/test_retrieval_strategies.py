@@ -3,19 +3,18 @@
 import pytest
 
 from research_engineer.models.memory import (
-    MemoryBase,
-    MemoryResult,
+    MemoryRelationship,
     MemoryType,
     PaperMemory,
+    RelationshipType,
 )
 from research_engineer.tools.memory_graph import MemoryKnowledgeGraph
-from research_engineer.models.memory import MemoryRelationship, RelationshipType
 from research_engineer.tools.retrieval_strategies import (
+    STRATEGY_REGISTRY,
     DirectLookupStrategy,
     GraphTraversalStrategy,
     HybridSearchStrategy,
     RetrievalQuery,
-    STRATEGY_REGISTRY,
     SemanticSearchStrategy,
     TagBasedFilterStrategy,
     TemporalQueryStrategy,

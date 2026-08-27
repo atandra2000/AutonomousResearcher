@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from research_engineer.llm import LLMProvider
 from research_engineer.models import (
     ComplexityMetrics,
     EngineeringReport,
@@ -13,7 +14,6 @@ from research_engineer.models import (
     Paper,
     ResearchSummary,
 )
-from research_engineer.llm import LLMProvider
 from research_engineer.tools import (
     ArxivTool,
     PaperParserTool,
@@ -39,7 +39,7 @@ class AnalysisResult(BaseModel):
 class ResearchAgent:
     """
     Main agent for analyzing ML papers and generating implementation plans.
-    
+
     This agent orchestrates multiple tools to:
     1. Acquire papers (arXiv or PDF)
     2. Parse and extract content
@@ -86,7 +86,6 @@ class ResearchAgent:
         """Generate structured research summary using rules and heuristics."""
 
         sections = parsed_content.sections
-        raw_text = paper.raw_content or ""
 
         # 1. Executive Summary
         executive_summary = self._extract_executive_summary(sections, paper)
@@ -352,7 +351,6 @@ class ResearchAgent:
     def _extract_reproduction_challenges(self, sections: dict) -> list:
         """Extract reproduction challenges."""
         methods = sections.get("methods", "")
-        limitations = sections.get("limitations", [])
 
         challenges = []
         challenge_keywords = [
@@ -658,11 +656,11 @@ class ResearchAgent:
     async def analyze(self, paper_input: str, output_dir: str = "output") -> dict:
         """
         Main entry point for paper analysis.
-        
+
         Args:
             paper_input: arXiv ID, arXiv URL, or PDF file path
             output_dir: Directory to save output files
-            
+
         Returns:
             Dict with analysis results
         """

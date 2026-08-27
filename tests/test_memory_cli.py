@@ -3,11 +3,9 @@
 import json
 from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from research_engineer.cli import app
-
 
 runner = CliRunner()
 

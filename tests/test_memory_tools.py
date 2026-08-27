@@ -3,9 +3,7 @@
 import pytest
 
 from research_engineer.models.memory import (
-    MemoryBase,
     MemoryRelationship,
-    MemoryType,
     PaperMemory,
     RelationshipType,
 )
@@ -14,7 +12,6 @@ from research_engineer.tools.memory_storage import MemoryStorageTool
 from research_engineer.tools.memory_tools import (
     MemoryGraphTool,
     MemoryGraphToolInput,
-    MemoryGraphToolOutput,
     MemoryQueryTool,
     MemoryQueryToolInput,
     MemoryQueryToolOutput,

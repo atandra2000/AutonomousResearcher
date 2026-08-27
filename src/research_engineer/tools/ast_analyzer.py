@@ -348,7 +348,7 @@ class ASTAnalysisTool(Tool[ASTInput, ASTOutput]):
         Halstead_volume = 0
         try:
             Halstead_volume = (N1 + N2) * ((n1 + n2).bit_length())
-        except:
+        except Exception:
             Halstead_volume = 0
 
         # Calculate maintainability index (simplified)

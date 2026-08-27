@@ -2,9 +2,7 @@
 
 import json
 import sqlite3
-from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,7 +12,6 @@ from research_engineer.models.memory import (
     MemoryRelationship,
     MemoryStats,
     MemoryType,
-    MemoryVersion,
 )
 from research_engineer.tools.base import Tool, ToolError
 
@@ -519,8 +516,8 @@ class MemoryStorageTool(Tool[MemoryStorageInput | MemoryQueryInput, MemoryStorag
             total = cursor.fetchone()[0]
 
             cursor.execute("""
-                SELECT memory_type, COUNT(*) 
-                FROM memories 
+                SELECT memory_type, COUNT(*)
+                FROM memories
                 GROUP BY memory_type
             """)
             by_type = {row[0]: row[1] for row in cursor.fetchall()}
@@ -535,15 +532,15 @@ class MemoryStorageTool(Tool[MemoryStorageInput | MemoryQueryInput, MemoryStorag
             avg_confidence = cursor.fetchone()[0] or 0.0
 
             cursor.execute("""
-                SELECT memory_id FROM memories 
-                ORDER BY accessed_count DESC 
+                SELECT memory_id FROM memories
+                ORDER BY accessed_count DESC
                 LIMIT 10
             """)
             most_accessed = [row[0] for row in cursor.fetchall()]
 
             cursor.execute("""
-                SELECT memory_id FROM memories 
-                ORDER BY created_at DESC 
+                SELECT memory_id FROM memories
+                ORDER BY created_at DESC
                 LIMIT 10
             """)
             recent = [row[0] for row in cursor.fetchall()]

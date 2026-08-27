@@ -3,8 +3,6 @@
 import pytest
 
 from research_engineer.models.memory import (
-    FailedApproachMemory,
-    FailureMode,
     PaperMemory,
     PatchMemory,
     RelationshipType,

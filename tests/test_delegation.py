@@ -19,7 +19,6 @@ from research_engineer.models.delegation import (
 from research_engineer.models.task import TaskConfig, TaskStatus
 from research_engineer.tools.terminal import TerminalOutput
 
-
 # ---------------------------------------------------------------------------
 # Fakes
 # ---------------------------------------------------------------------------
@@ -346,7 +345,7 @@ class TestReviewerAgent:
         from research_engineer.agents import ReviewerAgent
 
         provider = _FakeProvider()
-        agent = ReviewerAgent(llm=provider)
+        ReviewerAgent(llm=provider)
         ctx = SharedTaskContext(goal="g", repo_path=str(tmp_path))
         ctx.diff = "+def foo(): pass\n"
         # The _FakeProvider returns "1. Step one..." which doesn't start with APPROVED.
@@ -521,6 +520,7 @@ class TestTaskAgentDelegation:
 class TestDelegationCLI:
     def test_task_help_shows_delegate_flag(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -532,6 +532,7 @@ class TestDelegationCLI:
     def test_task_help_shows_review_in_console(self):
         """Verify the --delegate flag is documented in help."""
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()

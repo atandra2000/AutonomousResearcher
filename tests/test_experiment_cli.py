@@ -1,12 +1,9 @@
 """Tests for Phase 7 experiment CLI commands."""
 
-import sys
 
-import pytest
 from typer.testing import CliRunner
 
-from research_engineer.cli import app, experiment_app
-
+from research_engineer.cli import app
 
 runner = CliRunner()
 

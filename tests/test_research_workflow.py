@@ -24,7 +24,6 @@ from research_engineer.models.research import (
 )
 from research_engineer.tools.terminal import TerminalOutput
 
-
 # ---------------------------------------------------------------------------
 # Fakes
 # ---------------------------------------------------------------------------
@@ -215,7 +214,7 @@ class TestKnowledgeSynthesisAgent:
         agent = KnowledgeSynthesisAgent(llm=None)
         agent.llm_provider = None
         ctx = SharedResearchContext(research_goal="g", repo_path=str(tmp_path))
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert ctx.synthesis is not None
         assert len(ctx.synthesis.key_findings) > 0
         assert len(ctx.synthesis.research_gaps) > 0
@@ -227,7 +226,7 @@ class TestKnowledgeSynthesisAgent:
         agent = KnowledgeSynthesisAgent(llm=_FakeProvider())
         ctx = SharedResearchContext(research_goal="g", repo_path=str(tmp_path))
         ctx.literature_review = "Some review text"
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert ctx.synthesis is not None
 
     def test_parse_synthesis(self):
@@ -253,7 +252,7 @@ class TestHypothesisGeneratorAgent:
             key_findings=["f1"],
             research_gaps=["gap1", "gap2", "gap3"],
         )
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.hypotheses) == 3
         assert all(h.statement for h in ctx.hypotheses)
 
@@ -268,7 +267,7 @@ class TestHypothesisGeneratorAgent:
         ctx.synthesis = KnowledgeSynthesis(
             key_findings=["f1"], research_gaps=["gap1"]
         )
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.hypotheses) > 0
 
     def test_parse_hypotheses(self):
@@ -293,7 +292,7 @@ class TestResearchExperimentPlannerAgent:
             Hypothesis(hypothesis_id="h1", statement="Hypothesis 1"),
             Hypothesis(hypothesis_id="h2", statement="Hypothesis 2"),
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.experiment_designs) == 2
         assert ctx.experiment_designs[0].hypothesis_id == "h1"
 
@@ -318,7 +317,7 @@ class TestExperimentExecutorAgent:
                 title="Test", command="python train.py",
             )
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.experiment_outcomes) == 1
         assert ctx.experiment_outcomes[0].status == "dry_run"
 
@@ -341,7 +340,7 @@ class TestExperimentExecutorAgent:
                 title="Test", command="echo hello",
             )
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.experiment_outcomes) == 1
         assert ctx.experiment_outcomes[0].status == "completed"
 
@@ -365,7 +364,7 @@ class TestResultAnalyzerAgent:
                 experiment_id="exp1", status="dry_run", exit_code=0,
             )
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.analyses) == 1
         assert ctx.analyses[0].hypothesis_status == HypothesisStatus.INCONCLUSIVE
 
@@ -388,7 +387,7 @@ class TestResultAnalyzerAgent:
                 metrics={"loss": 0.05},
             )
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert ctx.analyses[0].hypothesis_status == HypothesisStatus.SUPPORTED
         assert ctx.hypotheses[0].status == HypothesisStatus.SUPPORTED
 
@@ -420,7 +419,7 @@ class TestReportGeneratorAgent:
                 conclusion="Inconclusive",
             )
         ]
-        result = await agent.execute(ctx)
+        await agent.execute(ctx)
         assert len(ctx.final_report) > 0
         assert "Research Report" in ctx.final_report
         assert ctx.report_path != ""
@@ -611,6 +610,7 @@ class TestResearchOrchestrator:
 class TestResearchCLI:
     def test_research_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -621,6 +621,7 @@ class TestResearchCLI:
 
     def test_research_missing_goal(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -629,6 +630,7 @@ class TestResearchCLI:
 
     def test_research_dry_run_flag(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -637,6 +639,7 @@ class TestResearchCLI:
 
     def test_research_max_papers_flag(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()

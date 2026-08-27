@@ -1,8 +1,9 @@
 """Tests for Phase 4 Coding Agent and tools."""
 
-import pytest
-from pathlib import Path
 
+import pytest
+
+from research_engineer.agents.coding_agent import CodingAgentResult
 from research_engineer.models.coding import (
     ChangeType,
     CodeChange,
@@ -12,19 +13,31 @@ from research_engineer.models.coding import (
     ReviewResult,
     ReviewStatus,
     RollbackPlan,
-    TestSpecification,
-    TestSuite,
-    TestType,
 )
 from research_engineer.tools.code_generation import (
     CodeGenerationInput,
     CodeGenerationOutput,
     CodeGenerationTool,
 )
+from research_engineer.tools.implementation_report import (
+    ImplementationReportInput,
+    ImplementationReportOutput,
+    ImplementationReportTool,
+)
+from research_engineer.tools.migration_planner import (
+    MigrationPlannerInput,
+    MigrationPlannerOutput,
+    MigrationPlannerTool,
+)
 from research_engineer.tools.patch_generation import (
     PatchGenerationInput,
     PatchGenerationOutput,
     PatchGenerationTool,
+)
+from research_engineer.tools.rollback_planner import (
+    RollbackPlannerInput,
+    RollbackPlannerOutput,
+    RollbackPlannerTool,
 )
 from research_engineer.tools.self_review import (
     SelfReviewInput,
@@ -36,22 +49,6 @@ from research_engineer.tools.test_generation import (
     TestGenerationOutput,
     TestGenerationTool,
 )
-from research_engineer.tools.migration_planner import (
-    MigrationPlannerInput,
-    MigrationPlannerOutput,
-    MigrationPlannerTool,
-)
-from research_engineer.tools.rollback_planner import (
-    RollbackPlannerInput,
-    RollbackPlannerOutput,
-    RollbackPlannerTool,
-)
-from research_engineer.tools.implementation_report import (
-    ImplementationReportInput,
-    ImplementationReportOutput,
-    ImplementationReportTool,
-)
-from research_engineer.agents.coding_agent import CodingAgent, CodingAgentResult
 
 
 class TestCodeChange:

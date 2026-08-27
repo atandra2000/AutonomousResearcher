@@ -7,27 +7,22 @@ TaskAgent integration.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from research_engineer.memory import (
     CodeChunk,
     HashingEmbedder,
-    HybridRetriever,
-    InMemoryVectorBackend,
     IndexStats,
+    InMemoryVectorBackend,
     RelationKind,
     RepositoryIndexer,
     RepositoryMemory,
     RepositoryMemoryStore,
-    RetrievalResult,
     Symbol,
     SymbolEdge,
     SymbolGraph,
     SymbolKind,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -606,6 +601,7 @@ class TestTaskAgentMemoryIntegration:
 class TestRepositoryMemoryCLI:
     def test_memory_build_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -615,6 +611,7 @@ class TestRepositoryMemoryCLI:
 
     def test_memory_query_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -624,6 +621,7 @@ class TestRepositoryMemoryCLI:
 
     def test_memory_symbol_graph_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -633,6 +631,7 @@ class TestRepositoryMemoryCLI:
 
     def test_memory_refresh_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()
@@ -641,6 +640,7 @@ class TestRepositoryMemoryCLI:
 
     def test_memory_stats_repo_help(self):
         from typer.testing import CliRunner
+
         from research_engineer.cli import app
 
         runner = CliRunner()

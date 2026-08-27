@@ -12,7 +12,6 @@ from research_engineer.models.literature import (
     PaperRelationshipOutput,
     PaperSearchOutput,
     PaperSummary,
-    RelevanceScoringOutput,
     SearchResult,
     SearchSource,
     TrendAnalysisOutput,
@@ -152,7 +151,7 @@ class TestDiscoverWorkflow:
 
 class TestToSummaries:
     def test_convert(self, literature_agent):
-        from research_engineer.models.literature import PaperSearchOutput, SearchResult
+        from research_engineer.models.literature import PaperSearchOutput
         output = PaperSearchOutput(
             papers=[
                 SearchResult(paper_id="1", title="A", abstract="test", source=SearchSource.ARXIV),
@@ -169,9 +168,9 @@ class TestStoreRelationships:
     @pytest.mark.asyncio
     async def test_store_relationships(self, literature_agent, mock_memory_agent):
         from research_engineer.models.literature import (
-            PaperRelationType,
             PaperRelationship,
             PaperRelationshipOutput,
+            PaperRelationType,
         )
         output = PaperRelationshipOutput(
             relationships=[

@@ -8,8 +8,6 @@ from research_engineer.models.memory import (
 )
 from research_engineer.tools.memory_graph import (
     GraphStats,
-    MemoryGraphInput,
-    MemoryGraphOutput,
     MemoryKnowledgeGraph,
 )
 

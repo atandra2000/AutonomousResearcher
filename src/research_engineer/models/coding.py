@@ -11,7 +11,6 @@ All Pydantic models for the Coding Agent, including:
 
 from datetime import datetime
 from enum import StrEnum
-from pathlib import Path
 
 from pydantic import BaseModel, Field
 

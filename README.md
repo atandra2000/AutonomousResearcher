@@ -7,14 +7,15 @@
 [![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-e92063?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-878%20passing-success)](#14-testing-statistics)
-[![Coverage](https://img.shields.io/badge/phases-1%E2%80%9315%20complete-blue)](#15-roadmap)
+[![Tests](https://img.shields.io/badge/tests-1462%20passing-success)](#15-testing-statistics)
+[![Coverage](https://img.shields.io/badge/phases-1%E2%80%9315%20complete-blue)](#16-roadmap)
+[![Deploy](https://img.shields.io/badge/deploy-Docker%20Compose-2496ED?logo=docker&logoColor=white)](#13-production-deployment)
 
 </div>
 
 ---
 
-> **v2.0 — Production-ready with autonomous research workflows.** 23 specialized agents, 61 typed tools, 186 Pydantic models, a persistent knowledge graph, a vector memory store, a symbol-graph repository memory, a multi-agent delegation framework, an autonomous self-repair engine, and an end-to-end research workflow orchestrator — wired through a single config-driven LLM layer with per-agent model routing (kimi-k2.7-code for coding, glm-5.2:cloud for reasoning, minimax-m3:cloud for orchestration).
+> **v0.9.0 — Production-ready.** 23 specialized agents, 61 typed tools, 251 Pydantic models, a persistent knowledge graph, a vector memory store, a symbol-graph repository memory, a multi-agent delegation framework, an autonomous self-repair engine, an end-to-end research workflow orchestrator, and a hardened deployment stack (FastAPI api + worker + Postgres queue + OpenTelemetry) — wired through a single config-driven LLM layer with per-agent model routing (kimi-k2.7-code for coding, glm-5.3-flash for reasoning, minimax-m3:cloud for orchestration).
 
 ---
 
@@ -32,11 +33,12 @@
 10. [Quick Start](#10-quick-start)
 11. [End-to-End Examples](#11-end-to-end-examples)
 12. [CLI Reference](#12-cli-reference)
-13. [Demo Workflows](#13-demo-workflows)
-14. [Testing Statistics](#14-testing-statistics)
-15. [Roadmap](#15-roadmap)
-16. [Limitations](#16-limitations)
-17. [Contributing](#17-contributing)
+13. [Production Deployment](#13-production-deployment)
+14. [Demo Workflows](#14-demo-workflows)
+15. [Testing Statistics](#15-testing-statistics)
+16. [Roadmap](#16-roadmap)
+17. [Limitations](#17-limitations)
+18. [Contributing](#18-contributing)
 
 ---
 
@@ -211,7 +213,7 @@ flowchart LR
     classDef a fill:#dbeafe,stroke:#1d4ed8,color:#000
 ```
 
-> Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `kimi-k2.7-code`, reasoning use `glm-5.2`, orchestration use `minimax-m3`.
+> Switching a model is a **YAML edit**, never a code change. Per-agent routing lets coding agents use `kimi-k2.7-code`, reasoning use `glm-5.3-flash`, orchestration use `minimax-m3`.
 ### Phase pipeline
 
 ```
@@ -239,28 +241,28 @@ Paper Analysis → Experiment Planning ← Repo Analysis
 
 | # | Agent | Phase | Responsibility | Model |
 |---|-------|-------|----------------|-------|
-| 1 | `ResearchAgent` | 1 | Acquire paper (arXiv/PDF), parse, produce `ResearchSummary` + `EngineeringReport`, store. | glm-5.2:cloud |
-| 2 | `RepositoryAgent` | 2 | Scan repo, AST analysis, dependency graph, training pipeline, config analysis, knowledge graph, docs. | glm-5.2:cloud |
-| 3 | `ExperimentPlannerAgent` | 3 | Compatibility (7 dims), implementation plan, experiment matrix, validation, risk, compute, prediction. | glm-5.2:cloud |
+| 1 | `ResearchAgent` | 1 | Acquire paper (arXiv/PDF), parse, produce `ResearchSummary` + `EngineeringReport`, store. | glm-5.3-flash |
+| 2 | `RepositoryAgent` | 2 | Scan repo, AST analysis, dependency graph, training pipeline, config analysis, knowledge graph, docs. | glm-5.3-flash |
+| 3 | `ExperimentPlannerAgent` | 3 | Compatibility (7 dims), implementation plan, experiment matrix, validation, risk, compute, prediction. | glm-5.3-flash |
 | 4 | `CodingAgent` | 4 | Code generation → patches → self-review → tests → migration → rollback → report. **Patch-first.** | kimi-k2.7-code |
-| 5 | `MemoryAgent` | 5 | Store/recall 9 memory types, manage relationships, vector search, knowledge graph. | glm-5.2:cloud |
-| 6 | `LiteratureAgent` | 6 | Multi-source search, 7-dim comparison, reviews, trends, recommendations, relevance scoring. | glm-5.2:cloud |
+| 5 | `MemoryAgent` | 5 | Store/recall 9 memory types, manage relationships, vector search, knowledge graph. | glm-5.3-flash |
+| 6 | `LiteratureAgent` | 6 | Multi-source search, 7-dim comparison, reviews, trends, recommendations, relevance scoring. | glm-5.3-flash |
 | 7 | `ExperimentAgent` | 7 | Launch (allowlisted, dry-run default), monitor, collect metrics + artifacts, detect failures. | minimax-m3:cloud |
-| 8 | `EvaluationAgent` | 8 | Compare runs, training dynamics, statistical significance, next-experiment recommendations. | glm-5.2:cloud |
+| 8 | `EvaluationAgent` | 8 | Compare runs, training dynamics, statistical significance, next-experiment recommendations. | glm-5.3-flash |
 | 9 | `ResearchLoopAgent` | 9 | Orchestrate Phases 1–8 in iterative cycles with stopping conditions + approval gates + reports. | minimax-m3:cloud |
 | 10 | `TaskAgent` | 11 | Terminal-first autonomous coding: analyze → plan → implement → diff → test. | minimax-m3:cloud |
-| 11 | `ArchitectAgent` | 13 | Produces implementation plans grounded in repository memory + research context. | glm-5.2:cloud |
-| 12 | `ReviewerAgent` | 13 | Reviews generated code changes; LLM + heuristic review producing structured feedback. | glm-5.2:cloud |
+| 11 | `ArchitectAgent` | 13 | Produces implementation plans grounded in repository memory + research context. | glm-5.3-flash |
+| 12 | `ReviewerAgent` | 13 | Reviews generated code changes; LLM + heuristic review producing structured feedback. | glm-5.3-flash |
 | 13 | `TestAgent` | 13 | Executes tests via TerminalTool, parses pytest failures, provides structured feedback. | minimax-m3:cloud |
-| 14 | `FailureAnalyzer` | 14 | Diagnoses failures from test/review/impl errors; produces structured `FailureReport`. | glm-5.2:cloud |
-| 15 | `RepairStrategist` | 14 | Generates ranked repair strategies from failure reports; category-keyed strategy map. | glm-5.2:cloud |
-| 16 | `LiteratureDiscoveryAgent` | 15 | Discovers relevant papers and generates a literature review. | glm-5.2:cloud |
-| 17 | `KnowledgeSynthesisAgent` | 15 | Synthesizes key findings, gaps, and trends from discovered papers. | glm-5.2:cloud |
-| 18 | `HypothesisGeneratorAgent` | 15 | Generates testable hypotheses from knowledge synthesis. | glm-5.2:cloud |
-| 19 | `ResearchExperimentPlannerAgent` | 15 | Designs experiments to test hypotheses. | glm-5.2:cloud |
+| 14 | `FailureAnalyzer` | 14 | Diagnoses failures from test/review/impl errors; produces structured `FailureReport`. | glm-5.3-flash |
+| 15 | `RepairStrategist` | 14 | Generates ranked repair strategies from failure reports; category-keyed strategy map. | glm-5.3-flash |
+| 16 | `LiteratureDiscoveryAgent` | 15 | Discovers relevant papers and generates a literature review. | glm-5.3-flash |
+| 17 | `KnowledgeSynthesisAgent` | 15 | Synthesizes key findings, gaps, and trends from discovered papers. | glm-5.3-flash |
+| 18 | `HypothesisGeneratorAgent` | 15 | Generates testable hypotheses from knowledge synthesis. | glm-5.3-flash |
+| 19 | `ResearchExperimentPlannerAgent` | 15 | Designs experiments to test hypotheses. | glm-5.3-flash |
 | 20 | `ExperimentExecutorAgent` | 15 | Executes experiments (dry-run default for safety). | minimax-m3:cloud |
-| 21 | `ResultAnalyzerAgent` | 15 | Analyzes experiment results and updates hypothesis status. | glm-5.2:cloud |
-| 22 | `ReportGeneratorAgent` | 15 | Generates the final research report with evidence and conclusions. | glm-5.2:cloud |
+| 21 | `ResultAnalyzerAgent` | 15 | Analyzes experiment results and updates hypothesis status. | glm-5.3-flash |
+| 22 | `ReportGeneratorAgent` | 15 | Generates the final research report with evidence and conclusions. | glm-5.3-flash |
 | 23 | `ResearchOrchestrator` | 15 | Top-level coordinator for end-to-end research workflows. | minimax-m3:cloud |
 
 Every agent constructor accepts an optional `llm: LLMProvider` and exposes `agent_name` + `llm_provider`. **No agent instantiates a model directly** — they all go through `resolve_llm()`.
@@ -417,29 +419,29 @@ llm_config.yaml ──→ ProviderFactory ──→ ModelRouter ──→ Ollama
 Each agent uses a **different model**, configured in one file. The platform uses three specialized models:
 
 - **kimi-k2.7-code** — coding (CodingAgent)
-- **glm-5.2:cloud** — reasoning (Research, Planning, Literature, Evaluation, Architecture, Review, Analysis)
+- **glm-5.3-flash** — reasoning (Research, Planning, Literature, Evaluation, Architecture, Review, Analysis)
 - **minimax-m3:cloud** — orchestration (TaskAgent, ResearchLoop, Experiment, Test, ResearchOrchestrator)
 
 ```yaml
 # llm_config.yaml
 default_provider: ollama
-default_model: glm-5.2:cloud
+default_model: glm-5.3-flash
 providers:
   ollama:
     type: ollama
     base_url: https://ollama.com
     api_key: ${OLLAMA_API_KEY}      # expanded from the environment
-    default_model: glm-5.2:cloud
+    default_model: glm-5.3-flash
     timeout: 60
 agents:
   CodingAgent:            {provider: ollama, model: kimi-k2.7-code}
-  ResearchAgent:          {provider: ollama, model: glm-5.2:cloud}
+  ResearchAgent:          {provider: ollama, model: glm-5.3-flash}
   TaskAgent:              {provider: ollama, model: minimax-m3:cloud}
   ResearchOrchestrator:   {provider: ollama, model: minimax-m3:cloud}
   # ... 23 agents total
 ```
 
-**Switching a model is a config-only change** — no source edits. Adding a new provider is `register_provider_type()` + a YAML block.
+**Switching a model is a config-only change** — no source edits. Adding a new provider is `register_provider_type()` + a YAML block. Built-in provider types: `ollama` (cloud), `local_ollama`, `openai`, `anthropic`.
 
 ### Environment variables
 
@@ -448,7 +450,7 @@ agents:
 | `RE_LLM_CONFIG` | `llm_config.yaml` at repo root |
 | `OLLAMA_BASE_URL` | `https://ollama.com` |
 | `OLLAMA_API_KEY` | (none) |
-| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | `glm-5.2:cloud` |
+| `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | `glm-5.3-flash` |
 | `OLLAMA_TIMEOUT` | `60` |
 
 ---
@@ -645,7 +647,7 @@ research-engineer research "Design a more efficient diffusion transformer archit
 
 ## 12. CLI Reference
 
-**56 commands** across 7 sub-apps. Run `research-engineer <command> --help` for full flags.
+**70+ commands across 20 command families.** Run `research-engineer <command> --help` for full flags.
 
 | Sub-app | Command | Purpose |
 |---------|---------|---------|
@@ -665,6 +667,10 @@ research-engineer research "Design a more efficient diffusion transformer archit
 | **evaluate** | `evaluate run|compare|analyze|dynamics|significance|next|list|get|search` | Evaluate experiments. |
 | **loop** | `loop run|list|get|iterations|iteration|search|report` | Autonomous research loops. |
 | **llm** | `llm status` / `llm config` | Inspect LLM provider/model routing. |
+| **review** | `review` | Interactive approval gate for plans/patches/experiments. |
+| **eval-harness** | `eval-harness` | E4: run graded agent-eval suites, compare reports. |
+| **improve** | `improve <report_id>` | E8: mine failures → propose/approve/promote improvements. |
+| **benchmark** | `benchmark p1|p2|list|compare` | P1 deterministic / P2 LLM-backed research benchmarks. |
 
 ```bash
 # Inspect which model each agent uses
@@ -678,7 +684,79 @@ research-engineer llm config --config path/to/llm_config.yaml
 
 ---
 
-## 13. Demo Workflows
+## 13. Production Deployment
+
+The platform ships as a hardened Docker Compose stack (`deploy/`) for
+running autonomous agents as a long-running service — not just a CLI.
+
+### Services
+
+| Service | Purpose |
+|---------|---------|
+| `api` | FastAPI service for run submission / status / result |
+| `worker` | Long-running executor driving the E1 `AgentRuntime` |
+| `postgres` | Runs table, queue (`FOR UPDATE SKIP LOCKED`), E2 checkpoints |
+| `otel-collector` | OpenTelemetry OTLP receiver (E6 telemetry) |
+| artifacts | Named Docker volume mounted into api + worker |
+
+No Redis: PostgreSQL provides both durable persistence *and* the queue
+with `FOR UPDATE SKIP LOCKED`, matching the backend already required by
+the E2 checkpoint store.
+
+### Start
+
+```bash
+cd deploy
+cp .env.example .env          # set POSTGRES_PASSWORD + RE_SERVICE_API_TOKEN
+docker compose up -d --build
+curl -s localhost:8000/health # liveness (no auth)
+curl -s localhost:8000/ready  # readiness incl. dependency checks (no auth)
+```
+
+### API (auth: `Authorization: Bearer $RE_SERVICE_API_TOKEN`)
+
+```
+POST /runs                      {"goal": "...", "metadata": {...}}
+GET  /runs/{run_id}
+POST /runs/{run_id}/cancel
+POST /runs/{run_id}/resume
+GET  /runs/{run_id}/result
+GET  /health                    liveness (no auth)
+GET  /ready                     readiness incl. dependency checks (no auth)
+```
+
+### Recovery semantics
+
+- Workers heartbeat run records; the recovery scan marks runs whose worker
+  disappeared as `resumable`, re-queues them, and execution resumes from
+  the last E2 checkpoint (never earlier).
+- Checkpoints are versioned full-payload upserts — they cannot be corrupted.
+- At-least-once boundary: side effects between the last checkpoint and
+  terminal-state commit may be redone if the worker dies exactly then.
+
+### Security hardening
+
+- Bearer-token auth on all run endpoints; probes unauthenticated.
+- Restricted CORS via `RE_SERVICE_CORS_ORIGINS` (empty = no CORS headers).
+- Request bodies bounded (`RE_SERVICE_MAX_BODY_BYTES`, default 1 MiB).
+- Non-root container user, no privileged mode or added capabilities.
+- No secrets in logs: the service never logs goals/metadata payloads.
+- `deploy/.env` is gitignored; only `.env.example` is tracked.
+- This is process-level hardening, not sandbox-grade workload isolation;
+  tool sandboxing remains the E3 gateway policy.
+
+### Verify the deployment
+
+```bash
+scripts/smoke_test.sh [--down]
+# Builds the stack, then exercises: submit → queue → worker →
+# AgentRuntime → checkpoint → completion → result query, followed by a
+# simulated worker crash (docker stop/restart) and recovery-from-checkpoint.
+```
+
+---
+
+## 14. Demo Workflows
 
 ### Demo 1 — Single-paper, single-repo plan (~30 s, no LLM needed)
 
@@ -735,69 +813,74 @@ research-engineer research "Design a more efficient diffusion transformer" \
 
 ---
 
-## 14. Testing Statistics
+## 15. Testing Statistics
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 878 passing |
+| **Total tests** | 1464 (1462 passed, 2 network-skipped) |
 | **Phase 10 (LLM) tests** | 29 |
 | **Phase 11 (Task/Terminal) tests** | 60 |
 | **Phase 12 (Repository Memory) tests** | 51 |
 | **Phase 13 (Delegation) tests** | 31 |
 | **Phase 14 (Self-Repair) tests** | 31 |
 | **Phase 15 (Research Workflow) tests** | 39 |
+| **Platform layers (E1–E8)** | runtime, checkpoints, gateway policy, service API, eval harness, improvement loop |
 | **Source files** | 120+ Python files |
-| **Pydantic models** | 186 |
+| **Pydantic models** | 251 across 17 modules |
 | **Typed tools** | 61 |
 | **Agents** | 23 + LLM layer |
-| **CLI commands** | 56 |
+| **CLI commands** | 70+ across 20 families |
 | **Phases complete** | 15 / 15 |
 
 ```bash
-uv run pytest -q          # 878 passed
-uv run mypy src/research_engineer/llm   # clean
-uv run ruff check .       # lint
+uv run python -m pytest -q   # 1462 passed, 2 skipped (network)
+uv run ruff check .          # lint
+scripts/ci_mypy.sh           # mypy — fails only on NEW errors vs baseline
 ```
 
-Test coverage spans every phase: models, tools, agents, CLI, and end-to-end integration (`test_integration.py`, `test_integration_phases.py`).
+Test coverage spans every phase: models, tools, agents, CLI, platform
+infrastructure, and end-to-end integration (`test_integration.py`,
+`test_integration_phases.py`). Network-dependent tests carry the
+`network` marker and are skipped offline, so the suite runs anywhere.
 
 ---
 
-## 15. Roadmap
+## 16. Roadmap
 
-### Completed (v2.0)
+### Completed (v0.9.0)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| 1–10 | ✅ Complete | Paper analysis through LLM layer (v1.0) |
+| 1–10 | ✅ Complete | Paper analysis through LLM layer |
 | 11 | ✅ Complete | Terminal-first autonomous coding agent |
 | 12 | ✅ Complete | Repository memory with hybrid retrieval |
 | 13 | ✅ Complete | Multi-agent delegation framework |
 | 14 | ✅ Complete | Autonomous self-repair with structured failure analysis |
 | 15 | ✅ Complete | End-to-end autonomous research workflows |
+| Providers | ✅ Complete | OpenAI, Anthropic, local Ollama alongside Ollama Cloud — with health checks/failover, cost tracking, and streaming behind the same `LLMProvider` ABC |
+| Platform (E1–E8) | ✅ Complete | Runtime + checkpoints, gateway policy, eval harness, telemetry, FastAPI service, Docker deployment, improvement loop |
 
 ### Planned
 
-- **v2.1** — ✅ Complete: additional providers (OpenAI, Anthropic, local Ollama), health checks/failover, cost tracking, streaming-first outputs behind the same `LLMProvider` ABC.
-- **v2.2** — Structured tool-calling for the CodingAgent.
-- **v2.3** — Web UI dashboard for loop monitoring + knowledge-graph visualization.
-- **v2.4** — Multi-repo experiment matrices; distributed experiment execution.
-- **v3.0** — Self-improving meta-loop: the platform proposes its own research goals from memory trends.
+- **v0.10** — Structured tool-calling for the CodingAgent.
+- **v0.11** — Web UI dashboard for loop monitoring + knowledge-graph visualization.
+- **v0.12** — Multi-repo experiment matrices; distributed experiment execution.
+- **v1.0** — Self-improving meta-loop: the platform proposes its own research goals from memory trends.
 
 ---
 
-## 16. Limitations
+## 17. Limitations
 
 - **Experiment execution is sandboxed by design.** The runner uses a command allowlist and dry-run default; it will not run arbitrary shells. Real training requires you to opt out of dry-run.
 - **Patch-first, not auto-apply.** `CodingAgent` produces reviewable unified diffs. Applying patches is a separate, explicit, approval-gated step.
 - **Paper extraction is rule-based in Phases 1–3** (no LLM cost for parsing); LLM is used where it adds value (e.g. optional repo analysis, code generation).
 - **Vector store** uses `sentence-transformers/all-mpnet-base-v2`; large memory corpora may need a dedicated embedding service.
 - **Statistical significance** is implemented in pure Python (Welch t-test, Cohen's d, bootstrap CIs) — no SciPy dependency, but not a substitute for a full stats package for production research conclusions.
-- **Ollama Cloud** is the default provider; other providers require implementing the `LLMProvider` ABC (a ~80-line class).
+- **Deployment hardening is process-level, not sandbox-grade.** The service stack uses bearer auth, CORS limits, body-size caps, and a non-root container; full workload isolation remains future work (tool sandboxing lives in the E3 gateway policy).
 
 ---
 
-## 17. Contributing
+## 18. Contributing
 
 Contributions are welcome — especially new providers, new tools, and new retrieval strategies.
 
@@ -805,10 +888,13 @@ Contributions are welcome — especially new providers, new tools, and new retri
 
 ```bash
 uv sync
-uv run pytest -q
+uv run python -m pytest -q   # all tests must pass
 uv run ruff check .
-uv run mypy src/research_engineer/llm
+scripts/ci_mypy.sh           # mypy: fail only on errors NEW vs configs/mypy-baseline.txt
 ```
+
+GitHub Actions runs the same pipeline on every push and pull request
+(`.github/workflows/ci.yml`).
 
 ### Conventions
 
@@ -855,14 +941,20 @@ No agent code changes required.
 ```
 src/research_engineer/
 ├── agents/      # 23 agents + delegation + self-repair + research workflow
-├── llm/         # Phase 10: base, ollama_provider, factory, router
+├── llm/         # Phase 10: base, providers (ollama cloud/local, openai, anthropic),
+│                #   factory, router, react_loop, streaming, resilience, cost
 ├── memory/      # Phase 12: indexer, symbol_graph, retriever, storage
-├── models/      # 186 Pydantic models across 18 modules
+├── models/      # 251 Pydantic models across 17 modules
 ├── tools/       # 61 typed tools
-└── cli/         # 56 Typer commands
-tests/           # 45+ test files, 878 tests
+├── cli/         # 70+ Typer commands across 20 families
+├── eval/        # E4 agent-eval harness
+├── improve/     # E8 continuous-improvement loop
+└── gateway/ runtime/ service/ safety/ observability/   # E1–E7 platform layers
+deploy/          # Docker Compose stack: api + worker + postgres + otel-collector
+scripts/         # smoke_test.sh (deploy probe), ci_mypy.sh (baseline gate)
+tests/           # 70+ test files, 1462 tests passing (1464 collected)
 llm_config.yaml  # provider + per-agent model config
-docs/            # 13 documentation files
+docs/            # 20 documentation files
 ```
 
 ---

@@ -3,11 +3,12 @@
 Generates comprehensive test suites for code changes.
 """
 
+from pathlib import Path
+
 from pydantic import BaseModel, Field
 
 from research_engineer.models.coding import (
     CodeChange,
-    ComplexityLevel,
     GeneratedPatch,
     TestSpecification,
     TestSuite,
@@ -393,7 +394,3 @@ def test_{Path(target_file).stem}_generic():
             return f"~{total_tests * 0.05:.1f}s"
         else:
             return f"~{total_tests * 0.02:.1f}s"
-
-
-# Import Path at module level
-from pathlib import Path

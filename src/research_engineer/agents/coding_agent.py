@@ -16,7 +16,6 @@ from research_engineer.models.coding import (
     GeneratedPatch,
     ImplementationRequest,
     ImplementationResult,
-    PatchStatus,
 )
 from research_engineer.models.planner import ImplementationPlan
 from research_engineer.models.repo import RepositorySummary
@@ -316,10 +315,6 @@ class CodingAgent:
         Returns:
             Application result
         """
-        from research_engineer.tools.patch_application import (
-            PatchApplicationInput,
-            PatchApplicationTool,
-        )
 
         # In a real implementation, would load patches from storage
         # For now, return placeholder result
