@@ -40,6 +40,10 @@ from research_engineer.improve.models import (
     canonical_json,
     content_hash,
 )
+from research_engineer.improve.pg_store import (
+    PostgresImprovementStore,
+    build_improvement_store,
+)
 from research_engineer.improve.pipeline import (
     LIFECYCLE_TRANSITIONS,
     ApprovalRequiredError,
@@ -79,6 +83,7 @@ __all__ = [
     "MetricSnapshot",
     "MiningConfig",
     "PatternKind",
+    "PostgresImprovementStore",
     "PromotionAction",
     "PromotionDecision",
     "ProposalSource",
@@ -87,6 +92,7 @@ __all__ = [
     "apply_candidate_changes",
     "build_candidate",
     "build_default_gate",
+    "build_improvement_store",
     "candidate_eval_runner_builder",
     "canonical_json",
     "content_hash",
