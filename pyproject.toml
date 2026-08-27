@@ -53,6 +53,13 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 pythonpath = ["src"]
+# P4 CI stabilization: a single hung test must never stall CI indefinitely.
+# Thread method keeps working for tests that run in non-main threads.
+timeout = 300
+timeout_method = "thread"
+markers = [
+    "network: test requires live internet (arXiv API); skipped when offline",
+]
 
 [tool.ruff]
 line-length = 88
@@ -94,4 +101,9 @@ exclude_lines = [
     "def __repr__",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
+]
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
 ]

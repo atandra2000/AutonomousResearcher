@@ -31,6 +31,22 @@ uv run mypy src/research_engineer/llm          # type-check the LLM layer
 
 > **Target:** all tests passing, ruff clean, mypy clean on changed files, > 90% coverage on new code.
 
+### CI stabilization (P4)
+
+* **mypy baseline gate.** The codebase carries a legacy mypy debt that is
+  tracked, not ignored: `configs/mypy-baseline.txt` records every existing
+  error (normalized to file + message). CI runs `scripts/ci_mypy.sh`, which
+  fails **only on NEW errors** relative to the baseline. Fix debt when you
+  touch a file, and re-baseline deliberately (see the header of that script)
+  after fixing a batch.
+* **Deterministic, bounded suite.** Every test has a hard 300s timeout
+  (`pytest-timeout`, configured in `pyproject.toml`), so a single hung test
+  can never stall CI indefinitely.
+* **Live-network tests are isolated.** Tests that genuinely require
+  internet (e.g. the arXiv API) must be marked `@pytest.mark.network`;
+  they are skipped automatically when connectivity is unavailable
+  (see `tests/conftest.py`).
+
 ---
 
 ## 2. Conventions
