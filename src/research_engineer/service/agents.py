@@ -146,8 +146,27 @@ class AgentFactoryRegistry:
                     "max_runtime_seconds", self.config_max_runtime_seconds
                 )
             ),
+            # P2: full budget surface for LLM-backed tiers (token/cost/
+            # tool-call budgets are enforced by the runtime between phases).
+            max_tool_calls=(
+                int(overrides["max_tool_calls"])
+                if "max_tool_calls" in overrides else None
+            ),
+            max_tokens=(
+                int(overrides["max_tokens"])
+                if "max_tokens" in overrides else None
+            ),
+            max_cost_usd=(
+                float(overrides["max_cost_usd"])
+                if "max_cost_usd" in overrides else None
+            ),
         )
-        return adapter, AgentPolicy(budget=budget)
+        policy = AgentPolicy(budget=budget)
+        if "max_recoverable_errors" in overrides:
+            policy.max_recoverable_errors = int(
+                overrides["max_recoverable_errors"]
+            )
+        return adapter, policy
 
     @staticmethod
     async def _default_factory(

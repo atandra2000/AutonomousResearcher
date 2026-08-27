@@ -1,0 +1,1029 @@
+# Autonomous ML Research Benchmark - v2 (LLM-backed tier)
+#
+# P2 §2: the real-agent tier. Every case runs a REAL LLM through the
+# production stack (API -> store -> worker -> AgentRuntime -> ToolGateway ->
+# SafetyController -> checkpointing -> evaluation -> E6 telemetry -> E8
+# mining) using the `llm_react` agent kind: one model call per runtime step,
+# every tool request dispatched through the E3 gateway and E5 safety chain.
+#
+# Evaluation-integrity rules encoded here:
+#   * Tasks are self-contained: all evidence the agent may use appears in
+#     the goal text. No benchmark answers are embedded anywhere; nothing in
+#     these files is placed into agent prompts beyond the goal itself.
+#   * Deterministic graders gate objective success (required=true); the
+#     LLM-judged `llm_quality` grader reports research quality separately
+#     and is always required=false, so judged scores cannot inflate pass/fail.
+#   * Structural markers (SURVEY:, HYPOTHESES:, ...) are deliverable-format
+#     contracts defined by the case, not content answers; numeric checks
+#     grade derivable arithmetic from data provided inside the goal.
+#   * Tasks are versioned by `revision`; baseline/candidate comparisons must
+#     use identical revisions. Provider/model/configuration fingerprints are
+#     recorded in the run report (see p2_benchmark.py).
+#
+# Provider/model selection is configuration-driven (llm_config.yaml /
+# OLLAMA_* env); credentials are never written here.
+
+suite_id: research_benchmark_v2_llm
+name: Autonomous ML Research Benchmark - LLM Backed Tier
+description: >
+  Real-LLM autonomous research tasks across eight categories: literature
+  discovery, hypothesis generation, experiment design, implementation,
+  debugging, ablation reasoning, experiment analysis, and end-to-end runs.
+  Success requires producing structured, evidence-grounded deliverables as
+  sandbox research notes through the production tool gateway under fixed
+  budgets.
+version: "2"
+
+cases:
+
+  # ------------------------------------------------------------------
+  # Category 1: literature_discovery
+  # ------------------------------------------------------------------
+  - case_id: litdisc_01_kv_cache_survey
+    name: Literature survey - KV-cache eviction digests
+    description: Synthesize three provided paper digests into a bounded survey.
+    goal: >-
+      You are given three digests. Digest A (PagedAttention): paging KV
+      cache to host memory cut peak VRAM 4x with <5% throughput loss at
+      batch 32. Digest B (H2O heavy-hitter eviction): keeping ~5% attention
+      heads' keys preserved quality within 1 point while evicting the rest
+      at 4k context. Digest C (Sliding-window hybrids): fixed 2k windows
+      matched full attention up to 8k context but degraded sharply past
+      16k. Task: produce a synthesis survey. Write one research note named
+      kv_cache_survey covering shared findings across the digests, and one
+      note named open_gaps listing under-evidenced areas. Your FINAL_ANSWER
+      must contain the section headers SURVEY:, GAPS:, and NEXT_STEPS:.
+    constraints:
+      - Reason only from the three digests; do not invent citations.
+      - Record deliverables via research_note_write before finishing.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, literature_discovery]
+    revision: r1
+    metadata:
+      category: literature_discovery
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 2}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 2}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["SURVEY:", "GAPS:", "NEXT_STEPS:"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the survey accurately synthesize ONLY the three provided
+            digests (paging, heavy-hitter eviction, sliding window), cite
+            their concrete numbers correctly (4x VRAM cut, 5% heads kept,
+            2k window degradation past 16k), separate agreement from gaps,
+            and avoid invented citations? Reward faithful grounding;
+            penalize fabrication and vagueness.
+
+  - case_id: litdisc_02_moe_routing_compare
+    name: Literature comparison - MoE routing papers
+    description: Compare two provided MoE-routing approaches on stated axes.
+    goal: >-
+      Digest X (expert-choice routing): experts pick tokens; reported
+      training speedup 1.7x at equal perplexity on a 15B sparse model.
+      Digest Y (hash routing without learned gates): 2% quality drop but
+      zero router parameters and simpler load balancing. Task: write one
+      research note moe_routing_comparison contrasting them on routing
+      control, load balancing, and quality/cost tradeoff. The FINAL_ANSWER
+      must include headers COMPARISON:, DIFFERENCES:, and TRADEOFF_SUMMARY:,
+      and must state both reported numbers (1.7x, 2%).
+    constraints:
+      - Use only facts present in the two digests.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, literature_discovery]
+    revision: r1
+    metadata:
+      category: literature_discovery
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["COMPARISON:", "DIFFERENCES:",
+                           "TRADEOFF_SUMMARY:", "1.7x", "2%"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the comparison restricted to the two digests' claims
+            (expert-choice 1.7x speedup; hash routing 2% drop with no
+            router params), organized on explicit axes, and honest about
+            what the digests do NOT measure? Penalize invented numbers.
+
+  - case_id: litdisc_03_claim_verification
+    name: Claim verification - supported vs unsupported
+    description: Sort four provided claims by evidential support.
+    goal: >-
+      Four claims arrive with varying support. Claim 1 cites a controlled
+      study: LR warmup reduced early divergence from 11/100 runs to 2/100.
+      Claim 2 asserts warmup always helps any optimizer, with no source.
+      Claim 3 cites a single anecdotal blog post. Claim 4 matches the
+      controlled study's exact scope. Task: classify each claim as
+      SUPPORTED, WEAKLY_SUPPORTED, or UNSUPPORTED, writing one note named
+      claim_verification with the classification table and rationale. The
+      FINAL_ANSWER needs headers CLASSIFICATIONS:, REASONING:, and
+      VERIFICATION_GAPS:.
+    constraints:
+      - Classify strictly by the strength of provided evidence.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, literature_discovery]
+    revision: r1
+    metadata:
+      category: literature_discovery
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["CLASSIFICATIONS:", "REASONING:",
+                           "VERIFICATION_GAPS:", "UNSUPPORTED"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Are classifications evidence-calibrated (claims 1 and 4
+            supported by the controlled study, claim 2 an unsupported
+            overgeneralization, claim 3 weakly supported)? Reward explicit
+            epistemic distinctions and gap statements.
+
+  # ------------------------------------------------------------------
+  # Category 2: hypothesis_generation
+  # ------------------------------------------------------------------
+  - case_id: hypo_01_dropout_curves
+    name: Hypotheses - dropout slowdown phenomenon
+    description: Generate testable hypotheses from provided training curves.
+    goal: >-
+      Observed dataset: a transformer trained with dropout 0.1 reaches val
+      loss 3.1 at epoch 10 versus 2.9 without dropout, but by epoch 60 the
+      dropout variant reaches 2.4 while the baseline stalls at 2.65. Both
+      used identical data, batch size, and schedule. Task: write one note
+      dropout_analysis containing two distinct hypotheses labeled H1: and
+      H2:, each with an EVIDENCE line tying it to the observed numbers and
+      one falsifiable prediction. FINAL_ANSWER requires headers
+      HYPOTHESES:, H1:, H2:, and DISCRIMINATING_EXPERIMENT: proposing one
+      cheap experiment that separates H1 from H2.
+    constraints:
+      - Each hypothesis must reference the provided loss numbers.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, hypothesis_generation]
+    revision: r1
+    metadata:
+      category: hypothesis_generation
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_regex, weight: 1.5,
+         config: {pattern: "H1:[\\s\\S]*H2:"}}
+      - {grader: output_contains, weight: 1.5,
+         config: {all_of: ["EVIDENCE", "DISCRIMINATING_EXPERIMENT:",
+                           "2.4", "2.65"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Are the hypotheses mechanistically distinct, grounded in the
+            crossover pattern (slower early, better late with dropout),
+            falsifiable, and tied to the exact loss numbers? Reward
+            predictions that actually discriminate between H1 and H2.
+
+  - case_id: hypo_02_conflicting_results
+    name: Hypotheses - reconciling conflicting results
+    description: Propose reconciling hypotheses for contradictory outcomes.
+    goal: >-
+      Conflict: Lab 1 reports mixed-precision training cuts wall-clock time
+      35% with equal accuracy. Lab 2, same model family and scale, reports
+      10% speedup with a 0.8-point accuracy drop. Known difference: Lab 2
+      used fp16 without loss scaling; Lab 1 used bf16. Task: write one note
+      precision_conflict explaining why the setups are not comparable, give
+      one primary hypothesis for the discrepancy plus a DISCONFIRMING_TEST
+      that would refute your hypothesis if it fails. FINAL_ANSWER requires
+      CONFLICT:, HYPOTHESIS:, and DISCONFIRMING_TEST: headers.
+    constraints:
+      - The reconciliation must hinge on stated setup differences.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, hypothesis_generation]
+    revision: r1
+    metadata:
+      category: hypothesis_generation
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["CONFLICT:", "HYPOTHESIS:",
+                           "DISCONFIRMING_TEST:", "bf16", "fp16"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the hypothesis plausibly explain BOTH labs' results via
+            the bf16-vs-fp16-without-loss-scaling difference, stay within
+            provided facts, and propose a genuinely refutable test?
+
+  - case_id: hypo_03_loss_spike_mechanism
+    name: Hypotheses - mid-training loss spike mechanism
+    description: Mechanistic hypothesis for a described loss spike.
+    goal: >-
+      Timeline: smooth 3.0->2.2 loss through step 48k; spike to 6.5 at step
+      50k right after a data-shard rotation; recovery to 2.25 by step 53k.
+      Optimizer state and LR schedule unchanged. The spike never recurred
+      after shard rotation was disabled. Task: write one note
+      spike_mechanism with headers OBSERVATION:, MECHANISM:, PREDICTION:,
+      stating the most plausible causal mechanism and one quantitative
+      prediction a follow-up run would confirm. FINAL_ANSWER must repeat
+      the three headers and reference the step numbers.
+    constraints:
+      - Reference the specific steps from the timeline.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, hypothesis_generation]
+    revision: r1
+    metadata:
+      category: hypothesis_generation
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["OBSERVATION:", "MECHANISM:", "PREDICTION:",
+                           "50k", "53k"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the proposed mechanism consistent with the correlation
+            between shard rotation and the spike (data-distribution shift,
+            optimizer re-adaptation), is the prediction concrete and
+            checkable, and does the answer avoid unrelated speculation?
+
+  # ------------------------------------------------------------------
+  # Category 3: experiment_design
+  # ------------------------------------------------------------------
+  - case_id: design_01_lora_rank_ablation
+    name: Experiment design - LoRA rank ablation under budget
+    description: Design a rank ablation respecting a stated GPU budget.
+    goal: >-
+      Setup: 7B model, LoRA fine-tuning; a single A100 costs $2/hr; one
+      rank-config run takes 6 GPU-hours; budget cap is $150 (75 GPU-hours).
+      Prior evidence: ranks 8 and 64 differ visibly on similar tasks.
+      Task: write one note lora_rank_design specifying (a) the rank values
+      to test with justification, (b) seeds per config within budget,
+      (c) total cost accounting that stays under the cap, (d) success
+      criteria for declaring a winner. FINAL_ANSWER requires DESIGN:,
+      BUDGET_PLAN:, and SUCCESS_CRITERIA: headers and must state how many
+      runs fit in 75 GPU-hours.
+    constraints:
+      - The plan must not exceed 75 GPU-hours or $150.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, experiment_design]
+    revision: r1
+    metadata:
+      category: experiment_design
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["DESIGN:", "BUDGET_PLAN:", "SUCCESS_CRITERIA:",
+                           "75"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the design internally consistent with the arithmetic (6
+            GPU-hours per run, 75 available -> at most 12 runs), does it
+            allocate seeds sensibly across ranks, and are success criteria
+            precise enough to be checked later? Penalize plans exceeding
+            budget.
+
+  - case_id: design_02_data_scaling_study
+    name: Experiment design - data scaling study
+    description: Design a minimal data-scaling experiment with estimates.
+    goal: >-
+      Context: a vision classifier gains +2.1 accuracy when data grows
+      10k->50k images; the team wants to know if +1M curated images is
+      worth labeling at $0.05/image. Annotation cost only; training reuse
+      is free. Task: write one note data_scaling_design that (a) defines
+      intermediate scale points, (b) gives the TOTAL annotation cost in
+      dollars for 1M images, (c) states a decision rule mapping results to
+      go/no-go, (d) lists risks. FINAL_ANSWER requires DESIGN:,
+      COMPUTE_ESTIMATE:, DECISION_RULE:, and RISKS: headers.
+    constraints:
+      - Include the explicit dollar cost of labeling 1M images.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, experiment_design]
+    revision: r1
+    metadata:
+      category: experiment_design
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["DESIGN:", "COMPUTE_ESTIMATE:", "DECISION_RULE:",
+                           "RISKS:", "50000"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the design a genuine scaling study (multiple intermediate
+            points), is the dollar math correct ($0.05 x 1M = $50,000),
+            and is the decision rule falsifiable? Reward anticipating
+            confounds like label-quality drift at scale.
+
+  - case_id: impl_01_attention_module_plan
+    name: Implementation - multi-head attention module plan
+    description: Plan a testable MHA module from a tensor-shape spec.
+    goal: >-
+      Spec: implement multi-head attention where q,k,v are (batch, seq,
+      d_model); heads h=8; per-head dim 64; output projection back to
+      d_model; causal mask optional. Constraints: no in-place autograd
+      hazards, O(seq^2) memory permitted but must be documented. Task:
+      write one note mha_module_plan containing (a) INTERFACE: exact
+      function/class signature with shapes, (b) PLAN: ordered steps,
+      (c) EDGE_CASES: at least three (e.g., seq=1, mask dtype mismatch,
+      non-divisible d_model), (d) TESTS: unit tests incl. a numeric
+      equivalence check against a reference loop. FINAL_ANSWER repeats all
+      four headers with the signature line verbatim.
+    constraints:
+      - Signatures must state explicit tensor shapes.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, implementation]
+    revision: r1
+    metadata:
+      category: implementation
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["INTERFACE:", "PLAN:", "EDGE_CASES:", "TESTS:",
+                           "(batch, seq"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Are shapes consistent throughout (d_model=512=8x64 must hold),
+            are edge cases genuine failure modes rather than filler, and
+            does the test plan include a numerical correctness check?
+            Penalize signatures that do not type-check dimensionally.
+
+  - case_id: impl_02_patch_plan_memory_leak
+    name: Implementation - patch plan for training-loop leak
+    description: Plan a minimal patch for a described resource leak.
+    goal: >-
+      Bug report: validation accuracy freezes after epoch N in a custom
+      training loop; RSS memory grows ~200MB per epoch; culprit identified
+      by bisect: a hook appending per-batch losses to a python list that
+      also holds references to graph tensors (loss stored without .item()
+      or .detach()). Task: write one note leak_patch_plan with PATCH_PLAN:
+      minimal diff-style steps, VALIDATION: how to verify the fix within
+      one epoch, ROLLBACK: revert strategy. FINAL_ANSWER must repeat the
+      three headers and mention detach() or item().
+    constraints:
+      - Keep the patch minimal; do not redesign the loop.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, implementation]
+    revision: r1
+    metadata:
+      category: implementation
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["PATCH_PLAN:", "VALIDATION:", "ROLLBACK:",
+                           "detach"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the patch actually break the tensor retention (detach/item
+            on stored loss), is it minimal as required, and does the
+            validation step detect both symptom classes (memory growth AND
+            frozen metric)?
+
+  # ------------------------------------------------------------------
+  # Category 5: debugging
+  # ------------------------------------------------------------------
+  - case_id: debug_01_nan_loss_timeline
+    name: Debugging - NaN loss from a training timeline
+    description: Diagnose a NaN blowup from a provided log timeline.
+    goal: >-
+      Log timeline (loss values): step 1000 -> 2.1; step 5000 -> 1.8; step
+      9000 -> nan; LR was constant 3e-4; grad-norm jumped from 0.9 to 340.0
+      at step 8997; an fp16 model without loss scaling was used. Task:
+      write one note nan_diagnosis with DIAGNOSIS:, ROOT_CAUSE:, FIX:, and
+      VERIFICATION: sections; root cause must connect the grad-norm
+      explosion, absent scaling, and overflow to inf/nan. FINAL_ANSWER
+      repeats all four headers and mentions grad clipping.
+    constraints:
+      - The causal chain must use the timeline facts.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, debugging]
+    revision: r1
+    metadata:
+      category: debugging
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["DIAGNOSIS:", "ROOT_CAUSE:", "FIX:",
+                           "VERIFICATION:", "clipping"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the causal chain correct and complete (grad spike 340 ->
+            fp16 overflow without loss scaling -> NaN) rather than a
+            generic laundry list? Reward proposing verification numbers
+            tied to the log.
+
+  - case_id: debug_02_ddp_deadlock
+    name: Debugging - distributed hang diagnosis
+    description: Diagnose a DDP deadlock from a stack-trace excerpt.
+    goal: >-
+      Symptom: multi-GPU DDP training hangs at the epoch boundary in the
+      validation loop. Stack excerpt shows rank 3 waiting inside
+      all_reduce while ranks 0-2 exited validation early because their
+      dataloader had fewer batches; batch-size division was uneven by one
+      sample. Task: write one note ddp_hang with SYMPTOMS:, ROOT_CAUSE:
+      (collective mismatch), FIX: (two acceptable fixes), PREVENTION:.
+      FINAL_ANSWER must repeat all four headers and mention all_reduce.
+    constraints:
+      - Root cause must be a collective-call mismatch across ranks.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, debugging]
+    revision: r1
+    metadata:
+      category: debugging
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["SYMPTOMS:", "ROOT_CAUSE:", "FIX:", "PREVENTION:",
+                           "all_reduce"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the deadlock explained as unequal collective participation
+            caused by uneven batch counts, are both proposed fixes valid
+            (drop_last/padding or guarded all_reduce), and is prevention
+            generalizable beyond this incident?
+
+  - case_id: debug_03_oom_step1200
+    name: Debugging - OOM at fixed step analysis
+    description: Analyze memory growth leading to OOM at step 1200.
+    goal: >-
+      Memory profile: GPU mem steady 31.5GB steps 1-800, linear climb to
+      40GB by step 1190, OOM at step 1200 on an 80GB card. Batch size 32;
+      activations at fixed size; an eval-mode forward pass runs every 100
+      steps and appends prediction tensors (~8GB accumulated across the
+      run) to history for later plotting. Task: write one note oom_analysis
+      with MEMORY_ANALYSIS: (accounting for the ~8.5GB climb),
+      ROOT_CAUSE:, MITIGATION: (two options), TRADEOFF:. FINAL_ANSWER
+      repeats headers and states roughly how many GB accumulated before
+      the OOM.
+    constraints:
+      - Distinguish constant activations from accumulating state.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, debugging]
+    revision: r1
+    metadata:
+      category: debugging
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["MEMORY_ANALYSIS:", "ROOT_CAUSE:", "MITIGATION:",
+                           "TRADEOFF:"]}}
+      - {grader: output_regex, weight: 1.5, config: {pattern: "8"}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the memory accounting correctly attribute ~8.5GB to the
+            accumulating prediction-history list rather than activations
+            (which are fixed), and are both mitigations practical (stream
+            to CPU / subsample)?
+
+  # ------------------------------------------------------------------
+  # Category 6: ablations
+  # ------------------------------------------------------------------
+  - case_id: abl_01_seed_mean_attribution
+    name: Ablation - seed-mean attribution
+    description: Attribute a gain correctly using three-seed results.
+    goal: >-
+      Results table (accuracy): config_a seeds: 41.2, 40.9, 41.1; config_b
+      seeds: 42.5, 44.0, 39.0. Task: write one note ablation_attribution
+      computing the MEAN of each config from the raw seeds, attributing
+      which configuration performs better on average, explaining the role
+      of variance (config_b's single bad seed), and giving a
+      RECOMMENDATION with confidence level. FINAL_ANSWER requires headers
+      ATTRIBUTION:, REASONING:, RECOMMENDATION:, and must state both means
+      numerically.
+    constraints:
+      - Means must be computed from the six provided seed values.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, ablations]
+    revision: r1
+    metadata:
+      category: ablations
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides:
+        llm_temperature: 0.1
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["ATTRIBUTION:", "REASONING:", "RECOMMENDATION:",
+                           "41.1", "41.8"]}}
+      - {grader: output_regex, weight: 1.5,
+         config: {pattern: "config_b"}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Are both means computed exactly (41.0667/41.07 and 41.83/41.8),
+            is config_b correctly identified as better on average despite
+            its high-variance bad seed, and does the recommendation weigh
+            mean vs variance honestly rather than cherry-picking?
+
+  - case_id: abl_02_next_component_choice
+    name: Ablation - next component to ablate
+    description: Prioritize the next ablation under a compute constraint.
+    goal: >-
+      Prior ablations on a 3-component pipeline (retriever, reranker,
+      verifier): removing the reranker dropped quality 6.2 points; removing
+      the retriever dropped 9.8; removing the verifier dropped only 0.4.
+      Each ablation costs 20 GPU-hours; the budget allows ONE more.
+      Stakeholder pressure favors re-verifying the smallest-impact
+      component. Task: write one note next_ablation deciding which
+      component deserves the single remaining run, with PRIORITIZATION:,
+      JUSTIFICATION:, and SAVED_COMPUTE: (what you chose NOT to run and
+      why). FINAL_ANSWER repeats all three headers.
+    constraints:
+      - Exactly one remaining ablation may be chosen.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, ablations]
+    revision: r1
+    metadata:
+      category: ablations
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["PRIORITIZATION:", "JUSTIFICATION:",
+                           "SAVED_COMPUTE:"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the reasoning target the least-explored or most uncertain
+            attribution (e.g., confidence around small deltas) rather than
+            restating given numbers, and does it acknowledge the
+            stakeholder-pressure tradeoff explicitly?
+
+  # ------------------------------------------------------------------
+  # Category 7: experiment_analysis
+  # ------------------------------------------------------------------
+  - case_id: expa_01_overfit_point_detection
+    name: Analysis - overfitting point from loss series
+    description: Detect the divergence point in a train/val loss series.
+    goal: >-
+      Series (steps 100..1000): val loss 2.5, 2.2, 2.05, 2.02 at step 400,
+      then 2.10 at step 500, 2.25 at step 700, 2.48 at step 1000 while
+      train loss keeps falling 2.4 -> 1.1 monotonically. Task: write one
+      note overfit_analysis with FINDINGS: (the approximate step where
+      validation bottomed out), EVIDENCE: (which numbers), ACTION_ITEMS:
+      (two interventions). FINAL_ANSWER requires all three headers and the
+      word overfit.
+    constraints:
+      - Identify the step where validation loss is minimal.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, experiment_analysis]
+    revision: r1
+    metadata:
+      category: experiment_analysis
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["FINDINGS:", "EVIDENCE:", "ACTION_ITEMS:",
+                           "overfit", "400"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the divergence diagnosis correct (validation minimum near
+            step 400 with training still falling is the classic overfit
+            signature), are action items appropriate (early stopping,
+            regularization), and is evidence cited numerically?
+
+  - case_id: expa_02_significance_reasoning
+    name: Analysis - significance reasoning for an improvement claim
+    description: Assess whether a reported improvement supports its claim.
+    goal: >-
+      Claim: candidate beats baseline by 3.2 accuracy points. Data: 5
+      seeds each; baseline mean 71.4 std 1.2; candidate mean 74.6 std 0.9.
+      Task: write one note significance_check with SIGNIFICANCE_ASSESSMENT:,
+      ASSUMPTIONS:, CONCLUSION:. Reason about whether the ~3.2-point gap
+      exceeds seed noise given these stds (rough t ratio of delta over
+      pooled spread divided by sqrt(5)). FINAL_ANSWER repeats all three
+      headers and states both means.
+    constraints:
+      - The assessment must use the provided means and stds.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 24000,
+             max_cost_usd: 0.50, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, experiment_analysis]
+    revision: r1
+    metadata:
+      category: experiment_analysis
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["SIGNIFICANCE_ASSESSMENT:", "ASSUMPTIONS:",
+                           "CONCLUSION:", "71.4", "74.6"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the statistical reasoning directionally correct (gap of 3.2
+            against a per-seed std near 1 gives a clearly separated
+            result), are assumptions stated (normality, equal n), and does
+            it avoid claiming exact p-values it cannot compute reliably?
+
+  # ------------------------------------------------------------------
+  # Category 8: end_to_end
+  # ------------------------------------------------------------------
+  - case_id: e2e_01_brief_to_conclusion
+    name: End-to-end - brief to research conclusion
+    description: Survey -> hypothesis -> experiment plan -> conclusion.
+    goal: >-
+      Brief: retrieval-augmented generation answers degrade when retrieved
+      passages disagree; a reranker trained on agreement labels reduced
+      wrong-answer rate from 18% to 11% on internal eval. Task chain:
+      (1) summarize the brief in two sentences, (2) derive ONE testable
+      hypothesis with a number-bearing prediction, (3) propose a minimal
+      experiment (dataset size + metric), (4) state what result would kill
+      the hypothesis. Write three notes: e2e_survey, e2e_hypothesis,
+      e2e_experiment. FINAL_ANSWER requires SURVEY:, HYPOTHESIS:,
+      EXPERIMENT_PLAN:, CONCLUSION: headers and references at least one of
+      the percentages (18% or 11%).
+    constraints:
+      - Every stage must stay grounded in the provided brief.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 28000,
+             max_cost_usd: 0.60, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, end_to_end]
+    revision: r1
+    metadata:
+      category: end_to_end
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 3}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 3}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["SURVEY:", "HYPOTHESIS:", "EXPERIMENT_PLAN:",
+                           "CONCLUSION:", "18%", "11%"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does each stage follow coherently from the previous one, does
+            the hypothesis embed a falsifiable numeric prediction derived
+            from the 18%->11% evidence, and does the kill-criterion
+            genuinely contradict the hypothesis?
+
+  - case_id: e2e_02_conflicting_evidence_resolution
+    name: End-to-end - resolving conflicting evidence
+    description: Detect a conflict, choose a resolution, propose the decisive run.
+    goal: >-
+      Digest P claims adapter-based fine-tuning halves storage vs full
+      fine-tuning with <0.5 quality loss at 7B scale. Digest Q reports
+      1.5-point loss under the same claim setup. Neither digest states
+      training duration or adapter rank; the difference may be an artifact.
+      Task: (1) write one note conflict_map stating exactly what
+      contradicts what and what is missing from both digests; (2) write one
+      note resolution_plan proposing ONE decisive experiment whose design
+      would reconcile P and Q regardless of outcome. FINAL_ANSWER requires
+      CONFLICT_DETECTION:, RESOLUTION:, DECISIVE_EXPERIMENT: headers.
+    constraints:
+      - The decisive experiment must work whichever side is right.
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 28000,
+             max_cost_usd: 0.60, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, end_to_end]
+    revision: r1
+    metadata:
+      category: end_to_end
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 2}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 2}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["CONFLICT_DETECTION:", "RESOLUTION:",
+                           "DECISIVE_EXPERIMENT:", "rank"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Does the conflict map isolate missing variables (training
+            duration, adapter rank) as candidate explanations, is the
+            proposed experiment factorial/controlled so either outcome
+            reconciles the digests, and does it avoid declaring a winner
+            without evidence?
+
+  - case_id: e2e_03_build_decision_memorandum
+    name: End-to-end - build/adapt/buy decision memorandum
+    description: Decide an implementation strategy from stated evidence.
+    goal: >-
+      Decision brief: team needs document-QA. Option A (train in-house):
+      3 engineers x 3 months + $40k compute. Option B (adapt open weights):
+      1 engineer x 1 month, $6k compute, licensing requires attribution but
+      free commercial use. Option C (buy API): $0.004 per call, projected
+      2M calls/month, vendor lock-in moderate. Task: write one note
+      decision_memorandum with COST_BENEFIT: per option, RISKS: per option,
+      FINAL_DECISION: with primary justification plus the trigger condition
+      that would reverse the decision. FINAL_ANSWER repeats all three
+      headers and includes the projected monthly API cost for option C.
+    constraints:
+      - Compute option C's monthly cost explicitly ($0.004 x 2M).
+    allowed_tools: [research_note_write, research_note_list, echo_probe]
+    budget: {max_steps: 8, max_tool_calls: 16, max_tokens: 28000,
+             max_cost_usd: 0.60, max_runtime_seconds: 300}
+    timeout_seconds: 420
+    tags: [p2_benchmark, llm_agent, end_to_end]
+    revision: r1
+    metadata:
+      category: end_to_end
+      mode: llm_agent
+      agent_kind: llm_react
+      agent_overrides: {}
+      expected_artifacts: [{type: research_notes, min_count: 1}]
+    criteria:
+      - {grader: termination, weight: 2.0}
+      - {grader: recovery, weight: 1.5}
+      - {grader: budget, weight: 1.5}
+      - {grader: tool_usage, weight: 1.0}
+      - {grader: output_json_field, weight: 1.5,
+         config: {field: notes_written, op: gte, expected: 1}}
+      - {grader: output_contains, weight: 2.0,
+         config: {all_of: ["COST_BENEFIT:", "RISKS:", "FINAL_DECISION:",
+                           "8000"]}}
+      - grader: llm_quality
+        weight: 2.0
+        required: false
+        config:
+          threshold: 0.5
+          rubric: >-
+            Is the arithmetic correct ($0.004 x 2M = $8,000/month), do all
+            three options carry honest risks rather than strawmen, and is
+            the reversal trigger concrete (a measurable condition)? Reward
+            reasoning that connects costs to the team constraints.
+
+
+
+
+
+
+
+
+
+
+
+
+

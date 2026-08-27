@@ -3968,5 +3968,81 @@ def improve_status(
     return 0
 
 
+# Benchmark sub-application (P1/P2 research benchmark tiers)
+benchmark_app = typer.Typer(
+    name="benchmark",
+    help="Run P1 (deterministic) / P2 (LLM-backed) research benchmarks"
+)
+app.add_typer(benchmark_app, name="benchmark")
+
+
+@benchmark_app.command("run")
+def benchmark_run(
+    tier: str = typer.Option(
+        "all", "--tier",
+        help="all | deterministic | llm",
+    ),
+    suite: Path | None = typer.Option(
+        None, "--suite", help="Benchmark suite YAML (default: packaged v2)",
+    ),
+    repeats: int = typer.Option(
+        2, "--repeats", min=1,
+        help="Variance repeats for selected cases (LLM tier).",
+    ),
+    output_dir: Path = typer.Option(
+        Path("artifacts/p2_benchmark"), "--output-dir",
+    ),
+    label: str = typer.Option("cli", "--label"),
+    compare: Path | None = typer.Option(
+        None, "--compare",
+        help="Previous p2_report.json to diff against.",
+    ),
+) -> int:
+    """Execute the research benchmark through the production stack.
+
+    Deterministic tier runs the P1 suite; the LLM tier runs real agents
+    through API -> store -> worker -> runtime -> gateway -> safety chain.
+    Results are reported separately per tier.
+    """
+    import asyncio
+
+    from research_engineer.service.p2_benchmark import run_p2
+
+    if tier not in ("all", "deterministic", "llm"):
+        typer.echo(f"❌ Unknown tier {tier!r}", err=True)
+        return 1
+    if tier == "deterministic":
+        from research_engineer.service.benchmark import DEFAULT_SUITE_PATH
+        from research_engineer.service.benchmark_runner import (
+            BenchmarkRunner,
+        )
+
+        runner = BenchmarkRunner(output_dir)
+        det_report = asyncio.run(runner.run_suite(
+            str(DEFAULT_SUITE_PATH), repeat=1,
+            report_name="p1_deterministic_regression",
+        ))
+        typer.echo(f"✅ Deterministic report: {det_report.json_path}")
+        typer.echo(
+            f"   Completion rate: "
+            f"{det_report.metrics.get('autonomous_completion_rate', 0):.1%}"
+        )
+        return 0
+    report = asyncio.run(run_p2(
+        output_dir,
+        suite_path=suite,
+        p1_regression=(tier == "all"),
+        repeats=repeats,
+        label=label,
+        previous_report=compare,
+    ))
+    typer.echo(f"✅ P2 report: {output_dir / 'p2_report.json'}")
+    typer.echo(f"   Markdown: {output_dir / 'p2_report.md'}")
+    for metric, value in report.headline.items():
+        typer.echo(f"   {metric}: {value}")
+    typer.echo(f"   Verdict: {report.verdict}")
+    return 0
+
+
 if __name__ == "__main__":
     app()

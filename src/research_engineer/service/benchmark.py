@@ -21,11 +21,18 @@ from research_engineer.service.bench_agents import (
     KIND_BENCH_RISKY,
     KIND_BENCH_TOOL,
 )
+from research_engineer.service.llm_agent import KIND_LLM_REACT
 
 #: Packaged v1 benchmark suite.
 DEFAULT_SUITE_PATH = (
     Path(__file__).resolve().parents[3]
     / "evals" / "research_benchmark" / "v1" / "suite.yaml"
+)
+
+#: Packaged v2 (LLM-backed) benchmark suite.
+DEFAULT_SUITE_V2_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "evals" / "research_benchmark" / "v2" / "suite.yaml"
 )
 
 #: The eight research categories the benchmark must cover.
@@ -43,12 +50,18 @@ BENCHMARK_CATEGORIES: frozenset[str] = frozenset({
 #: Agent kinds the worker can execute for benchmark cases.
 BENCHMARK_AGENT_KINDS: frozenset[str] = frozenset({
     KIND_BENCH_TOOL, KIND_BENCH_FLAKY, KIND_BENCH_LOOP, KIND_BENCH_RISKY,
+    KIND_LLM_REACT,
 })
 
 #: Scenario modes a case may declare.
 BENCHMARK_MODES: frozenset[str] = frozenset({
     "deterministic_sandbox", "transient_recovery", "policy_guardrail",
+    "llm_agent",
 })
+
+#: Graders that consult an LLM judge; only valid inside ``llm_agent``
+#: suites and always optional (never gate objective success).
+LLM_JUDGED_GRADERS: frozenset[str] = frozenset({"llm_quality"})
 
 
 def load_benchmark_suite(
@@ -125,7 +138,9 @@ def _validate_case(case: Any) -> list[str]:
         problems.append(f"{cid}: at least one required criterion")
 
     for criterion in case.criteria:
-        problem = _validate_criterion(cid, criterion, case.budget.max_steps)
+        problem = _validate_criterion(
+            cid, criterion, case.budget.max_steps, mode
+        )
         if problem:
             problems.append(problem)
     return problems
@@ -146,10 +161,21 @@ def _validate_artifacts(cid: str, meta: dict) -> list[str]:
 
 def _validate_criterion(
     cid: str, criterion: Any, declared_max_steps: int | None,
+    mode: str = "",
 ) -> str | None:
     """Validate one success criterion; return a problem string or None."""
-    if criterion.grader not in DETERMINISTIC_GRADERS:
+    judged = criterion.grader in LLM_JUDGED_GRADERS
+    if not judged and criterion.grader not in DETERMINISTIC_GRADERS:
         return f"{cid}: unknown grader {criterion.grader!r}"
+    if judged:
+        # Evaluation integrity: LLM-judged quality scores are reported
+        # separately and never gate objective task success.
+        if mode != "llm_agent":
+            return (f"{cid}: grader {criterion.grader!r} is only valid "
+                    f"in llm_agent-mode cases")
+        if criterion.required:
+            return (f"{cid}: LLM-judged grader {criterion.grader!r} must "
+                    f"be optional (required=false)")
     if criterion.grader == "max_steps":
         configured = int(criterion.config.get("max_steps", 0))
         if declared_max_steps is not None and configured != declared_max_steps:
@@ -165,6 +191,8 @@ __all__ = [
     "BENCHMARK_CATEGORIES",
     "BENCHMARK_MODES",
     "DEFAULT_SUITE_PATH",
+    "DEFAULT_SUITE_V2_PATH",
+    "LLM_JUDGED_GRADERS",
     "load_benchmark_suite",
     "validate_benchmark_suite",
 ]

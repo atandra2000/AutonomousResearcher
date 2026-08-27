@@ -24,6 +24,7 @@ import asyncio
 import json
 import time
 from collections import Counter
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from statistics import mean, median, pstdev
@@ -177,6 +178,7 @@ async def _grade_case(
     suite_case: Any,
     execution_view: _StoredExecutionView,
     harness_error: str = "",
+    extra_graders: dict[str, Any] | None = None,
 ) -> tuple[list[CriterionOutcome], bool, float]:
     """Async twin of E4's ``_grade`` against the stored-payload view."""
 
@@ -193,8 +195,32 @@ async def _grade_case(
 
     outcomes: list[CriterionOutcome] = []
     for criterion in suite_case.criteria:
-        grader = build_grader(criterion.grader, criterion.config)
-        result = await grader.grade(req)
+        shared = (extra_graders or {}).get(criterion.grader)
+        try:
+            if shared is not None:
+                # Per-criterion configuration (rubric/threshold/patterns)
+                # must not leak between cases sharing one grader instance,
+                # so each grade gets its own configured copy.
+                grader = deepcopy(shared)
+                if hasattr(grader, "configure"):
+                    grader.configure(criterion.config)
+                result = await grader.grade(req)
+            else:
+                result = await build_grader(
+                    criterion.grader, criterion.config
+                ).grade(req)
+        except KeyError as exc:
+            # Unknown grader names fail closed as a failed criterion
+            # instead of aborting the whole benchmark run.
+            outcomes.append(CriterionOutcome(
+                grader=criterion.grader,
+                weight=criterion.weight,
+                required=criterion.required,
+                passed=False,
+                score=0.0,
+                detail=f"unknown grader: {exc}",
+            ))
+            continue
         outcomes.append(CriterionOutcome(
             grader=criterion.grader,
             weight=criterion.weight,
@@ -505,7 +531,16 @@ def render_markdown(report: BenchmarkReport) -> str:
 
 
 class BenchmarkRunner:
-    """Execute a benchmark suite through the full production stack."""
+    """Execute a benchmark suite through the full production stack.
+
+    P2 extensions (both optional, backward compatible):
+
+    * ``extra_graders``: additional grader instances keyed by criterion
+      name (e.g. the ``llm_quality`` LLM-judge); deterministic graders stay
+      the default resolution path.
+    * ``factories``: a pre-populated ``AgentFactoryRegistry``; when omitted,
+      the P1 default registry is built and benchmark kinds are registered.
+    """
 
     def __init__(
         self,
@@ -513,10 +548,14 @@ class BenchmarkRunner:
         *,
         cycles_per_poll: int = 400,
         poll_seconds: float = 0.02,
+        extra_graders: dict[str, Any] | None = None,
+        factories: AgentFactoryRegistry | None = None,
     ) -> None:
         self.base_dir = Path(base_dir)
         self._cycles = cycles_per_poll
         self._poll = poll_seconds
+        self._extra_graders = extra_graders or {}
+        self._factories = factories
 
     async def run_suite(
         self,
@@ -599,8 +638,11 @@ class BenchmarkRunner:
         gateway, controller = build_default_safety_chain(
             _ArtifactConfigShim(artifacts_root)
         )
-        factories = AgentFactoryRegistry(config_max_steps=12)
-        register_benchmark_kinds(factories)
+        if self._factories is not None:
+            factories = self._factories
+        else:
+            factories = AgentFactoryRegistry(config_max_steps=12)
+            register_benchmark_kinds(factories)
         worker = AgentWorker(
             store=store,
             queue=queue,
@@ -637,7 +679,8 @@ class BenchmarkRunner:
                     _notes_snapshot(artifacts_root) - notes_before
                 )
                 results.append(await self._outcome_for(
-                    case, repeat, final, payload, added
+                    case, repeat, final, payload, added,
+                    extra_graders=self._extra_graders or None,
                 ))
         finally:
             await worker.drain(5)
@@ -665,9 +708,13 @@ class BenchmarkRunner:
     async def _outcome_for(
         self, case: Any, repeat: int,
         record: Any, payload: dict[str, Any], artifacts_added: int,
+        *,
+        extra_graders: dict[str, Any] | None = None,
     ) -> CaseOutcome:
         view = _StoredExecutionView(payload)
-        criteria, graded_success, weighted = await _grade_case(case, view)
+        criteria, graded_success, weighted = await _grade_case(
+            case, view, extra_graders=extra_graders
+        )
         ctx = view.context
         safety_state: dict[str, Any] = (
             ctx.metadata.get("safety_state") or {}
