@@ -1,0 +1,20 @@
+# P3 arm E - implementation-task strategy. ONLY change: implementation-
+# category cases get the impl_focus method prompt (interface-shape checks,
+# ordered build steps, genuine edge cases, numeric equivalence tests).
+# Deliberately narrower than arm B so the two agent-policy effects can be
+# attributed separately: if only E improves implementation cases while B
+# does not move global metrics, the gap was category-specific guidance.
+arm_id: exp_e_impl_strategy
+variable: implementation_strategy
+description: >-
+  Category-scoped implementation strategy prompt on implementation-category
+  cases only; all other cases run with exactly the frozen baseline config.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    categories: [implementation]
+  overrides:
+    llm_strategy: impl_focus
+gate_component: planning_params
+gate_changes: {"agent.llm_strategy": "impl_focus"}

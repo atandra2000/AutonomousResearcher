@@ -1,0 +1,20 @@
+# P3 arm B - planning/reasoning strategy. ONLY change: a mandatory
+# finish-discipline paragraph appended to the agent system prompt via the
+# new ``llm_strategy`` override (see service/llm_agent.STRATEGY_PROMPTS).
+# Targets the observed failure mode where models declared FINAL_ANSWER in
+# one step with zero tool calls and never wrote required deliverables.
+# Budgets, graders, judge, and model remain frozen-baseline values.
+arm_id: exp_b_plan_first_strategy
+variable: planning_strategy
+description: >-
+  Global plan-first finishing discipline added to the system prompt of every
+  llm_react case; single prompt-level delta vs the frozen baseline prompt.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_strategy: plan_first
+gate_component: planning_params
+gate_changes: {"agent.llm_strategy": "plan_first"}

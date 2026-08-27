@@ -1,0 +1,17 @@
+# P3 arm A3 - model comparison. ONLY change: agent model -> gpt-oss:120b
+# (verified available on the ollama.com catalog reachable with current env
+# credentials). Judge constant (glm-5.3-flash).
+arm_id: exp_a3_gpt_oss_120b
+variable: model
+description: >-
+  Agent model swapped from glm-5.3-flash to gpt-oss:120b; single-variable
+  arm on top of the frozen baseline configuration.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_model: gpt-oss:120b
+gate_component: model_provider_config
+gate_changes: {"model_provider.model": "gpt-oss:120b"}

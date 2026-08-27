@@ -1,0 +1,20 @@
+# P3 arm A1 - model comparison. ONLY change: the agent's model id, set per
+# case through the existing scalar ``llm_model`` override (Phase 10 provider
+# abstraction resolves it against the same configured ollama provider). The
+# judge stays bound to EvaluationAgent -> glm-5.3-flash so evaluator quality
+# is constant across all arms and judge/model effects stay separable.
+arm_id: exp_a1_kimi_k27_code
+variable: model
+description: >-
+  Agent model swapped from glm-5.3-flash to kimi-k2.7-code (coding-tuned
+  strong candidate already validated in this deployment for CodingAgent).
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_model: kimi-k2.7-code
+# E8 gate registration (candidate provenance; promotion stays manual).
+gate_component: model_provider_config
+gate_changes: {"model_provider.model": "kimi-k2.7-code"}

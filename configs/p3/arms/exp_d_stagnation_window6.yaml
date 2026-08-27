@@ -1,0 +1,20 @@
+# P3 arm D - stagnation handling. ONLY change: the E5 stagnation window
+# widens from the documented default (3 steps without progress before
+# NO_PROGRESS termination) to 6, expressed through the newly plumbed scalar
+# ``stagnation_window`` policy override. Hypothesis under test: a more
+# patient guard can only help or be neutral because baselines never hit
+# NO_PROGRESS terminations; regression here would expose hidden fragility.
+arm_id: exp_d_stagnation_window6
+variable: stagnation_policy
+description: >-
+  Less aggressive stagnation handling (window 3 -> 6). Model, prompts,
+  budgets, judge all frozen-baseline values.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    stagnation_window: 6
+gate_component: loop_policy
+gate_changes: {"agent.stagnation_window": 6}

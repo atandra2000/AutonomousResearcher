@@ -166,6 +166,15 @@ class AgentFactoryRegistry:
             policy.max_recoverable_errors = int(
                 overrides["max_recoverable_errors"]
             )
+        # P3: stagnation-handling knobs are configurable per benchmark arm
+        # (experiment D varies ``stagnation_window`` while everything else
+        # stays frozen). Absent overrides keep the documented defaults.
+        if "stagnation_window" in overrides:
+            policy.stagnation_window = int(overrides["stagnation_window"])
+        if "progress_threshold" in overrides:
+            policy.progress_threshold = float(
+                overrides["progress_threshold"]
+            )
         return adapter, policy
 
     @staticmethod

@@ -1,0 +1,22 @@
+# P3 arm C - token/reasoning budget. ONLY change: the reasoning envelope.
+# Per-call completion cap raised 2048 -> 4096 (reasoning models truncate at
+# low caps; the P2 session already observed truncation at 1024) and an
+# explicit cumulative max_tokens budget of 48000 replaces the implicit
+# unlimited runtime cap so growth remains bounded and measured. Case
+# structure, goals, criteria, timeout, cost policy, model, judge: frozen.
+arm_id: exp_c_reasoning_budget
+variable: token_budget
+description: >-
+  Elevated reasoning budget: llm_max_tokens_per_call=4096 plus explicit
+  cumulative max_tokens=48000 per task; everything else identical to the
+  frozen baseline.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_max_tokens_per_call: 4096
+    max_tokens: 48000
+gate_component: reasoning_budget
+gate_changes: {"agent.llm_max_tokens_per_call": 4096, "agent.max_tokens": 48000}

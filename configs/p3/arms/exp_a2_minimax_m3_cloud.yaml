@@ -1,0 +1,17 @@
+# P3 arm A2 - model comparison. ONLY change: agent model -> minimax-m3:cloud
+# (strong reasoning/orchestration candidate already routed in this deployment).
+# Judge constant (glm-5.3-flash) for clean model-vs-model deltas.
+arm_id: exp_a2_minimax_m3_cloud
+variable: model
+description: >-
+  Agent model swapped from glm-5.3-flash to minimax-m3:cloud; single-variable
+  arm on top of the frozen baseline configuration.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: set_agent_overrides
+  select:
+    all_cases: true
+  overrides:
+    llm_model: minimax-m3:cloud
+gate_component: model_provider_config
+gate_changes: {"model_provider.model": "minimax-m3:cloud"}

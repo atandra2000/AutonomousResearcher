@@ -1,0 +1,16 @@
+# P3 - Agent Capability Optimization Experiment
+#
+# Each file declares ONE experiment arm: a single controlled variable applied
+# on top of the frozen P2 baseline configuration. Arms are executed through
+# the unchanged P2 production path (run_p2 -> BenchmarkRunner -> E7 stack).
+# The original evals/research_benchmark/v2/suite.yaml is NEVER modified;
+# each run derives a suite snapshot recorded under artifacts/p3/<arm>/.
+arm_id: baseline_repro
+variable: none
+description: >-
+  Frozen baseline reproduction. Identical inputs to the authoritative P2
+  final run (provider ollama / model glm-5.3-flash agent+judge, v2 suite r1,
+  default budgets). Used to verify baseline integrity before any experiment.
+base_suite: evals/research_benchmark/v2/suite.yaml
+mutation:
+  kind: none

@@ -101,6 +101,45 @@ a line starting exactly with:
 followed by your final structured answer. Include every required section \
 header from the task inside that final answer."""
 
+#: Optional planning-strategy addenda selected per benchmark arm through the
+#: scalar ``llm_strategy`` agent override. Each variant appends exactly one
+#: paragraph to the shared system prompt so a strategy change is a single,
+#: auditable delta versus the frozen baseline prompt. Unknown strategy names
+#: fail closed (the factory raises instead of silently running base prompt).
+STRATEGY_PROMPTS: dict[str, str] = {
+    # B: global plan-first finishing discipline (targets the observed
+    # single-step zero-tool-call failure mode where deliverables were never
+    # written before the model declared FINAL_ANSWER).
+    "plan_first": (
+        "\n5. Finish discipline (mandatory): first enumerate internally which "
+        "deliverables the task requires, then produce them with "
+        "research_note_write, and only afterwards emit your FINAL_ANSWER. A "
+        "final answer that omits a required deliverable or a required section "
+        "header counts as failure even if the prose is excellent."
+    ),
+    # E: implementation-task-specific strategy (scoped to implementation-
+    # category cases by the experiment configuration).
+    "impl_focus": (
+        "\n5. Implementation-task method (mandatory): (a) state the exact "
+        "interface/signature with explicit tensor shapes and verify they are "
+        "dimensionally consistent; (b) order concrete build steps; (c) list "
+        "genuine edge cases with why they break naive implementations; "
+        "(d) specify unit tests including a numeric equivalence check. Write "
+        "this plan via research_note_write BEFORE emitting FINAL_ANSWER, and "
+        "repeat every required header verbatim inside FINAL_ANSWER."
+    ),
+}
+
+
+def system_prompt(strategy: str | None = None) -> str:
+    """Compose the agent system prompt for an optional strategy name."""
+    if not strategy:
+        return _SYSTEM_PROMPT
+    suffix = STRATEGY_PROMPTS.get(strategy)
+    if suffix is None:
+        raise ValueError(f"unknown llm_strategy {strategy!r}")
+    return _SYSTEM_PROMPT + suffix
+
 
 # ---------------------------------------------------------------------------
 # Tool surface exposed to the model (gateway-registered sandbox tools only)
@@ -185,9 +224,15 @@ class LLMReActAdapter(RuntimeAwareAdapter):
         model: str | None = None,
         temperature: float = 0.2,
         max_tokens_per_call: int = 1024,
+        strategy: str | None = None,
         agent_name: str = "benchmark_llm",
     ) -> None:
         super().__init__(agent_name=agent_name)
+        # Fail closed on unknown strategy names (P3 experiment arms set this
+        # through the ``llm_strategy`` override; a typo must not silently
+        # execute the baseline prompt under a candidate label).
+        self.strategy = str(strategy) if strategy else None
+        self.system_prompt_text = system_prompt(self.strategy)
         self.provider = provider
         self.model = model
         self.temperature = float(temperature)
@@ -206,7 +251,9 @@ class LLMReActAdapter(RuntimeAwareAdapter):
         conversation = self._conversations.get(execution_id)
         if conversation is None:
             conversation = [
-                LLMMessage(role=LLMRole.SYSTEM, content=_SYSTEM_PROMPT),
+                LLMMessage(
+                    role=LLMRole.SYSTEM, content=self.system_prompt_text
+                ),
                 LLMMessage(role=LLMRole.USER, content=goal),
             ]
             self._conversations[execution_id] = conversation
@@ -412,6 +459,10 @@ def _llm_react_factory(injected_provider: Any = None) -> Any:
             max_tokens_per_call=int(
                 overrides.get("llm_max_tokens_per_call", 2048)
             ),
+            strategy=(
+                str(overrides["llm_strategy"])
+                if overrides.get("llm_strategy") else None
+            ),
         )
         return adapter, AgentPolicy()
 
@@ -430,8 +481,10 @@ __all__ = [
     "KIND_LLM_REACT",
     "LLMReActAdapter",
     "ROUTER_AGENT_NAME",
+    "STRATEGY_PROMPTS",
     "register_llm_agent_kinds",
     "resolve_llm_provider",
+    "system_prompt",
     "tool_definitions",
 ]
 
