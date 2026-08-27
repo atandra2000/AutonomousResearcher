@@ -52,6 +52,18 @@ from research_engineer.tools.base import Tool, ToolError
 #: not explicitly set ``requires_approval``. Operators can override per tool.
 APPROVAL_RISK_THRESHOLD = RiskLevel.HIGH
 
+#: Declaration-order ranks for severity comparisons. ``RiskLevel.value``
+#: strings must never be compared directly - lexicographic order would
+#: wrongly gate ``medium`` and exempt ``critical`` from approval.
+_RISK_SEVERITY_ORDER: dict[RiskLevel, int] = {
+    level: rank for rank, level in enumerate(RiskLevel)
+}
+
+
+def risk_at_least(level: RiskLevel, threshold: RiskLevel) -> bool:
+    """Severity-ordered risk comparison (LOW < MEDIUM < HIGH < CRITICAL)."""
+    return _RISK_SEVERITY_ORDER[level] >= _RISK_SEVERITY_ORDER[threshold]
+
 
 class ToolGateway:
     """Centralized, policy-enforcing tool dispatch.
@@ -254,8 +266,7 @@ class ToolGateway:
         or when its risk level is at or above the approval threshold.
         """
         requires = policy.requires_approval or (
-            policy.risk_level.value
-            >= APPROVAL_RISK_THRESHOLD.value
+            risk_at_least(policy.risk_level, APPROVAL_RISK_THRESHOLD)
         )
         if not requires:
             return True

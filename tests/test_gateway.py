@@ -14,6 +14,7 @@ import asyncio
 from typing import Any
 
 import pytest
+from pydantic import BaseModel
 
 from research_engineer.gateway import (
     APPROVAL_RISK_THRESHOLD,
@@ -498,3 +499,60 @@ def test_registry_register_and_lookup() -> None:
     assert "echo" in reg.names()
     assert reg.is_allowed("echo")
 
+
+
+class _ProbeInput(BaseModel):
+    pass
+
+
+class _ProbeOutput(BaseModel):
+    digest: str = "x"
+
+
+class TestRiskApprovalOrdering:
+    """P1 regression: severity ordering, not lexicographic string compare.
+
+    The original ``risk_level.value >= threshold.value`` comparison made
+    MEDIUM tools demand approval ("m" > "h") and let CRITICAL tools bypass
+    it ("c" < "h").
+    """
+
+    @staticmethod
+    def _gateway() -> ToolGateway:
+        return ToolGateway(ToolGatewayConfig(enforce_approval=True))
+
+    async def _approval_consulted(self, risk: RiskLevel) -> bool:
+        seen: list[str] = []
+
+        async def spy(request: ApprovalRequest) -> bool:
+            seen.append(risk.value)
+            return True
+
+        gateway = self._gateway()
+        gateway.approval_handler = CallbackApprovalHandler(
+            callback=spy, enforce=True
+        )
+
+        class _ProbeTool(Tool[_ProbeInput, _ProbeOutput]):
+            async def execute(self, input):
+                return _ProbeOutput()
+
+        gateway.register_tool(_ProbeTool(), name=f"probe_{risk.value}",
+                              risk_level=risk)
+        await gateway.execute(f"probe_{risk.value}", {})
+        return bool(seen)
+
+    @pytest.mark.asyncio
+    async def test_medium_requires_no_approval_and_critical_does(
+        self,
+    ) -> None:
+        assert await self._approval_consulted(RiskLevel.MEDIUM) is False
+        assert await self._approval_consulted(RiskLevel.CRITICAL) is True
+
+    def test_risk_at_least_orders_by_severity(self) -> None:
+        from research_engineer.gateway.gateway import risk_at_least
+
+        assert risk_at_least(RiskLevel.LOW, RiskLevel.HIGH) is False
+        assert risk_at_least(RiskLevel.MEDIUM, RiskLevel.HIGH) is False
+        assert risk_at_least(RiskLevel.HIGH, RiskLevel.HIGH) is True
+        assert risk_at_least(RiskLevel.CRITICAL, RiskLevel.HIGH) is True

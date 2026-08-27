@@ -320,3 +320,269 @@ class TestOutcomeSettlementRaces:
         final = await store.get_required(created.run_id)
         assert final.status == RunStatus.CANCELLED
         assert queue.acked == [created.run_id]
+
+
+# ---------------------------------------------------------------------------
+# P1 §1: production safety wiring (fail-closed + full chain execution)
+# ---------------------------------------------------------------------------
+
+
+class TestProductionSafetyChain:
+    """Production autonomous execution requires E3 gateway + E5 safety."""
+
+    @staticmethod
+    def _enforcing_worker(store, queue, tmp_path, **kwargs):
+        return AgentWorker(
+            store=store,
+            queue=queue,
+            checkpoint_store=InMemoryCheckpointStore(),
+            artifacts=ArtifactStore(tmp_path / "artifacts"),
+            factories=AgentFactoryRegistry(config_max_steps=8),
+            telemetry=ServiceTelemetry(),
+            poll_interval_seconds=0.02,
+            require_safety_chain=True,
+            **kwargs,
+        )
+
+    async def _submit(self, store, queue, tmp_path, goal="Step one. Step two.",
+                      metadata=None):
+        manager = RunManager(store, queue, ServiceTelemetry())
+        return await manager.submit(
+            CreateRunRequest(goal=goal, metadata=metadata or {})
+        )
+
+    @pytest.mark.asyncio
+    async def test_enforce_mode_fails_closed_without_chain(
+        self, tmp_store, tmp_path
+    ) -> None:
+        """No gateway/controller wired -> run refuses to execute agent code."""
+        from research_engineer.service.queue import InMemoryQueue
+
+        queue = InMemoryQueue()
+        worker = self._enforcing_worker(tmp_store, queue, tmp_path)
+        created = await self._submit(tmp_store, queue, tmp_path)
+        await _drive(worker)
+        final = await tmp_store.get_required(created.run_id)
+        assert final.status == RunStatus.FAILED
+        assert final.error is not None
+        assert "fail-closed" in final.error
+        assert "ToolGateway" in final.error
+        assert "SafetyController" in final.error
+        # The refusal acked the queue entry (no re-delivery loop).
+        assert final.claim_count <= 1
+        assert not final.artifacts  # nothing executed, nothing persisted
+
+    @pytest.mark.asyncio
+    async def test_enforce_mode_fails_closed_gateway_only(
+        self, tmp_store, tmp_path
+    ) -> None:
+        """Gateway alone is insufficient; the pair is REQUIRED."""
+        from research_engineer.gateway.gateway import ToolGateway
+        from research_engineer.gateway.models import ToolGatewayConfig
+        from research_engineer.service.queue import InMemoryQueue
+
+        queue = InMemoryQueue()
+        ws = tmp_path / "sandbox"
+        ws.mkdir(parents=True)
+        gateway = ToolGateway(ToolGatewayConfig(workspace=[str(ws)]))
+        worker = self._enforcing_worker(
+            tmp_store, queue, tmp_path, tool_gateway=gateway
+        )
+        created = await self._submit(tmp_store, queue, tmp_path)
+        await _drive(worker)
+        final = await tmp_store.get_required(created.run_id)
+        assert final.status == RunStatus.FAILED
+        assert "SafetyController" in (final.error or "")
+
+    @pytest.mark.asyncio
+    async def test_full_chain_executes_tool_calls_through_gateway(
+        self, tmp_store, tmp_path
+    ) -> None:
+        """With both components wired, a bench_tool run completes and its
+        tool calls visibly traverse the gateway+safety chain."""
+        from research_engineer.gateway.gateway import ToolGateway
+        from research_engineer.gateway.models import ToolGatewayConfig
+        from research_engineer.safety.controller import SafetyController
+        from research_engineer.service.bench_agents import (
+            KIND_BENCH_TOOL,
+            register_benchmark_kinds,
+            register_sandbox_tools,
+        )
+        from research_engineer.service.queue import InMemoryQueue
+
+        queue = InMemoryQueue()
+        factories = AgentFactoryRegistry(config_max_steps=10)
+        register_benchmark_kinds(factories)
+        workspace = tmp_path / "artifacts"
+        gateway = ToolGateway(
+            ToolGatewayConfig(workspace=[str(workspace.resolve())],
+                              enforce_approval=True)
+        )
+        register_sandbox_tools(gateway, workspace=workspace / "sandbox")
+        controller = SafetyController()
+
+        worker = AgentWorker(
+            store=tmp_store,
+            queue=queue,
+            checkpoint_store=InMemoryCheckpointStore(),
+            artifacts=ArtifactStore(workspace),
+            factories=factories,
+            telemetry=ServiceTelemetry(),
+            poll_interval_seconds=0.02,
+            tool_gateway=gateway,
+            safety_controller=controller,
+            require_safety_chain=True,
+        )
+        created = await self._submit(
+            tmp_store,
+            queue,
+            tmp_path,
+            goal=(
+                "Survey gradient checkpointing tradeoffs for MoE models. "
+                "Benchmark attention kernel variants under bf16."
+            ),
+            metadata={"agent_kind": KIND_BENCH_TOOL},
+        )
+        await _drive(worker, cycles=12)
+        final = await tmp_store.get_required(created.run_id)
+        assert final.status == RunStatus.COMPLETED
+        assert final.result is not None
+
+        summary = final.result["context"]
+        # P1 §2 payload enrichment: analysis-grade context travels with the
+        # terminal record.
+        for field in (
+            "current_step", "tool_calls", "tokens", "cost_usd",
+            "recoverable_errors", "fatal_errors", "human_interventions",
+            "tool_call_log", "safety_state", "steps",
+        ):
+            assert field in summary, f"missing context summary field {field}"
+        # Real gateway-dispatched calls are recorded in order.
+        statuses = [
+            e["status"] for e in summary["tool_call_log"]
+            if e["tool"] == "research_note_write"
+        ]
+        assert statuses and all(s == "success" for s in statuses)
+        assert summary["tool_calls"] >= 4
+        # Files really landed inside the approved sandbox root (the goal
+        # decomposes into exactly two checklist chunks >8 chars).
+        notes = sorted((workspace / "sandbox" / "notes").glob("*.txt"))
+        assert len(notes) == 2
+
+    @pytest.mark.asyncio
+    async def test_loop_kind_is_stopped_by_safety_controller(
+        self, tmp_store, tmp_path
+    ) -> None:
+        """A looping benchmark run is terminated by the E5 chain."""
+        from research_engineer.gateway.gateway import ToolGateway
+        from research_engineer.gateway.models import ToolGatewayConfig
+        from research_engineer.safety.controller import SafetyController
+        from research_engineer.service.bench_agents import (
+            KIND_BENCH_LOOP,
+            register_benchmark_kinds,
+            register_sandbox_tools,
+        )
+        from research_engineer.service.queue import InMemoryQueue
+
+        queue = InMemoryQueue()
+        factories = AgentFactoryRegistry(config_max_steps=15)
+        register_benchmark_kinds(factories)
+        workspace = tmp_path / "artifacts"
+        gateway = ToolGateway(
+            ToolGatewayConfig(workspace=[str(workspace.resolve())])
+        )
+        register_sandbox_tools(gateway, workspace=workspace / "sandbox")
+
+        worker = AgentWorker(
+            store=tmp_store,
+            queue=queue,
+            checkpoint_store=InMemoryCheckpointStore(),
+            artifacts=ArtifactStore(workspace),
+            factories=factories,
+            telemetry=ServiceTelemetry(),
+            poll_interval_seconds=0.02,
+            tool_gateway=gateway,
+            safety_controller=SafetyController(),
+            require_safety_chain=True,
+        )
+        created = await self._submit(
+            tmp_store,
+            queue,
+            tmp_path,
+            goal="Probe the same source repeatedly.",
+            metadata={"agent_kind": KIND_BENCH_LOOP},
+        )
+        await _drive(worker, cycles=16)
+        final = await tmp_store.get_required(created.run_id)
+        assert final.status == RunStatus.FAILED
+        summary = final.result["context"] if final.result else {}
+        decisions = ((summary.get("safety_state") or {}).get("decisions")) or []
+        # At least one non-CONTINUE deterministic control fired.
+        assert any(
+            str(d.get("action", "")) not in ("", "continue", "None")
+            for d in decisions if isinstance(d, dict)
+        ), f"expected safety intervention, decisions={decisions}"
+
+    @pytest.mark.asyncio
+    async def test_risky_kind_denied_under_enforced_approvals(
+        self, tmp_store, tmp_path
+    ) -> None:
+        """HIGH-risk approval-gated tools cannot self-approve in production."""
+        from research_engineer.gateway.gateway import ToolGateway
+        from research_engineer.gateway.models import ToolGatewayConfig
+        from research_engineer.safety.controller import SafetyController
+        from research_engineer.service.bench_agents import (
+            KIND_BENCH_RISKY,
+            register_benchmark_kinds,
+            register_sandbox_tools,
+        )
+        from research_engineer.service.queue import InMemoryQueue
+
+        queue = InMemoryQueue()
+        factories = AgentFactoryRegistry(config_max_steps=10)
+        register_benchmark_kinds(factories)
+        workspace = tmp_path / "artifacts"
+        gateway = ToolGateway(
+            ToolGatewayConfig(workspace=[str(workspace.resolve())],
+                              enforce_approval=True)
+        )
+        register_sandbox_tools(gateway, workspace=workspace / "sandbox")
+
+        worker = AgentWorker(
+            store=tmp_store,
+            queue=queue,
+            checkpoint_store=InMemoryCheckpointStore(),
+            artifacts=ArtifactStore(workspace),
+            factories=factories,
+            telemetry=ServiceTelemetry(),
+            poll_interval_seconds=0.02,
+            tool_gateway=gateway,
+            safety_controller=SafetyController(),
+            require_safety_chain=True,
+        )
+        created = await self._submit(
+            tmp_store,
+            queue,
+            tmp_path,
+            goal="Fetch external benchmark corpora.",
+            metadata={"agent_kind": KIND_BENCH_RISKY},
+        )
+        await _drive(worker, cycles=14)
+        final = await tmp_store.get_required(created.run_id)
+        assert final.status.is_terminal()
+        summary = final.result["context"] if final.result else {}
+        denials = [
+            e for e in summary.get("tool_call_log", [])
+            if e.get("tool") == "external_probe"
+            and "denied" in str(e.get("status", ""))
+        ]
+        assert denials, (
+            "expected approval_denied entries; got "
+            f"{summary.get('tool_call_log')}"
+        )
+
+    def test_config_flag_parses(self) -> None:
+        cfg = load_service_config({"RE_SERVICE_ENFORCE_SAFETY": "1"})
+        assert cfg.enforce_safety_chain is True
+        dev = load_service_config({})
+        assert dev.enforce_safety_chain is False

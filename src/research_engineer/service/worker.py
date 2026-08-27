@@ -65,6 +65,9 @@ class AgentWorker:
         poll_interval_seconds: float = 0.5,
         recovery_interval_seconds: float = 30.0,
         stale_run_timeout_seconds: float = 120.0,
+        tool_gateway: Any | None = None,
+        safety_controller: Any | None = None,
+        require_safety_chain: bool = False,
     ) -> None:
         self.store = store
         self.queue = queue
@@ -77,6 +80,12 @@ class AgentWorker:
         self.poll_interval = poll_interval_seconds
         self.recovery_interval = recovery_interval_seconds
         self.stale_timeout = stale_run_timeout_seconds
+        # P1 §1: production discipline. When ``require_safety_chain`` is set
+        # (RE_SERVICE_ENFORCE_SAFETY=1) autonomous execution fails closed
+        # unless both E3 gateway and E5 controller are wired in.
+        self.tool_gateway = tool_gateway
+        self.safety_controller = safety_controller
+        self.require_safety_chain = require_safety_chain
         self._tasks: set[asyncio.Task[None]] = set()
         self._stopping = False
         self._cancellable: dict[str, AgentRuntime] = {}
@@ -136,6 +145,34 @@ class AgentWorker:
         )
         return recovered
 
+    async def _refuse_without_safety_chain(self, run_id: str) -> None:
+        """P1 §1: fail-closed refusal of autonomous execution.
+
+        Production runs must never execute agent code without the full
+        E3 (gateway) + E5 (safety) chain; the run is marked FAILED with a
+        reason naming every missing component.
+        """
+        missing = " and ".join(
+            name
+            for name, obj in (
+                ("ToolGateway", self.tool_gateway),
+                ("SafetyController", self.safety_controller),
+            )
+            if obj is None
+        )
+        reason = (
+            "fail-closed: production autonomous execution requires "
+            f"{missing}"
+        )
+        logger.error("run %s refused: %s", run_id, reason)
+        record = await self.store.get_required(run_id)
+        record.status = RunStatus.FAILED
+        record.finished_at = datetime.now()
+        record.error = reason
+        await self.store.update(record)
+        self.telemetry.run_failed(run_id, reason)
+        await self.queue.ack(run_id)
+
     async def drain(self, timeout: float = 10.0) -> None:
         """Wait for in-flight executions to finish."""
         if self._tasks:
@@ -145,15 +182,25 @@ class AgentWorker:
     # Execution
     # ------------------------------------------------------------------
 
-    async def execute(self, run_id: str) -> None:
-        """Execute (or resume) one claimed run to a terminal state."""
-        record = await self.store.get_required(run_id)
+    async def _pass_gates(self, run_id: str, record: Any) -> bool:
+        """Pre-execution gates.
+
+        Returns True when the run should proceed to claiming; every refusal
+        path acknowledges the queue entry itself.
+        """
         if record.status.is_terminal():
             await self.queue.ack(run_id)
-            return
+            return False
         if record.cancel_requested:
             await self._finish_cancelled(record)
-            return
+            return False
+        # P1 §1: production discipline. Refuse autonomous execution without
+        # the full E3 (gateway) + E5 (safety) chain; never run agent code.
+        if self.require_safety_chain and (
+            self.tool_gateway is None or self.safety_controller is None
+        ):
+            await self._refuse_without_safety_chain(run_id)
+            return False
         if record.status == RunStatus.RUNNING:
             # Duplicate delivery while another execution may be live.
             # Take over only when the previous heartbeat is older than the
@@ -162,9 +209,15 @@ class AgentWorker:
             age = (datetime.now() - record.updated_at).total_seconds()
             if age < self.stale_timeout:
                 await self.queue.ack(run_id)
-                return
+                return False
+        return True
 
-        from datetime import datetime
+    async def execute(self, run_id: str) -> None:
+        """Execute (or resume) one claimed run to a terminal state."""
+        record = await self.store.get_required(run_id)
+        if not await self._pass_gates(run_id, record):
+            return
+
 
         record.status = RunStatus.RUNNING
         record.worker_id = self.worker_id
@@ -209,12 +262,19 @@ class AgentWorker:
                 policy=policy,
                 checkpoint_store=self.checkpoint_store,
                 on_step=self._make_cancel_hook(run_id),
+                tool_gateway=self.tool_gateway,
+                safety_controller=self.safety_controller,
             )
             self._register_runtime(run_id, runtime)
+            # P1 §1: adapters that opt in (``attach_runtime``) route tool
+            # calls through AgentRuntime.call_tool so every dispatch crosses
+            # the gateway + safety chain rather than bypassing it.
+            attach = getattr(adapter, "attach_runtime", None)
+            if attach is not None:
+                attach(runtime)
             context = await self._run_runtime(runtime, record, resumed_context)
         except Exception as exc:  # noqa: BLE001 - failures mark run failed
             logger.exception("run %s failed", run_id)
-            from datetime import datetime
 
             record.status = RunStatus.FAILED
             record.finished_at = datetime.now()
@@ -255,7 +315,6 @@ class AgentWorker:
 
     async def _persist_outcome(self, record: RunRecord, context: Any) -> None:
         """Commit the terminal state, result payload, and artifact."""
-        from datetime import datetime
 
         termination = str(getattr(context.termination, "value",
                                   context.termination))
@@ -265,6 +324,7 @@ class AgentWorker:
             "reason": context.termination_reason,
             "steps": len(context.steps),
             "execution_id": context.execution_id,
+            "context": _context_summary(context),
         }
         artifact = self.artifacts.persist_result(record.run_id, result_payload)
         record.result = result_payload
@@ -383,13 +443,79 @@ class AgentWorker:
         return False
 
     async def _finish_cancelled(self, record: RunRecord) -> None:
-        from datetime import datetime
 
         record.status = RunStatus.CANCELLED
         record.finished_at = datetime.now()
         await self.store.update(record)
         await self.queue.ack(record.run_id)
         self.telemetry.run_cancelled(record.run_id)
+
+
+def _context_summary(context: Any) -> dict[str, Any]:
+    """Compact, JSON-safe snapshot of a finished ``AgentContext``.
+
+    Downstream consumers (benchmark grading/metrics, E8 mining) rebuild
+    their analysis inputs from this payload without live runtime state:
+    budget counters, the E4/E8 ``tool_call_log``, E5 safety decisions, and
+    per-step outcomes. Mirrors the shape graders expect on a real context.
+    """
+    metadata = getattr(context, "metadata", {}) or {}
+    safety_state = metadata.get("safety_state")
+    if isinstance(safety_state, dict):
+        decisions = safety_state.get("decisions")
+        if isinstance(decisions, list):
+            # ponytail: keep last 50 decisions; full history stays in the
+            # checkpoint until terminal cleanup.
+            safety_state = {**safety_state, "decisions": decisions[-50:]}
+    return {
+        "execution_id": context.execution_id,
+        "state": str(getattr(getattr(context, "state", None), "value",
+                             getattr(context, "state", ""))),
+        "current_step": context.current_step,
+        "tool_calls": context.tool_calls,
+        "tokens": context.tokens,
+        "cost_usd": context.cost_usd,
+        "recoverable_errors": context.recoverable_errors,
+        "fatal_errors": sum(1 for s in context.steps if s.error is not None),
+        "stagnation_count": context.stagnation_count,
+        "best_score": context.best_score,
+        "duration_seconds": context.duration_seconds,
+        "human_interventions": int(
+            metadata.get("human_interventions", 0) or 0
+        ),
+        "tool_call_log": [
+            entry
+            for entry in (metadata.get("tool_call_log") or [])
+            if isinstance(entry, dict)
+        ],
+        "safety_state": (
+            safety_state if isinstance(safety_state, dict) else None
+        ),
+        "steps": [
+            {
+                "step": s.step,
+                "score": s.score,
+                "error": (
+                    {
+                        "message": s.error.message,
+                        "type": s.error.error_type,
+                        "recoverable": s.error.recoverable,
+                        "phase": (
+                            s.error.phase.value
+                            if s.error.phase is not None else ""
+                        ),
+                    }
+                    if s.error is not None
+                    else None
+                ),
+                "tool_calls": s.tool_calls,
+                "tokens": s.tokens,
+                "cost_usd": s.cost_usd,
+                "duration_seconds": s.duration_seconds,
+            }
+            for s in context.steps
+        ],
+    }
 
 
 async def _null_planner(ctx: Any) -> None:

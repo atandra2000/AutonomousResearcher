@@ -176,6 +176,7 @@ class AgentRuntime:
         self._cancel_event: asyncio.Event | None = None
         self._resume_lock_held = False
         self._active_ctx: AgentContext | None = None
+        self._active_step: AgentStep | None = None
 
     # ------------------------------------------------------------------
     # Public API
@@ -500,6 +501,23 @@ class AgentRuntime:
             run_id=effective_run_id,
             metadata=metadata,
         )
+        # E4/E8 telemetry contract: graders and mining read per-call
+        # ``{"tool", "status"}`` entries from ``ctx.metadata["tool_call_log"]``
+        # (the scripted factory writes the same shape). Production dispatch
+        # via a gateway must record it too so offline analysis sees calls.
+        if self._active_ctx is not None:
+            if self._active_step is not None:
+                # Attribute the call to the in-flight step so budget checks
+                # and context summaries count gateway-dispatched work.
+                self._active_step.tool_calls += 1
+            try:
+                log = self._active_ctx.metadata.setdefault("tool_call_log", [])
+                log.append({
+                    "tool": tool_name,
+                    "status": str(getattr(result, "status", "unknown")),
+                })
+            except Exception:  # noqa: BLE001 - logging never breaks dispatch
+                logger.debug("tool_call_log append failed", exc_info=True)
         # E5: feed the safety controller (best-effort, never breaks dispatch).
         if self._safety_controller is not None and self._active_ctx is not None:
             risk_level = None
@@ -536,6 +554,7 @@ class AgentRuntime:
         """
         step = AgentStep(step=ctx.current_step + 1)
         step.started_at = datetime.now()
+        self._active_step = step
         t0 = time.monotonic()
 
         # --- Plan ---

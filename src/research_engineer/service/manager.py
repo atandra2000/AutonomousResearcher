@@ -51,7 +51,10 @@ class RunManager:
     async def submit(self, request: CreateRunRequest) -> RunRecord:
         """Validate, persist, and queue a new run. Never blocks on execution."""
         run_id = f"run_{uuid.uuid4().hex[:16]}"
-        overrides: dict[str, object] = {}
+        overrides: dict[str, object] = {
+            k: v for k, v in request.budget_overrides.items()
+            if isinstance(v, (str, int, float, bool))
+        }
         if request.max_steps is not None:
             overrides["max_steps"] = request.max_steps
         if request.max_runtime_seconds is not None:

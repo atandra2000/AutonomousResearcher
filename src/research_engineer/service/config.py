@@ -55,6 +55,10 @@ class ServiceConfig(BaseModel):
     api_port: int = Field(default=8000, ge=1, le=65535)
     #: Optional OpenTelemetry OTLP endpoint for telemetry export.
     otlp_endpoint: str = ""
+    #: Production discipline: when True, autonomous execution fails closed
+    #: unless a ToolGateway *and* a SafetyController are wired into the
+    #: worker (P1 §1). Development/test deployments may leave this off.
+    enforce_safety_chain: bool = False
 
     @property
     def use_postgres(self) -> bool:
@@ -106,6 +110,8 @@ def _parse_paths_and_dsn(
         kwargs["postgres_dsn"] = env["RE_POSTGRES_DSN"]
     if env.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
         kwargs["otlp_endpoint"] = env["OTEL_EXPORTER_OTLP_ENDPOINT"]
+    raw_enforce = env.get("RE_SERVICE_ENFORCE_SAFETY", "").strip().lower()
+    kwargs["enforce_safety_chain"] = raw_enforce in ("1", "true", "yes", "on")
 
 
 def load_service_config(env: dict[str, str] | None = None) -> ServiceConfig:
@@ -118,6 +124,7 @@ def load_service_config(env: dict[str, str] | None = None) -> ServiceConfig:
     ``RE_CHECKPOINT_DB``, ``RE_WORKER_CONCURRENCY``,
     ``RE_STALE_RUN_TIMEOUT_SECONDS``, ``RE_QUEUE_POLL_SECONDS``,
     ``RE_DEFAULT_MAX_STEPS``, ``RE_DEFAULT_MAX_RUNTIME_SECONDS``,
+    ``RE_SERVICE_ENFORCE_SAFETY`` (fail closed without gateway+safety),
     ``OTEL_EXPORTER_OTLP_ENDPOINT``.
     """
     e = env if env is not None else os.environ

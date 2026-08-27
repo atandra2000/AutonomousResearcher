@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 
 import uvicorn
 
@@ -38,6 +39,30 @@ def _build_checkpoint_store(config: object) -> object:
     return SQLiteCheckpointStore(str(db_path))
 
 
+def build_default_safety_chain(
+    config: object,
+) -> tuple[object, object]:
+    """Construct the production E3 gateway + E5 safety chain (P1 §1).
+
+    The gateway sandbox is rooted at the artifact volume (the only writable
+    root agents get), approvals are enforced - autonomous runs cannot grant
+    themselves permission for HIGH-risk tools - and the deterministic
+    sandbox tool set is registered.
+    """
+    from research_engineer.gateway.gateway import ToolGateway
+    from research_engineer.gateway.models import ToolGatewayConfig
+    from research_engineer.safety.controller import SafetyController
+    from research_engineer.service.bench_agents import register_sandbox_tools
+
+    workspace = Path(str(getattr(config, "artifact_dir", "data/artifacts")))
+    gateway = ToolGateway(
+        ToolGatewayConfig(workspace=[str(workspace.resolve())],
+                          enforce_approval=True)
+    )
+    register_sandbox_tools(gateway, workspace=workspace / "sandbox")
+    return gateway, SafetyController()
+
+
 def serve_api() -> None:
     config = load_service_config()
     app = create_app(config)
@@ -51,23 +76,36 @@ async def _worker_main() -> None:
     config = load_service_config()
     telemetry = ServiceTelemetry()
     from research_engineer.service.artifacts import ArtifactStore
+    from research_engineer.service.bench_agents import (
+        register_benchmark_kinds,
+    )
     from research_engineer.service.queue import build_run_queue
     from research_engineer.service.store import build_run_store
+
+    factories = AgentFactoryRegistry(
+        config_max_steps=config.default_max_steps,
+        config_max_runtime_seconds=config.default_max_runtime_seconds,
+        config_step_delay_seconds=config.step_delay_seconds,
+    )
+    register_benchmark_kinds(factories)
+
+    gateway = safety_controller = None
+    if config.enforce_safety_chain:
+        gateway, safety_controller = build_default_safety_chain(config)
 
     worker = AgentWorker(
         store=build_run_store(config),
         queue=build_run_queue(config),
         checkpoint_store=_build_checkpoint_store(config),
         artifacts=ArtifactStore(config.artifact_dir),
-        factories=AgentFactoryRegistry(
-            config_max_steps=config.default_max_steps,
-            config_max_runtime_seconds=config.default_max_runtime_seconds,
-            config_step_delay_seconds=config.step_delay_seconds,
-        ),
+        factories=factories,
         telemetry=telemetry,
         concurrency=config.worker_concurrency,
         poll_interval_seconds=config.queue_poll_interval_seconds,
         stale_run_timeout_seconds=config.stale_run_timeout_seconds,
+        tool_gateway=gateway,
+        safety_controller=safety_controller,
+        require_safety_chain=config.enforce_safety_chain,
     )
     await worker.serve_forever()
 

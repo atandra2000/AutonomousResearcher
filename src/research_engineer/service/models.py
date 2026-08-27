@@ -71,6 +71,14 @@ class CreateRunRequest(BaseModel):
         gt=0.0,
         description="Optional per-run wall-clock budget override.",
     )
+    budget_overrides: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Agent-factory budget overrides (scalar values only). "
+            "Forwarded to the worker's factory unchanged - e.g. "
+            "bench_fail_calls for benchmark kinds."
+        ),
+    )
 
 
 class ArtifactReference(BaseModel):

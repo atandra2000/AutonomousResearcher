@@ -40,6 +40,9 @@ services:
       RE_WORKER_CONCURRENCY: ${RE_WORKER_CONCURRENCY:-4}
       RE_STALE_RUN_TIMEOUT_SECONDS: ${RE_STALE_RUN_TIMEOUT_SECONDS:-120}
       RE_STEP_DELAY_SECONDS: ${RE_STEP_DELAY_SECONDS:-0}
+      # P1 §1: containerized workers are production - fail closed without
+      # the E3 gateway + E5 safety chain.
+      RE_SERVICE_ENFORCE_SAFETY: "1"
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
