@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ff7b50c2ebd3033688d6b7549f7f5627b649e8c8e22ab718d9e067310a418275",
+  "claims": [
+    {
+      "id": "claim_0bfa95c93b024a439bce0fd15a02421e",
+      "statement": "`ResearchLoopAgent.run()` creates and persists a running loop record before iterating; each completed pass recalls memory, persists an iteration, updates metric and cost state, stores memory/graph evidence, checks stopping conditions, finalizes the loop record, and best-effort generates a report returned through `LoopResult`.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L222-L406",
+          "version": "repo-lines-v1:sha256:ac7d0405d755e493d0c7050820f67bd6ef8629a2fc623e216379e45cc65f0fab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNWJhODljY2RhOGM4ODFhYWQ4MjczMmVhYWVmNTJmMzFiNjc5ODY0ZTgxYjA0MGY3NjllMmY1ZDc2YmY3M2U3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI3NzJmOTY5NWM3NDY3Yzc0NzczYzljZTdmYzQyOWM1ZDBkMGU0ODdmM2M1MWQxNWQ2NjY4YTNkMjQwNzJiYjk1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3ZjcyOWI2OWRmNGJkODkwNDdkZWY4M2Y3NDg4ODgxMjgxYjIzM2NkMjlmZWE5NjIzNmUzNWQyNTEzYmJjZTI4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4OTVmYzg3OGNiYzZjNjI4ZTllYjhjM2RiNjY4ZTJhMzVkMDNlM2IzNTM5ZDkyZjMxMWE1ZTNhYzlmZmE3MjQxIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/loop_storage.py#L45-L111",
+          "version": "repo-lines-v1:sha256:e56a5f947a51cfca23cc5ace367173efef7eea0c81ebd54f9180df5fbd7cad20:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NDdkYzk4ZjI5Y2MxYjU0MjBkMzk0YzQxZDEyNmRjODg3YzM4YjkxZDFlNDZlMmVhYjA1ZmY4Y2ZmYzc5ZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZGQ0ZjQzOGVhMTU2MTg5YWE2Y2VlYjQ3YzY2ODZjNzY0ZGNhZmI0NDBmMDhjZTk0MGFjMDYwZjk1YWJiNWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzN2RkNmEwMWFhZDE0ZDcwZTRkYmQxNmM2NWNhODFiMGRjYmViN2Y0MjQwNDUzMWUxZmE5MzczY2FjNjJlYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOTE5MTk2MTNlOGRjMGQ3YWU0YzZiNmIxOTkwZjlmYjcyOGQ1NTE4NjM3MDA2YzUyMjVjYzRkYzcxYTFlOTQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/report_generator.py#L25-L54",
+          "version": "repo-lines-v1:sha256:39b8e2fb5fbd4863cb1478dc51aa378deb17536b1dd484014df797208e157c59:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3YjdlZTdlOGYyZGMxYTNiN2ZjYzNmODcyNWY0MTJlY2ZiZDFkODFmNjAwZDMyNmQ1MDczODQwZmM0ZTg2NjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZTYxYTVjNGY1MTE0NzJhZWMzMzU0MTY2NzQ3ZTJjNjdmOWY5MTZjYzhmZDc1ZmFiODEzNDljZWY1YWFiNzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0NjUxNDIxNTBhZDI2OTBhNTA1YWFlZTEzZTgyNjZjNmNhZjI4YTg2ZjkxYjZmNDIzMTZmM2I2NTA0ODUzZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzYTIzMWUxYTM5YmU3NGQ2ODE1NjZjMmVjZjJhOGNjYWY3OGRiMzZjYmZiNzNmOGJhZjhkMzk1NTk5NGQzZmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ee5193e50df430a8e563dd20aa8276a",
+      "statement": "A loop iteration conditionally runs literature discovery, planning, implementation, experiment execution, and evaluation in that order; literature normally runs only on the first iteration, and missing collaborators or exceptions within individual phase helpers degrade to absent outputs rather than aborting the iteration.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L412-L492",
+          "version": "repo-lines-v1:sha256:b733d50f4075715dcbc7c637ccf982d5e8dbbb76820716705166a2619f72e2e9:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMjZmYzAzYzI4NGI4ZTA3OGE1Yzc5NWQ5NWEwNjJkMjY2OWMzNmEwMDEyZmRkY2Q4MGZjYTEwYmI3ZjhiMjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkOGEwNmVjNmNlYmE0ZWU3ZDdmMzJlNzZhNTVlNTljMTgwOTUxYzU4ODZmNWI0OWQzMWI0Y2I2NWYxZGMxNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmYWIxODBmODY1ZjRjODIwNDIyZjEyZjEwN2QzOWZiY2M0MjU3NTE3MmU4ZTJjYjA2NzA2NGJjNjFhMTM4ZDUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L494-L635",
+          "version": "repo-lines-v1:sha256:da7ae31410b9406711fa55d522b5c69bbea5abc9d13447a0ee4cfdae3e95cfad:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjYmMyYTVhZjQ0Y2M4MGNmODU2MDFkZDViNDAzMTc4MzFlNzk4OTY4Yjk2ZjZiMzc0MzgyZmNhZjUwNWMyNjMzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwZjA4NjhkODYyZTU5NmUxZmEwYTBhNTg3OGIwNTBlZWFmYzZlMzRkMGUxNjJiZTM4YzZhZjNiMWNiYWNlOGZjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhN2VkYTBiZmNlNWQ4N2NkZWQ5ZDQ3NDRiODQ2NjYyYWZiYzJmM2Y0ODE2ODBlMTRiY2UwNTAyMWE2NzdlZDY0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhMGE2NDg0Zjc1MzAzNThiNDhkNGM1NGU3M2I4OGNlYjk2MDQyZjE0NWQ5MzEyOTE3YzVlYWQ1ZTBhN2U5NGE5In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L100-L113",
+          "version": "repo-lines-v1:sha256:20acd8b0c060c07687cb358f4c13ee03e06e901193a13bdeb84977dbb2edf0a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2Mzc3NjA3NjkwNjRmNzcxYjllZDg1N2Q0ZDcyOWZlM2FmNDQwNTAzOWNmMzMyYmQ2YjRhNTcwYzAyMGNkNWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxNTg2MmFkMjc2YjBmNDVlYWY3ZDQ0ZjJmYWE4Y2JiODFjM2E3NGEyOWIxMzZmNjY4MWRiMDkxOGNmODE0ZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5YzE4Y2NjNjQ1ZDcxOTNlOTVmYjUwNWNhOWQyNGZkYWQzMmUwMzU0MTYzYmI5ODljYjA5YTQwYjA2MTE1YzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzZmM4NjBlMGVkOWU4NmQ5NWU0MWViMGZmZDdmM2RhY2Q2M2YwY2JiNTg0YWU4NTkyY2FiNzhmYTEzYTE0YmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbd39e5c3f194f929522be1292fa0b8a",
+      "statement": "The CLI loop factory injects memory, literature, experiment, and evaluation agents but not planner or coding agents, so the supported planning and implementation phases are skipped by a loop created through that factory.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L424-L472",
+          "version": "repo-lines-v1:sha256:686b956a55b013c0d0490c483a490e5646beb3a370602ddb7f2143089c9e0f84:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5Y2JkYTMwMzYxZDVhNDY0ZTQ5YzQwM2E5NjY4N2NjMTBiNDg5ZGYzNGVmN2IzYzIwMDM3ZGRlNzg2Njk2M2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4ZjMyYTUxNTkyN2VjODMwZmJjYzBiYTRlMjY2ODU5NGE4ZDAyOWJjODc4ZjY0MjI0MjY4ODMxNTRhOWVmNDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2YzE1M2FlZTFiNjk5YWRhNTlkOTljNTVhMjg1MWMzOWY3NmVmNzYxM2VjMzM2N2ViMGM0ZmZjMjY0Mjk2MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkM2U0MzJhMmI0N2UyYWU3NGZlYzU5ZGU3YjAyMDc3NmM1ZDg3MjA0MzIxOTQyNjI4ZGJhOGExYmYzNDhhMTUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L160-L170",
+          "version": "repo-lines-v1:sha256:57fd0ce6a73f089df43e1c0de6949ee93cff238ae6b6134a3ae34e7c13ae415c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlODgzZTFlNWQ3YWRkNWI2M2Y5MWE1MmUzMDIyYmI3NTU2OWQ5Nzc5ZTI0MDYwZjUzYTJhMDI0ZjJiZDY0YjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxZGZlMzQ5NDFkNDEwZjhhNTRkNjJkNzg0YWEyNzU5MDk4NjhlMDAyM2U0ZDlmMzNhYmZiZmYwYzg4YmMwNjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlNjEwYzk1ZDIzNzVjMjVhYTY3YTIwZjczOTczMmVlNzZiZjg5Y2I1OTZlZGMxMmQ3NzNkZGEwMTBkYzRlNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkMGEzMzQzYWUzYzBjZWJiMWIyNThlYmRhYWQ2NzFhYmY3NzZlNzcwMmFjZTQyYmVmZjBiZmE1MGVlNTllMDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e2ec5b8782d246d2a5647824f82154f5",
+      "statement": "Before each iteration the loop recalls up to five goal-relevant memories; recall failure returns empty context, and formatted recalled context is supplied to both planner and coding collaborators when present.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L524-L569",
+          "version": "repo-lines-v1:sha256:0dba13596315f35a6620967cbbeec69ca5d33bf63bdcb5e5bfddd08e6bc62883:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNThlMzczYzM0ZjVkYmRkNDVlY2FkOGY2NDZmNDFjN2RhOTBiMzhkN2I2MmYzNDBkNzkwYjMzMGI2YmJjMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDg2OGQ4NjJlNTk2ZTFmYTBhMGE1ODc4YjA1MGVlYWZjNmUzNGQwZTE2MmJlMzhjNmFmM2IxY2JhY2U4ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyODg2OTliMzliYzM3N2RmOTIzN2NkMTdmMTg0MDM3OGNjZTdiNzg3YjBlZmU1YTg0Mjk3YzJhM2IzZWNmODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4NGJhMjJiNjg3MGM1OWNjNjczMGQyOTNjNTkzODQ2NjIwNWMwZDdmNTZkMjFkMjI5NWExMTczMTRjYmE2MzcifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L768-L775",
+          "version": "repo-lines-v1:sha256:2582bcbb344f161ccfc12cc3071a289d34aa8e4581941ac220cd8a978a2f762d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTJiNTQ1NTRkN2MwOWQxODc5MDg3M2UxZTE3NzJhOTA1ZDU5ZDY2MWFjOTgyOWM2YjAxYTQ4Nzg0NjVmOTU4YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTBmMTBmNzk0MjI3MTY3MmY3ZjM5YmY4ZmE4Njk3NWZmMWIzZjNjMjRhNGYxNjFlMTdjNjYxNGFiYWU3NzY1ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGNjM2NkMWE2N2EzZTM0YzU2MjJiMWI4YjljNDU5MmY4NTU3YzE3ZTMyYjQ2OTI5MTdmZWRkYmE1MTNmMTU0OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzgwOTRjYTAxOTEyYzNlZjAwNzM3YWFjNDY5N2FjODYxNmQzZTBmOWJjNTUzZjE0MmQ5NzY2YzViMjBmNDlmYiJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L99-L160",
+          "version": "repo-lines-v1:sha256:60eccfe62f9d48f857e1f94d059fcecf75ff16d65fc7a4682b7a4cdc7d8967e9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MmQ5NzQzMTM1NzJjMDM1ZjEyYmZkMTc4ZTNmYzEyMmQxMmYyOTZjM2UyNGQyMGJkYjljZTFiYjAzMDYyNTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1MTIyZDNlYjdmZTA0NDM5YjJmYmJkZDU2MGZmZTc1OWM1OTFiZmNkYzhhYmY2YzNmOWFmMWViYWUyOTMwZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMxMWQ3YjQ3ODQ0NjA2YTI0OGYzOWE1Y2EwNzg4YTIzOTcyNmJhMzQ1ZTJlMWE1ZTUxYTBhYjllNWZmYjMyNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5MWFmZTY4ZmMwMmIyOGQyM2ZlYzNhMWI2MWZjN2NlNzg0ODg1MGNhYmU1YjU0NmViOTdkMGM5ODY4NTkwYWIifQ"
+        },
+        {
+          "resource": "repo://tests/test_loop_agent.py#L439-L496",
+          "version": "repo-lines-v1:sha256:2a8be432b2f135a9c0ccd5cf26cd90827d0c8b0418c8bcf8f2f7a0b81d4e616b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2YTZmZjE1ZmI3MWM4MjE0NjJjYTY1ZmEyMjc2YWQ3OGRkOGVjOGY4MmE4NmZiYjFmYmE3ZjEwNTg4MDQxZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNjYwNGZlNjQxNTVhNTE0MzMxYjRmOGMyMTA2Y2Y1ZmRhOGY5YTY4ZDI5OGRmMTgwMTZmZjQzYThkNjcwZDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI2YTU1YWViZjk5ZGJmOGQ1MzVjOGM0MTE3NTc2YTMzMjI0M2U2OTUxMWQyODZmYTZkNDc5OWZjN2Y3ZWYwYTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiM2JhMDM3ZWY2MzhhODExYzRhN2ZiZTgzOGZmNTVhYzNlYjczNzhmZGQ1ZmNkNmYwZGQzNjEyOTU1YzlhMWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_050846f7961f4d12bce232fcaee80168",
+      "statement": "After storing an iteration, the loop updates the best configured target metric with direction-aware comparison, adds a fixed 0.5 GPU-hour estimate plus tracked LLM cost, and stores success/failure and metric insight memories with optional graph relationships.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L300-L324",
+          "version": "repo-lines-v1:sha256:dbf96b7590faa4d03c2b3bc0ac5247e881f6fea735a7099908ec098a1ab012d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkYTk1ZTg2MTAxOWY2NDdhZDI5YmRmZWVlMmNjZWNmMWJjYTAwZDY4YWQ3ZjdkYzNkMGU1MWIyNTYzYjM1MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4ZTJmZDM4MzU2ODU3N2M3NDlhODM3NjUwOTdkZTdhODQ4NDFlMTYzNDZiM2ZkODFkZTM4YjZkMWRhNjgwZTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxZmRjNTQ0NWExNDhhMTQyNzNlMzVhMWNhYmE2YjkyNWI5YTlmMjk5NWJmNzcyZGMwNWRhNDMyODMwNDUwZTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1YWRlNGVlYTI0MTg3MjI2NmIzM2IxYmUyYzMxNGMzZGM1YTE1OWUyYzdmZTgzYWRkMDkyZjc1MTc4ODg3ZGMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L777-L918",
+          "version": "repo-lines-v1:sha256:7d9d273553fc15c7dc033e114fbaf2bb1b88ba84fbd749cbe200385c5e3c7391:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4NDljZWJiNmNlM2ZjMGExMDk0OGM1N2MzYmFmNDM3YmM4NzcxNTk5OWZmYzBlY2E1ZjUxZjcwMzc1YWYxMWQzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwZjA4NjhkODYyZTU5NmUxZmEwYTBhNTg3OGIwNTBlZWFmYzZlMzRkMGUxNjJiZTM4YzZhZjNiMWNiYWNlOGZjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4ZTEzMDg2ZDE3Mzk4Nzc4ODVhNzk2MjZkNDk0YzJkM2FjOTcwZDhiZjIxY2E2NTg0ZDJmMDk3NTczMWRhZDk4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1Yjg0ODIxODc1OGMzMmMwOGQwM2NhMjEzYzllZmRmYjllNWEyNTU4YmRiN2FmYmVjY2JhNWE1NDE1MjhmZTE5In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L934-L987",
+          "version": "repo-lines-v1:sha256:aedbb2942f0d7cf1bd807523ea350fc665c6915a79810d4232811d53e380893c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlNzM2NzU2YTA2YTdhOTVmZjNiMWE4MTk1MTgyMTk2ODRkYmZjYWRjNDEyZGQxYmFmMGQ2NWQ3NzhlMGZhNTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmMWYzODU4Y2E4NzkyNTAwYjY3NjJjODdjNTc2ZmIwOTVhMDE2NTZhZmQ2MzMzYjMzYjMzMDdhYTk2OTg4ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzOTRiMWJhNzk3NWZlZGFjOWRiNTljMzRmOWI0MzRkZTM0YTcwMmU4OWVkM2QwNzMzM2ZlOWRjYWViNWQyZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb1cb1a3ee3e4bcb89fa410dde13af33",
+      "statement": "Stopping is evaluated after iteration persistence and learning in priority order: target achieved, maximum iterations, budget exceeded, then insufficient improvement; target comparison respects metric direction, and no-improvement requires a complete trailing metric window plus prior metric values.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L297-L349",
+          "version": "repo-lines-v1:sha256:aaa229730727baef880e7e071b9480fffc666bbe8fd3dcd41f1d0b8d39f8eaf8:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYTNmMGMyY2YwNGQ1MzhiMWIwODEzZmJmNTM1MThiOWZlOThkZjI4Y2QyODQ1OTJiNzdiMWYzMzIzMTIzYzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhZjQwZTIwNjE4MDFlZWE2ZTdjNDNkOWQ3NWI5ODQ3MDc1NTBmNTYwYTAxODQ0OWJiMzk0YTdmODM3YmRiYzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3Njg2ZTI5YmI4N2ZjOWIwODQzNGUxNjg5Yjk4ZGQyZjE1NzNkZTk2NGI2ZDU2M2U1MjQ5MGEzNDE4NGIyN2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkNzg0NjIzMWRlNTM3MGE1ZDRmYzExYmY1MjVlY2FiZWZkZjNjYTNiYzgyYjg3ZmY0NWMyNzcwYjFhYjFiN2YifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/stopping_condition.py#L25-L48",
+          "version": "repo-lines-v1:sha256:989a7ff6d1eaf8956e831fce84d772821f3f3ecd602e9b40d31da796ca80384b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMzlmY2Y3MTA5MjE4YTc0NWUzNWY1MmRmYTAwMThhNzI1ZDdkYmY4YTY5NTI4NzRjYjVlMTI2ZDhmNTRmOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNhMDNlY2ViODAyZjFmYTUzM2QyZTNjYWY4NTMwMDdlMDdjODZlMTAxMDJiYzIyZjQyMDJjODhhZmZlNjA0MjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0Y2FhOTA0NmNmOTg1Yjg4MTE2NDdkZWU3OTQ4MjZkZTRhZjdlNzdjZGJmYmQ4ZTFjMTE1M2U2M2I2YmI1MWQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/stopping_condition.py#L50-L180",
+          "version": "repo-lines-v1:sha256:be0856f2d1036169e764d948ddcc7006bb01037ee708b050cc446fd1c07610e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0MWFiY2QwY2M2OTEzZDRmNTFlYjIxZTRmNWFmYzJlOTBmODZkMzZhNDUwYmI0MmNiMDVjNmYzZTBkNzA2ZjhjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJlZTdjOTU3YmNiNDRmYjY3M2M5OGIwMDUwYTc1ZDM4MDgyZGI4MWQ5MThkZTMxM2EzZjA3YzEyMzUzMDZkN2VjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3ZGE4YjA3YTRmYjFhZTMzMzdjYmE1YTJjOTU4ZDgxYTJkOGZiYzM2NDQxZjE4ODJiNWNhNTEzOGFhOTQzYzI3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_2872d1b4c6614be2b478642ffe293708",
+      "statement": "A top-level iteration exception becomes a failed iteration and stops the loop only when `stop_on_error=True`; phase helper exceptions are swallowed, and report-generation failure is non-fatal, so a returned result may represent degraded completion and have no report files.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L273-L295",
+          "version": "repo-lines-v1:sha256:433070ef6711d764beca8c905963a3bbd7e3ac1aa1e40cf223b77c9b687822c1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3M2E5MDY4ZjdhYmM0NTY1NmI5ZjQ1YThlMTRiMTkxMDJhOGIwZjIxOWJlMGI2NTY1MTY3ZTM5ODUzZmEyNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkNjllNWM0Yzk4YmFkYjI5ZTYxOGM5OWVjNmFhZGQ2Njg3NDhkNTJkY2Y4NTFlYTJmMTY1N2Q2NjFhNTU3Y2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljZDVmMmZkYzlkODgyNGRlMjM1YjZhYjRkNzQ4YzRjMzNkMzE4YWZjODMzMDAxZjU3ZWM1Y2YyYmMzNDhmNTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhNzMxZGZhMDExMmZlMWU0OTlhYmYxNTM5OGRmOTMyZGNjM2E3MjY3YjI5ZDY0YWM5Mjg4ZGEzMTlmNzc4ZDIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L375-L388",
+          "version": "repo-lines-v1:sha256:6f2df36efd33f56fe6ff84d5ed442d7f6311d2a72885d3d7be515539692ea1d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhYWU2YTc0OWMwYWJmM2RmNTc5YzA0ODBkYjg0YjI1MjhiY2U3MWU4YWE0ZTdkOTJjZWNlODkwYjU2MWE1Y2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDg2OGQ4NjJlNTk2ZTFmYTBhMGE1ODc4YjA1MGVlYWZjNmUzNGQwZTE2MmJlMzhjNmFmM2IxY2JhY2U4ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0MjRjZDFlYjJkNjUyNjdlZjM5ZTExNzZlYmJlOGU0NjU4NDQyNGMyY2ZlNWE0MWYxZGJjYjZiMDI3ZDk2YzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwN2I3ODljMGUxZjg3NGFjNTM4MzM2ZDMyNmU3MGE1ZDNlYzczMjNmMWUyZTdmOTU1YTY2MmFjNGMwYzliYzcifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L494-L635",
+          "version": "repo-lines-v1:sha256:da7ae31410b9406711fa55d522b5c69bbea5abc9d13447a0ee4cfdae3e95cfad:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjYmMyYTVhZjQ0Y2M4MGNmODU2MDFkZDViNDAzMTc4MzFlNzk4OTY4Yjk2ZjZiMzc0MzgyZmNhZjUwNWMyNjMzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwZjA4NjhkODYyZTU5NmUxZmEwYTBhNTg3OGIwNTBlZWFmYzZlMzRkMGUxNjJiZTM4YzZhZjNiMWNiYWNlOGZjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhN2VkYTBiZmNlNWQ4N2NkZWQ5ZDQ3NDRiODQ2NjYyYWZiYzJmM2Y0ODE2ODBlMTRiY2UwNTAyMWE2NzdlZDY0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhMGE2NDg0Zjc1MzAzNThiNDhkNGM1NGU3M2I4OGNlYjk2MDQyZjE0NWQ5MzEyOTE3YzVlYWQ1ZTBhN2U5NGE5In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L109-L125",
+          "version": "repo-lines-v1:sha256:d6ee3a108aaeca125f2400721367258432c4eceb83bd834fbc6002ba9f9c615e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMWUxM2M5ZWE1YWJiYWUyNWVmMmM4MTFiMWE4NmUzMTcxNjMwODZlOTU4NWFkM2I4OTgwYjYwOGRlM2Q2MmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyYjQ3MGZiNTYxYjMzYzFlYTc0MjEwZjUxOTEwOWM1OTJkNzVhMzVkMjYxZDYwYjY5NDI3YWI0M2VkMDM1YWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmYzdjNThhNTkzZjk1ZDg0NzZlOTc4M2Y5OTAzOTg2NWY4ODNhNWM5ZGMyZDAwNmY3M2QxNmM2MjY4N2Y5MTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c41471ade30046da839f7bbf2ffa307b",
+      "statement": "Approval mode invokes gates after planning, implementation, and evaluation; a callback exception rejects the request, but without a callback the request is recorded as pending and automatically approved, while the `awaiting_approval` status is defined but not assigned by `ResearchLoopAgent`.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L437-L483",
+          "version": "repo-lines-v1:sha256:39b970bb4f3e27af82e014ea1c933f093d1b190830df8acbca4abe3989a2ea49:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMmNmNDMxZWYxYzJmZDdiOTMzNTU2OWZhZWU5M2MyZDc5YTljNTI2ZDBmMGExNGJkZDRhMTlmOTM1NTQ5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMDM0ODFjNTdkMGYwZGMwZjc2Y2QyY2M4YjM2MDRjNGU4Mjk2ZGE0MTIyYWRkMTllODE3NDVkYzdlMzMxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzOTFjNGJiN2YwYzQ2YjA2NmUyNTlhM2I0MjgyNzYyZjdmODkwNTUzZDExMDE5YzI3YjRjMWIxZjU4MWI2NmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzM2I3YTAzODJmNjVjYzg2MDY4NjVhNGUzYzA5Mzg5YWE5YTkwNjE5YWE3ZTBiOTFkODlkYzFiYmU5NzM3NWYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L637-L762",
+          "version": "repo-lines-v1:sha256:44d0dca980a809946e81f86c76b76b68b34777b972c080428360de792ba4f302:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlYzI1YzA0OThkODJiZDcyY2JmMGY1MmU5YmFkN2MxYzBhNjk1ODY1NDQ4NWZiMzA1MzJlNDA3ZGFmNjVjODFkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkMTA0MjRiZGUzYWQ5MWZmOGRhZWE4MWE0YWE1MDRiMmZlOWQzNzkyM2Y1OTM3OTE1MmQ1NDNkN2I0ZGVhZjcxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2Mjg4Njk5YjM5YmMzNzdkZjkyMzdjZDE3ZjE4NDAzNzhjY2U3Yjc4N2IwZWZlNWE4NDI5N2MyYTNiM2VjZjg5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5MDBiNmU2N2E2MDFmZWQxNjFjOGNlOGIxZTUzNTY4ZmYwNmVhMzQwM2IyYjUxNDA5YWUzNDA3NGMzMmEzODIxIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L134-L181",
+          "version": "repo-lines-v1:sha256:4a368001f113d50c89084ceacd11272e9ab071cc9c5f2b605391f0f677d72af9:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5YzYxZDI4NzkwMzVhN2JmMWZkOGY4MDVmOWJjYmIyYWE5ODljMjQ4YTAyOGIzOWU5ODgyMDg2MTUyMzI1OGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L19-L28",
+          "version": "repo-lines-v1:sha256:b05ddb18248097f84080caa528c01aa44ce7359bc9b7f1a9ed60afefeb7d4c74:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1MGYwYTM3ZDU1MGEyYjdmNmNjNjY4NTdhNmQ2NTJmYTZjMTZjYjVmMmQ3YzQ4OGM5NzczNzRhZTk0OTI1ZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiNDY2NTZhMDFlZTVkYzIzYTg1N2EzNjhiZGZhMGFhMDBiYjk5Mjg0YzA1MmJhYWM5N2NmMGRmOTA3ZjE3M2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkNzFmZDMxMGRlNTcxMzc5YzJiYjY5YmZkY2FkYzBiMmVlNTdkN2NhMmY1ZGNiNGViMjZhYzZmYmNmMGZjMWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9d915a4f7dff43a289cecf2a60ab1202",
+      "statement": "`NextCommand` is an advisory rule-based output: it recommends continue after improvement, correct after regression, rediscover after a stagnant window, or none without a target/metric; it does not itself terminate the loop.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L990-L1101",
+          "version": "repo-lines-v1:sha256:2722960bdad6569db24b8c160edabe464e62ed8b7d823086753f7633a9d3652c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhZjNlMDExNTlmZWNlNTE0YWZiMGYwZTA3YWI4MjExMTUzYTJiNzhlMDY3MTBjMTY3ODM0NDczOWFjNDlkODQzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJjNDBhNTJmMjA5NGUxNmJiZWJlYTdlMDdjZDk3N2UyZTdmOTNkMmQzMDY5MGUwYWZkM2EwY2FkZmFlMTBmMWJlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiYWUzNWI2ZTZjY2UxYjIyZDdiZmZiOTA2MmViODUyMzM5NjllMTc3Yzk0ZTczN2UyYTNmOTQ2NzIyNTM1YjlmIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L290-L313",
+          "version": "repo-lines-v1:sha256:2defbd735e1310a299a47ce54c9ce8ebbafcaf120dba0019e2bd4c15c059a818:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjOTQ0YzE1ZjVlMTAxOTk5MWVlNjYyZjQ0OWFkZThiMTdmY2I3NTY4ZjFlMGViMzY4ZGQyYmUwNWVlN2JjZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5NDJmZTA2NTNiNGZlNzMxNjRiMjQ5YzA3M2FlNjJkODhhY2E0NTVkMThiMWVmYzkxM2EzYWYxNDNlMDI0Y2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://tests/test_loop_agent.py#L519-L632",
+          "version": "repo-lines-v1:sha256:7eff752995e792afdd097ebc761a2420ef75f1517d37ee35eec2f386809e5d71:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0ZjRlMWY1M2MwNTQzZGY5YTBiNmQ2YmU1NGVlYjhhMjdkYWI4NmRhZWI2NjUwMWIzY2Q1NGQwZTc5MjFmZTNmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIxMDEwMjRiZGE5NDJjOGRlZDdiNGE1ZWU3YTM2MWE4MmZmZDc5ZDc3NzllODFhNzcwOWU1YTBmZTQ0MTZlMDQyIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5ZjcxNDQ5MjA2MWQxNzdiNWM3NzkzM2ZlOWJiYzFiMmQ4YjUwYzg2ODk3NjI1N2ViZjE0ZWFiODgyMmViYjBhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJmNDE2MTJjOWI5Mjg5NGViMmU1OTNjYWFmZDU2NzIxMmI1ODM3MzU5MmJmZjhhNmYxMjkzOWZmNjhhOWNjMGM2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_ab950b12d03343beaa2d37ea32ec77fb",
+      "statement": "Loop persistence uses SQLite tables for loops and iterations, supports retrieval/filtering/search, and `generate_report()` reloads the saved loop configuration and iteration history; reports are Markdown and JSON written under the configured output directory and include status/configuration and iteration history.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L1107-L1170",
+          "version": "repo-lines-v1:sha256:1972d53127934ec50c35028b06460153dac682c689542ffe75dc8841a9b468dd:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyYTFkMTc3NDMwNWE3N2M2MDkxZTc0NzNlZTlkYThmMDhkZWJjNWYxZWQ4YTczYzExMjQ3ZDhlZjk2YjQzYTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlZWU5MDY0M2IxMDhjMGM5NmIzMDMzZjE1N2Q0YjYyMmY1ZDEzZmI0OGIwN2ZlOTE5MDkxOTEwZWI4MDhhZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/loop_storage.py#L157-L277",
+          "version": "repo-lines-v1:sha256:80b83f6a92f07374be36660ff59bd192a6829be98eff7171b4f8eca9c17fdd47:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlMDliOTA0N2ExODc0NTZkMTZjY2VhN2JhZTk3Mjc2ZDFmOTYyOGNhOTE2ZDkzYjI2ZWE4YWY5MjgwNDdmYTg1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2ZjA2ZjRjY2U5YTJlMjMwMjUwNjNiODRhOGI2YTkwYWU3Y2YwODFlNjZmMTRmNWFlNDkzNWM3NTkzZmUwNDRlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlNTM4ZTg2OWIxOTM3ZDM3MzcwYWM2YmY4NTY1NTU3ZjNjNTQ2MmRiMjFlYzA2NjU0Nzk4ZTE3NmRhMjMxNTk4In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/loop_storage.py#L281-L470",
+          "version": "repo-lines-v1:sha256:50a9033047e85db2b6743e81e03a79d990dd565124a9de52aa4e01aff9082418:eyJzZWxlY3RlZExpbmVDb3VudCI6MTkwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5YTcwNDg2MzBiZGY4ODA4MGRmNGEzZjc1ZmE0MzNkZGU2ZTlkMTNmMzk2NTAyNGFjZDYzOGVlNzE0YWFjNzIxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJhNzMyZjhiZThjNWM4NjkwZjk2NWVkZTFkNDcwNmM0MGUwMTJhMDQ0NjRiMmEwMTc3ODAzODBkMGM1ZmEyZjJiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlNTM4ZTg2OWIxOTM3ZDM3MzcwYWM2YmY4NTY1NTU3ZjNjNTQ2MmRiMjFlYzA2NjU0Nzk4ZTE3NmRhMjMxNTk4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/loop_storage.py#L45-L111",
+          "version": "repo-lines-v1:sha256:e56a5f947a51cfca23cc5ace367173efef7eea0c81ebd54f9180df5fbd7cad20:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NDdkYzk4ZjI5Y2MxYjU0MjBkMzk0YzQxZDEyNmRjODg3YzM4YjkxZDFlNDZlMmVhYjA1ZmY4Y2ZmYzc5ZWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZGQ0ZjQzOGVhMTU2MTg5YWE2Y2VlYjQ3YzY2ODZjNzY0ZGNhZmI0NDBmMDhjZTk0MGFjMDYwZjk1YWJiNWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzN2RkNmEwMWFhZDE0ZDcwZTRkYmQxNmM2NWNhODFiMGRjYmViN2Y0MjQwNDUzMWUxZmE5MzczY2FjNjJlYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiOTE5MTk2MTNlOGRjMGQ3YWU0YzZiNmIxOTkwZjlmYjcyOGQ1NTE4NjM3MDA2YzUyMjVjYzRkYzcxYTFlOTQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/report_generator.py#L25-L52",
+          "version": "repo-lines-v1:sha256:1721a32bfb7941e09b4eccebf314f9cd3894ee1b60e5578fd90dccdc03dd6d1d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3YjdlZTdlOGYyZGMxYTNiN2ZjYzNmODcyNWY0MTJlY2ZiZDFkODFmNjAwZDMyNmQ1MDczODQwZmM0ZTg2NjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0NjUxNDIxNTBhZDI2OTBhNTA1YWFlZTEzZTgyNjZjNmNhZjI4YTg2ZjkxYjZmNDIzMTZmM2I2NTA0ODUzZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5ZDUxNGFlN2ZkOGRlMTgwNjllODNjZGZkYzkxNTMwZjU3NDU1Yzc1ZjhlY2UyZjAzN2MwOTU1NTU3YjI3MGUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/report_generator.py#L71-L185",
+          "version": "repo-lines-v1:sha256:83f6247c0c8e33b3e980211f2a3d55e7dc28d5fda7022c3267da703b68aafe26:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiZDk3NTg4ZjFjYTA3YjY0YzNkZWY0NWE2ZWI5YTU0NWYyZTg2MTExNjBmMTczM2VhYzRkMmU0MzZlODhiY2VjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI2NDllOTliOTdlZTRlZjFiZjdhZDY4ZGFhNTZlMzg1YzY1MWZhMWRlZWNjNjI5ODg1ZWI0OGNhZDA3MGIxZTczIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3YmRhYjMyMDBkNzQxNDZkODJhNGMwMzA5NWFjM2E0NTg3YjYwOWQwMGExMzgyN2M4YWQzZmVjYjQwOWJjZjUxIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlODc0NWJlYjhlMGFlNzA5NDc4YzkxMWJiMGY2MDYxZWRlMGI2MGVlNjMyYmI3YTdjMTVhOWU2ZmY4MzcwOTczIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_e0b683d46460428ca84cac8a9898323a",
+      "statement": "The `loop` CLI provides run, list, get, iterations, iteration, search, and report commands; its run command constructs `LoopConfig` from exposed metric, budget, approval, dry-run, literature, and output options.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L2654-L2744",
+          "version": "repo-lines-v1:sha256:bdaf1656610a0c1a359606126d2d78fdd859ce5f38beda90426ba9fa0bc4ecdc:eyJzZWxlY3RlZExpbmVDb3VudCI6OTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NDAwYTk5ZjNiNzI0MGQwMmQ0NjU2ODYyYzVjY2IyNDNhMjBlZThlNDE0YzUxNjc4ZDkxZWI5MDIxMGYwZTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzMDg2NmUxYmNjNWFiNzZlM2VmNTkwMTJkMGFkMzlhNjg3YWJlMDAyM2I0MzhhY2IxMTMwYTE4ODI1ZTgxOTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzNzJlYzFjYjcwNTJjZDEyNDcxYWIxNzM0NmJhZDQwYzMxZWU4ZDIxZDFjNjdhMWIxZDA5ZDdmNjY2NTVlNjUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L2747-L2999",
+          "version": "repo-lines-v1:sha256:46d4814676282be80ef6f21ce07e97b9b058dc40821aa6aff813c80dfb4b147e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlMGZjZTIxMzZhYzg1NTU2MTc5MTE2MjYxNDAyNjU3YmRkZTI2ZDkwZTcwMzE3ZjE1ZTdiNjRhNWVmNWEwMjM4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMzA4NjZlMWJjYzVhYjc2ZTNlZjU5MDEyZDBhZDM5YTY4N2FiZTAwMjNiNDM4YWNiMTEzMGExODgyNWU4MTkzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2NmM3YzU1ZWYzNjMyNDg2OWNmZTVkYWUxMzEwZDk2MzAxMGY1ZWUyNTQyMzI5ODkzN2IzOTUyZjVlMjkwYjZhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjYWMzOWQ1NWIxYzQwOWFlZTdjMzE4YWU4ZmVlNGYxMjllZTgzNTllYjI3MzY1NzViZWJiODA3MTdhNTM5NjlkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_66876001c13c46e0b5a6b64deb007f05",
+      "statement": "Focused loop tests exercise stop conditions, error continuation, memory flow into planning/coding, next-command decisions, SQLite query/report behavior, optional dependency degradation, and CLI command boundaries.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_loop_agent.py#L203-L717",
+          "version": "repo-lines-v1:sha256:034fac31d538fc609b2060aff5615d0d532b7df8cee8fe676e6522142cceec3f:eyJzZWxlY3RlZExpbmVDb3VudCI6NTE1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiMzE1ZGIxODg4NGIwMDJkNDEwZmE2YjY5MjA4ZTVhMTI0MzdkMzIwNWZhNGZhYWFhZGI5OTM4MWNmODYxYWNiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkZDRjZmQxYzcwODhlZDQ2ODI3ODU4ZjlmZjJlNGZlYzAzN2JhZGYyZGIxNDM3MWZhZTEwNzY0ZmZjNzlkMWNmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyNzMzZDc5MmY4ZWQxZDU2MWFjZTk4NWI4MDljNDUxZGY1NDMzMzkyNDIyOGU0OTcxMjYyMjA0NjZkOTEwZjdkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://tests/test_loop_cli.py#L10-L67",
+          "version": "repo-lines-v1:sha256:66ac9ef37e23c5558eb5ebb85ebaf374d611b30aec13a246ce6524f4ecee3fac:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhNTQ1MTkxMmE2ZjhmOTIzNjc4ZmMyOWNkNTU0ZWNmNmU2NzUzZjUxYWQ2M2I4MGYwYjZjNGFmYzVmZWE3OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0Y2YzYmRkOWExOTkyYmY4NmQ3ZWYyYmVlYTZkZjYyODllY2MwZmM3YWUyZGY1NDBiNmY2MjJiYzI3NWZlOTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk3MWE2MDBhMTY3NmFkNTAzYTJhMjc4MGNmODljZmUwYTZlZjhjYmQxMTg5NzI2OGEwMjJhZWIwOTM5ODJiZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://tests/test_loop_models.py#L114-L260",
+          "version": "repo-lines-v1:sha256:1dd4d2d329201a42bac7fef876615d7c35b1510c374b174bf6d95f7279af9efe:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQ3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2YTk0ZTU3NjkyYjkyMmU3MjBiOWFjYzc4YzhhNjM1ODgyODY3ZmI1ZDc2ZDU2NmZlMDI0OWQzYzFhNjk2NmFhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI3ZDc3YzU2MDE0OTZkNTRjNmJlMWUzY2NhMjQ1OTA5ZTI3ZGVmMWM5M2IyMjBjNWE4N2U1MDZmMDk1NzJlNzdkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJkOWY3MjFmNjhjYmFlZjJiODUyMjZhNTIyNDBlODJmZmNlMTkzMDhkY2JjYmU3ZTYwYmFhOTc2ZDJlNGQ3YzY1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjMWMyYjY2MGIxMDU0NmQ2MGYyNzdmOTZkMGVjYjFjOTA4YjQ3OWU2ZGE1MmUwMWE5YWFjYzZhZTY1YzFjMzM0In0"
+        },
+        {
+          "resource": "repo://tests/test_loop_tools.py#L85-L333",
+          "version": "repo-lines-v1:sha256:49fe4edb3d3a17cae37a5060065a1ff3742d156c94cb10791240194915bd5b78:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQ5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1ZmY2ZTVjYThlYWRkMzI2MDg3OWI5M2RhMmJkOTBhYjEyZTkyYWRiMzRlMWFlOWNmYmY5OTNjODliOWI3ZGI4IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIxOGI3OGM1YWNiOGVjZmM3OGIwZGE2OTMzNjc3NjU0NDdmMGExYTc3ZDQ4YmI3ODJlODNlMjQ1MjZmOTc0ZWQzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmZjczMDMwYWE1MzBjMzllMzQ2ZDdiNDU2ZjdlZjlhY2YxNzNlY2NjZWYyNzk0ZTZhOGZkYzg4NWFhYTNkZWQ0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

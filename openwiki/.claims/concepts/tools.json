@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:78ed97ffabfb718391bda1a5a1602d5a415500366a5af57897c30b27b72bb0a1",
+  "claims": [
+    {
+      "id": "claim_982b728b19564e52802a8f5716da3757",
+      "statement": "The generic Tool contract validates typed Pydantic input before invoking async execute(), and raises ToolError when validation fails.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/base.py#L21-L44",
+          "version": "repo-lines-v1:sha256:5ea070c6e2d732847d07cfe19dfe82db6cf0687cfb7544368f4db4ca37d9848f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkY2QzMjRhNTY0ODdmYzg1NWE1MTg5YzhmNWNlYjEyMmU1ZDJhMDI4MWUzNWZmNjU5N2Y0ZmUyOTVhNTk0Y2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YjAwODcyYmNiZDYyMWI3MDViODJlMzkxNzkxZWQ2OGYyNWYzNGJlODQ3YzMxNDQxNDBkNDFiZWFkOGI2YzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjYjk1NTNmYmY2YWI0OTM4OWRiNDI2YWNkYzAwMGEyMDRhMzY3MTRiZjFhMzE2NzIyYzliN2JhZTA3OTQ4MjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1NmI5ZTQyMTA1YmJmZDVmN2VjZjhlZjQzMDk4NjVmMTc3Nzk3NTg0ZDUwMjRjMTVhNjQzMGQzYTFjYjNiMTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d8a0c47e40eb4ef8ad7c4500517524f8",
+      "statement": "TerminalTool exposes command, file, search, patch, and Git operations through typed input/output, and rejects a missing operation or a repository path that does not exist or is not a directory.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L168-L215",
+          "version": "repo-lines-v1:sha256:899b1baabf6f11d38f52aa7665467bef3df46e7bdd3e452f3548f1a8c24f168f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkNGQ2YzFiNGFhNDYxYzZiMjg4YjdhYjdjNGNiNDQzZGVlZTY1ZTU0YTQ5ZTdjMTFlNjAyMTA2YzQzOTBmOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyNjI5MTUxMWViZWJkYWQ1MTRlNzMzMDE1ZWRmNzM2YjlmYzJjNWYxYTFlZmZjZTllYjNjNzE2ODcwMDViNTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzOWY4NTU4YWQ5MzIwZmRiOGY1NTAxNWJjM2NiNWM1Y2RjNWQ5MDk4NzAwYjk5YzY2NjA4YzJkMGI4ZjYzNWQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L81-L160",
+          "version": "repo-lines-v1:sha256:0dc41f158de1ca348f9642253a2a2e1372955da5796657691d0f151afb41c876:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ZGY1M2Q5MmIwZTVhZmU3Y2Y2MjI0NjNhOGU5ZTcwYjU4ZWUwYTQyYzgwNmQ4ZmM0ZGY3YWE0Y2Y1ODBkODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmZTgxZjBiMWFlNDk1ZGEwODdhNGY5Yzc2M2ZjMjE5N2JkMzYzNDAxYTgyYjQ0NDVlMmZkMDBhMjRlZmJmMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2615ee097608492a898850c19413919e",
+      "statement": "TerminalTool runs commands without a shell from repo_path only when the executable basename is in its fixed allowlist; command dry-run returns the rendered command, live commands have a caller-configurable timeout, and output is capped.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L221-L287",
+          "version": "repo-lines-v1:sha256:50765d0bb48731d8157ae9daa666a082c824cf28941329832861c5e402a63140:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyZGYyNGZlMjFhMWNlYTExMTc4OGE4N2IyYzI5YTM3ZWQyMDRhM2E4MGUyYWIyMmU0ZTU4MWI1OTljYzg0NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3MDA0MDdjYzUwYmY5NzQwZjJkNjI4Mjc0YTBkOGI1MjRhMTNiODA3NmNiZTdiNzMzNTRhMTExYTUyMzhkMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MjFjMTY5ZTk0ZTVkYWU3OGNiOWMwMGEwZGUwYWE2M2M2MjdkZTgzMTJmYTIzZWQ2YTZkYzMwNzRlNDQ5OWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L36-L74",
+          "version": "repo-lines-v1:sha256:04ae74b214342744e3f86b8ebdb57ce844614fbc301d9388209796d078ad1924:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjdjMTk0ODc0NDJlN2UzYjZlNzg3OTU1ZTk3Mjg2MjM1MWE4ZGE2MGQyOWFhYmZjOGEyYjc5ODA4ZmI3NGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYTY0YjUyMzZmODM5YmJhMzhiMmIwN2YxMzllYjAxMTU5OThjMzA0YzhjZGY4NmE1YmJkZWZlMjI0YzUzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllNGFjYzU4ZjA2NDQ5YWY0NmUxNzRkODI5MmY2YjNiYmY0MjZjNmJiNzAzY2NmNGE5YTFkNDFhNTQ2N2I5NzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L565-L583",
+          "version": "repo-lines-v1:sha256:479875c2b78c5ec96565bc7c9e8ae1354f24e8452bce9c3ba2510caaa0767d8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmNTQ2NDg1YmY1MzFjZTlhZWE2ZDM1MWJmOTI1NTUzZGY0OWY5MWFkMGNlZGVmZjBlOTEyY2ZhZjA2YTAxYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmMWYzODU4Y2E4NzkyNTAwYjY3NjJjODdjNTc2ZmIwOTVhMDE2NTZhZmQ2MzMzYjMzYjMzMDdhYTk2OTg4ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwYWI2OTFlODdiZjllZmFjODNlN2I3NzY1ZWM4OWZjMzdmODg5N2YyYWE1ZDQ2NDc4ODkwMjQyNWM4MmRiNmQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L97-L118",
+          "version": "repo-lines-v1:sha256:5eb54d4cfe78b6c8df5e48ee4804bb312a4632a14f52fe5937a480215cf00482:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmNWY5ZDVhODFlOWUyZDM2ODFiODUwOWQwYjkxZmZjNTVlOWQxMDZiMTA0NTUxM2I3M2U4NDk2ZGIyZjlmMjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1MGY2ZGEwNWFmNjIzM2Y1MmJlYzU0NTE1MGFmMjQ1Yzg5MWEwYjVlNmM4YzU3ZTQ4NGUxYzM1NWM5ODAxZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIwOTAwZTJhOWIwNGRjZDA0ZTkwMTA0ODFiNmMwOTE1YWJkMTQxNmM2ODA2MDU3Yzk2OTBhMjI3YTc0MzQzNjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bfc6ab6beb354fea8aa865dc653e0783",
+      "statement": "TerminalTool validates a unified diff with patch --dry-run before applying it, with separate 30-second validation and 60-second application subprocess timeouts.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L434-L500",
+          "version": "repo-lines-v1:sha256:688ebf0a4c5db66c45ffc9d9dc5f3defdc3d067d89f1563b9134ae8e60cfbcb3:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZTBlMzM3MmRlMjhjN2Y4ZjU2ZTdmOTZiMjkxMTUyZDQzMTY1YjI0NmVmZDI4NzU0MjU1ZjNiZjYxZWI5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3MGY2YjY0MTE3ODRiOWRkNDVkYTE2NWRlYWJiNDY0ZTY1MGM5MzU0ZmFlZWMwMDNkNWVmMmUxNGEwYzBiOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyZTRmNDM4MTIzYmFiZmVmNjU5YmY1ZGVhYjg3NTJlNWExY2QwNjI0MDBiODU4YWVlZmRlYjAzMjUzMjYzNTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77b020cd1d3f45378dfaff21b0f33ee0",
+      "statement": "TerminalTool's repo_path is a working-directory convention rather than a path-confinement security boundary, because absolute file paths win and relative paths are joined without a canonical containment check.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L293-L349",
+          "version": "repo-lines-v1:sha256:0129601090140fbcdd423d960108a229b0e2e5eda7c65022e3aeadb05fd94795:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmMDViZDljNjJlNTdiZjA0NGQwZTQzMWRkNWEwZWQwMWUyMThiNWI5NGYwZWNiNjI0ODJhNGYzZTBiOTliNTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI4M2FjNzNmY2JhY2Q3NzU4NGZhMWI0MzlhMTlhNGE1MWY2NDc3M2YwZTI5NzE2OTIwZTcwMDkzYTVhZDZkNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxYTU4YzdkZGNhMzZiYTFlNGIwOThiYzMyZmJmZmJlOGZjZWU5NjEyMDFjMGYyNGJkNDZmMDgxNzRiNjFhZGQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L565-L571",
+          "version": "repo-lines-v1:sha256:704d9473247f70b9034fa37a1792c30129a39061f81782eb854bd5671d20d70c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDFhYmNkMGNjNjkxM2Q0ZjUxZWIyMWU0ZjVhZmMyZTkwZjg2ZDM2YTQ1MGJiNDJjYjA1YzZmM2UwZDcwNmY4YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI3M2IxYTY0Mjk5MTZlZGI5ODE0YWQwNDEzOWJmNWViMjZiNjAwYTcxY2Q2OWRlZWMzMzA4N2EzYzNmMTZkZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWYxZjM4NThjYTg3OTI1MDBiNjc2MmM4N2M1NzZmYjA5NWEwMTY1NmFmZDYzMzNiMzNiMzMwN2FhOTY5ODg4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjlmZDUyODRkN2E0ZmFiM2Y3NDhmZWEyZGRiZmQ3MDUyNzJmN2U5NzQ0NmUwYmJjNmRhZWNiZjdmMjhlNmFiOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_308c7a8acba54bd2a0b1243bb168da37",
+      "statement": "PatchApplicationTool defaults to dry run, approval required, approval absent, and backups enabled; absent required approval returns a rejected status without applying patches.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L113-L143",
+          "version": "repo-lines-v1:sha256:3684d877fe06fd1dc7b96ae34b75ab2e64ea1d7b97f090dd0ee6db85ff43617e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3NWRlZmYzNTFjYzJkNTdhYWI3YWQ2MTQ2MTQxMjY2NjhiMDdhMjk4NTRkZGViYjllNmYwMTdhYTFlNGJlMGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMDM0ODFjNTdkMGYwZGMwZjc2Y2QyY2M4YjM2MDRjNGU4Mjk2ZGE0MTIyYWRkMTllODE3NDVkYzdlMzMxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4OWY1MTA3ZDYyYTIyYzc0ODYwNGM3OTVlZTY4ZTlhYmVlMzYzN2M2ZDBlMmM2YWMxYjMzZWVkZTE4NjdiOGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA0M2VkZTc5YjY4YmRlMmVjYWY4ZGYyOGNlNjBjMjJiNDlhYjVmNWU2YmU0NTdiNWUwNDJmYTE2YzMwODlkMjkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L32-L55",
+          "version": "repo-lines-v1:sha256:7866ded5fc1b88d940c00266ddc2ae44aa99b46db500d419c92198f6e04214f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhZmExMzAyYWJmMDNiNzRmNTQ4ZjA5ZDQxOTM5YTYwMDEwMGM5Nzg0YmNhMjBiNWMzNjNjZDJkZjExMTg2OTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlNzU3NWMzYjc3NzZjZjJmOWMyYmZiY2E0NGYyMTQ4MTNhNzgyN2VhYTljMzg0NTRjNzAzYjY4OWE3NDQzODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4ZmUwMzExY2M4MmU5ZGQwMDFhYzA3YWRhMjI2OWU4ZjRiZjQ0YjE4YmY1OWViZDA5OGExN2JhMzk2NTlkNjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8b3eada2a7e244f29ec3d298e70722ce",
+      "statement": "PatchApplicationTool validates patch target conditions and Git-style diffs, processes dependency-ordered patches independently, reports aggregate success/partial/failure states, and records backups and rollback metadata for real applications.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L145-L210",
+          "version": "repo-lines-v1:sha256:656312c5211860ca1300eea89962c1c27eb47700c8fcfb78eb03037ee0a8ed7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2YjZjM2I3ZmJkNGViMmM0NjYwNWE3ZDdmM2VkYTE2MmQ4ZTUwMWM4NjFkM2QyNGUwODI5MGVhNjM1YjkwNGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1ZWRjYzc2MTM1ZjZhODZkODI1Yzc1ZTVkNzNlMzZmODk2Y2M5MmJjMDE0MTlkYjVhYWFjMmZjYjg1NWY3YzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4YTNhZjNiNDMxZmYyYzJiOGY2YTBmZDcxNzkzNzNkYzZhODJhYzU0OWQ0Y2U1Nzk2MGNmZmE5MzhmMWI0OTkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L215-L285",
+          "version": "repo-lines-v1:sha256:92299d2de7c42dddc8ec69eefecd6fa24ae4496489f24ee802847d4c60addfc7:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3MDk0NDdhMTU2M2E3MjVhZDAyODdmNjg0YmEyMTAzMDE3ZjA4Y2FmYjNkYTA4Nzk5ZGUwZTZlNmVlY2Q4OTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4OWM1YTgwMDNlYTI2MWVlYWRiMGVmYjA1ODJjZGE0ZjYzZjljNDE1M2Y3MTE3NWM2ZDdkYzM2NGU3YjI5YjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhMDUzZjA3MDc2Y2EyMzdiNTg1OGUyODU5ZTczMzg5MmU4NGM0YzdmN2E4YzQ1MjQ4NzI5OGMwNWZmYWRjMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwNWIwMjE5NTJjYzNkOGJjNDY3OWViMGM5ODY3NjRhYTIyOWI4YmZkYmVmOWRmOTM4MjA4NjE2ZmEyZWQyZTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77bea80b605d49568fda73e2f7ed3ee0",
+      "statement": "PatchApplicationTool rejects syntactically invalid Python for new-file and in-process modifications, and restores original text if an externally applied Git-style patch leaves a Python file unparsable.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L21-L29",
+          "version": "repo-lines-v1:sha256:9aefd6735c978639ce811e4f73a845911ebeea4a5a39b27b91e50bab04b1638d:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTk4ZDczNTdjYzdjZDI0NjhkZWY4MTY3YmRhZTJkMjFmODAxYzhiN2E5ODZiNDQ1ZTEwMjU4NjE2ZDcyMTY3ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzBlMmE0NjUwMDk1ZmE5NWQwZTJiYjQxYjJkYjI5MDk0ZDM0MDRkMjhjZTEyMzM5ZWM4OGJiNGI1YzViZThmNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjIwMDk3ZTRhYTUwMDY4YmExNTdmOWEyNzM5ZmFkODY5OTVlMWUwY2RjY2RhZGM1ODk3YzIwMzRjNzRkM2VmYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjk5ZTZjZjg4N2M2YTJiNTJlY2EyOTM0YjA1ODUyMzAwMGNjYWRlODU0ZDNlZGY1MjdiOWY4NjhjZjQxMDZhMCJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L303-L363",
+          "version": "repo-lines-v1:sha256:a1bec3f14d7bea7be192ab86ac181091e1a01971ae3dbcd2ad63edcb6a895141:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5MmJlZWNhOWNkMzI5ZmZkOGZjOWNkNTlhNmExNmY2Zjc1OWRkN2E4ZmEyNTQzMWQxMDRmZTY4NmJlYmRjYWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3NjdiNDdkNDllZTBmNGMyMmE1Zjk5MzAzMWZmOTI2ZTlmOWVjNTc1NzI3NTRjNTYyOWU4MGQzMzE0YmQ1NmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3YjI2MzY2NjZjNzc0NTg5MTk1ZjYwMTc1YzYyMzUwNTBkZGYyMWYxMjAyMjZmNDJmMzdiOWQyYTZlODM3YTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5d1ca3e44f2b4a85b895841166977262",
+      "statement": "TaskAgent applies generated patches only after TaskConfig.dry_run is disabled, but invokes PatchApplicationTool with approval checks disabled and approval supplied, so that workflow's explicit dry-run opt-out is its effective application authorization.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L779-L823",
+          "version": "repo-lines-v1:sha256:89ac01dabfcbae39291f46cf4bfe37c3745ed51d1eca3087c4b3a3faf099d732:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYzAzM2RlZTVhYjc0NTZjMjBhODY4OTRhZTU5NzgyNjdlMzEzNjA1MDBmZmFjYjlmMDViYmNlNTZiNzRjNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDEwNWUwYTY4NTIxYzNkMzMyNjE1MzkwZTg1OWUzOWNmMjQxMjc0YTdkNzgxZDE5NmEzYWRhMDdiMTBmZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczMGUwNTgxZTIyMjQ1MjUzNjE3ZDc0ZmJiMTEzOGY3Yzg3ZmU4Yjc4YzNkYTRkNmI5OWM3OTI0ODNkY2ZiYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkNDZiNWYyNmRmNjdkMDNlZGMwMjg1N2JkZTg4NDQwNDU1ZmFlZDI5NDVhZjY5Y2JmYjUwNzhlNDI2MWFjNDkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L67-L100",
+          "version": "repo-lines-v1:sha256:ca28f6a08f4c2f7985fe5383624e565f44c313958283b931d7f521b711c7c79a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4MzY2NjVlZjA0YzBjZjhhMGZiNzYzMTA1NjQ0ZWRlMmU1NmQ3ZmNhZjg1YzdjNWI4ZjYyMGY2NWUyMDkzOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMWFhY2JlMDljODM5OGU1OWFlOTI1ZDAzM2UxMjY2M2EwYzQyODBiY2IxZGI5OWU4ZmMyNTA1YzUyNWNiY2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1ZjFiN2IzZGU1NDZiMGMzMTAzNjJkMDFhODc1MmZmOWJiMDQ1ZTNlOGZhYjhlYjhhYTZkMWMxN2E2ZDFiZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ccf49d8aa0f64ad8bc71f270ed88261f",
+      "statement": "StorageTool initializes a local SQLite schema and upserts serialized paper, summary, and plan data by paper_id; it also offers parameterized retrieval, pagination, search, and deletion operations.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/storage.py#L150-L256",
+          "version": "repo-lines-v1:sha256:aedddc665caf59ec2c40168fcf0a5f97df04f4ff2b2d545d315fe31663ba106a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlZDlmZDgwYzQyNWYyYWE0NzM5YzBhNzI4MzU2MmZkNWNjMGI0ZmZjMWE1NTI0NjhlZTUzY2QzYjFjNmI5ZDliIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0ZjE2OTEyMmNjN2U1YzA5MjY4ZjUzNWE3MGViMjZjMDAyOWM2Zjc4M2FlYjljYmU4YjQ3ZTZmNmM0YjQ3MGQ5IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhMzgzZWJmNWQ1ZmQ4MTg2ZGVkMGY5NDdhZjEyMjI5MGYyMjA2OGQwYTEwMWEyYjQxZmU2YzRiYzgwMTQ4ZTI2IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2NjJjN2E3Yzc5MjU2YWM4NDlmNzEzMTU0ZDU4MzRhODcwZjBmOTQ2YjM4NWZkNmIzNTg1MTNjMmY1ZThjMDM2In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/storage.py#L34-L88",
+          "version": "repo-lines-v1:sha256:85ee1e94df095bac5cfcb3717e137fd56d86d7812373329b960b9b5315b619b1:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5NTk1OTRjMGUzZTUwNWY5OWQ3ZGYwMGQ0MmVlOTNkNThlYmE3NGFhNmRkMmUxN2Q5YWQ0ZDUyMzFjMmY0ZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZGQ0ZjQzOGVhMTU2MTg5YWE2Y2VlYjQ3YzY2ODZjNzY0ZGNhZmI0NDBmMDhjZTk0MGFjMDYwZjk1YWJiNWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhODZiM2NmZjIwNTY2ZjlhNDRlNmEyMmE1ODJjZjU1NjEzYzJlMzllMTgwNDhiOTVhMzZhZDc5OWMzYjIyY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMyYjRkMzg2MTNmOGZhMjlkNTA2YzkzZDIwZDZhODRhMTQ5NTUxYmQ0OWRlNjFhNThiODkxMjY3OGYyY2ZiYzgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/storage.py#L90-L148",
+          "version": "repo-lines-v1:sha256:efd23cfc2558c3431faf15b3f8836df0812ad10578ba1543aa706d74fe29a4e2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmYWQzMjc4NDY3NzdkNGFkNzQ4NTE4YmU3ZTk3Njk3MmY3MTM0YWUwMTcwNDY4ZGFiYzhhYjdkNGIwYzZjZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkZTVhMDFmMWRiNDI5MzgzN2UyYzljZThlNzBiYTFkMjg4OTg5NzA4OTA5MDNjYzg3YzFmZGJiOTU1ZGYyNDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJjZmNiMWU1ZWM2MmNkZGQ0OTRmZTdkMjhhMTY0NDBhOWQzY2M0ZGZhZGQwOTQ0NTU4ODE1NmVhZGM1NTIxYWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwZGYxZjI0ODIwZDNkZGFlMDQ1ZDdhMmVlNzEzMGNmZGY2OTcxYzRlZTA1NDkyMmIwNjlmMjI2M2VmMzEwMDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77705f02bad74b8fae7be197ca34ee9d",
+      "statement": "Focused terminal tests cover validation, allowlisting, dry run, status/output behavior, file and search operations, Git operations, and patch application, while production-fix tests cover Python syntax rejection and hunk context behavior.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_production_fixes.py#L346-L422",
+          "version": "repo-lines-v1:sha256:09f374dc718dd723b5f51491f3ec35b884397aec89c21b146cb6b832039a8d51:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkOTk0MmRlYjdkYmFiYzExNGIxYzQ4ZDAyZGE0NjM4NmU5YWNhNTE1YTUyZmI3YjNjNDEyZGM2Mjc5MjFiMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlNGUyZDBhMDE3NDdjMDY3NTFkYzdjNmQ0MmNkMDhmOGQyNWYwYTZhYzMwOTczN2JmMWNhZjNkMjU0OGMyYmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://tests/test_terminal_tool.py#L51-L320",
+          "version": "repo-lines-v1:sha256:dbb5364bb9120f92fbfe3f23b3255f87d9f25f1289d1a8142c0d92a9e1e6a530:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5NmNhMjdiMmUzZTgyZTY4MWI0M2NlMDdhZDRlMDQ5ZGE2OTczNDIyODc3MGEwODI1MmJiMGUzNTZkNmQ0MGU5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI4ZTdlNWUxZjU1ZjZmMjQ1ZTBjYjM3OTkwNjFmMDkyOWZhMjYxOTk1YjE5YzQ2MWRlNGQ0OWY5YjM4MWRmN2NkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI5MWNhNDJjYzViMDAzZGUxOWE4YjFhOTNiNGM1OGE3NmZjMTk4NzMxNzI5YzY4ZTE2MTMwNDg3ZTYzMDY1YjA5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:208eba3e455388e5d4ef09e3ada9712231c82f6e458474c203af1420abc09bef",
+  "claims": [
+    {
+      "id": "claim_0bed426f1fa246b08273ee5f8423a5b6",
+      "statement": "Agents obtain model providers through `resolve_llm`: an explicitly injected provider takes precedence, disabled LLM use returns `None`, and otherwise the helper resolves a provider by agent name; router failures are logged and degrade to `None`.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/_llm_support.py#L26-L64",
+          "version": "repo-lines-v1:sha256:6c7941aca70801ad34e97d62febc38d2b6310f8bc29c6e048bbb976f11fc8377:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiN2JmMGUzYjJmMzQ3ZTQ3MzM5ODI5YWQ3NTUzMjE5NmVjZTliMzU0YWQxNGZmYWY4MzVlNjg1YThkM2M3MjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlN2M5NTdiY2I0NGZiNjczYzk4YjAwNTBhNzVkMzgwODJkYjgxZDkxOGRlMzEzYTNmMDdjMTIzNTMwNmQ3ZWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjYzhlM2JiYjQ2YWFkYjI5ZTJmMmIyMTcyN2Q4ZTQ4OTAyMGEyNGQ5YjMyNmUyODYwZDA3NDA4YmNkMjgxOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxZTk3MTA3YjFlNmZjM2E0MzA4YTBkNjk5MTQwZGU2YTBkZTNmMGJlY2Y2ZGNiNmQ0MGY2NDkwNTQ1OGY3MzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_965911563728481196f34e642089a761",
+      "statement": "The provider abstraction normalizes requests, responses, tool definitions/calls/results, usage, and provider errors so agents can use `LLMProvider` rather than vendor-specific APIs; unsupported native tool calling and streaming explicitly raise `NotImplementedError`.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/base.py#L29-L218",
+          "version": "repo-lines-v1:sha256:5472e5f4c06c8054dedd7a668730c506dc84b0b67388c6e530fd4147faf85e71:eyJzZWxlY3RlZExpbmVDb3VudCI6MTkwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZTlhMTA5MmUxMDkxMjgzZWIwNmRhM2RiMjQ2ZWUwMWVmOWNjMWVhMWYxNDBlZjE0NzIyY2YzYmU2NWM2MmQxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIzMjA2NTNmN2Y1ZDkwNzNhNTIxOGE1NThhNDU3MzFmMTdiMTY2MTg3NTVjMWYzZWY3ZDdjMGM5MmRlMDg5MTIwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3YmU2ZjIwYWJhMjYxYmQ1M2JjMTc2MDY4ZmIwNTU0MDU0OTE3MDAzOGI4Zjg4ZGIzN2Y4NzIxNWM3OGM0OGUwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1ZGNmODlhOGExNDA3OTAzYzBhY2YxOWIzNGNiMDJjMzk1ZTk4ZDdkMGNlZTRkZmNmZmUzODYyYWJiZTg4YTJiIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_4b1e61f7a71245f9ad3e1add78a87753",
+      "statement": "`ProviderFactory` reads named provider settings and per-agent provider/model bindings, caches constructed providers and specs, supports environment placeholder expansion, and resolves omitted agent settings from configured defaults.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/factory.py#L59-L70",
+          "version": "repo-lines-v1:sha256:e0e5f4248c1f753b2d67fd4701a70e0c08befb175540e0fd3717cf9f7b3ba48d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZmQxNzY4Yjc5ZTVlNTAxMGJkNWM3N2NiOWJhYmYzNDg1YTJmZDMyNDBkMTVhNmEzYmM2NTViMDQ5NjY3NWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5M2ExMzA2MmYxMGVlNGYxMjE4ZDkzZTM3YTZmODFkMzQ2ZmYxMWVjN2U1NWRkNTQyZTJkMmQyZWYwNzExZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5ZjkzMDgzYzE5NzEyMWI5ODI3MDBiYThhZmFiZDE3MjJjZjFkM2U3NDA0NTA5ZTgwZWZhMjcyNDdmNjJmMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhYmUxNzQ0MWQwM2YzNDQ3MjZhYTljYWY0NjgwZTdlYTk4ZDhjNDMxOGY4YmM3NTdiNDM4NmQwODNkZjg0ZDEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/factory.py#L90-L198",
+          "version": "repo-lines-v1:sha256:efce99470922a87ee1ca0883ad01fade1e719c57689999de84e3f8f7381e9fcb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzZGFmNTM4OTI2NDFkYmQ3M2ZjMDVkOTJjYTE3NjQ5OTdkNzRlMTkzZTgxODFmYmI3MjUxYjk2ZTE4Y2Q2MjIxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJlNGM4YTEzMDA5MmM5MmYyZjkyM2I1Y2QyMzA3ZWExM2FiMmYwN2ZkMmM2NjMzMTBjZGQ3NmY1NTAwZjJlNmQ4IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiM2RmMmFjZjA2ZThjM2YwM2M3MTM1YzZlOGFjNWE5Y2E1NDMyYWJlMDZhNzRhY2EwZmRkOWE1M2EwMDhmOTg3IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwYjg0ODRhNjkxNWY1ODAxMGE3MzQ5NjBlNmQzN2YwZmIzNjc3ODhhOGNmNDEwMzZmNWQ0ZWY1YWY0MDYxNjA4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_9449ac97f1ac4171825657e5e8d35fdf",
+      "statement": "LLM configuration path resolution uses `RE_LLM_CONFIG` first, then package-root and working-directory `llm_config.yaml`; the process-wide factory is initialized once and must be reset to reload configuration in-process.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/factory.py#L267-L322",
+          "version": "repo-lines-v1:sha256:12d6e80b5b5c3d5f0c33dcb2c1f128e3b9a8c7da749fcf65a35db42413966afd:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjNjIxNGFkYTEzMTBmMDI0NDIwMzk3NTM3MTQwMmFmNDliNThkZDg4YTk4ZTVkZWJlMTMzZjM0MGUzNmRlODciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NWEzMmRiZWEyN2Y3YmYyOTVjOWY0YzkzNWNmNTczYjJlMWY1YjllODIzYTBhOTQ3OTc0NDhhYTJhMzI5ZTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3MDQxOWRiZjFkYzg0NzEyZDRkMjJlYzFiOWNkNmFjODE1NjFmOTUyNzAxYzEzMTQyZWUwNzU1NjM3MzdmM2YifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ecb9a62b26954a71841787d82f893df4",
+      "statement": "The router returns a cached bound provider per agent; that wrapper pins the configured model only when the request omits `model`, so an explicit request model can override the route.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/router.py#L181-L197",
+          "version": "repo-lines-v1:sha256:f5e583c2c5058141dbbd17e4069550976fcf61b0dcc7783d026b4c65575cc741:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjZDRmNThkNTc4ZThmNzFmZWZmZmI0ZGFlZDYzZDM5NGZkN2Q4ZDcxNWJiZWM3Mjk4OTVjN2UxZDBjNmViZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4MjA0MDczZmYxMTIyMzU2MWU0MDYxMTliODM2MGVjMmQ0NTg3NGMzMWI4MWVhZTg4NjJkYzIwNmFjNmE2NWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5MzJjMWIyMDA2ZTA2MjI3NmQ3ODZkMGVlMzlkZDI3Y2MwYWQwYjMxODVjMGFjYjhlY2Q3MjQyZGNiZGJjMGIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAzMTYxMzc0NDNlZjQxYTJmN2Y0YTZlMzY5YzViMjg2NzZkN2RmMTg1MDRmY2EzNDUxNDUzMTk5YjhjZDQ1OTQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/router.py#L28-L50",
+          "version": "repo-lines-v1:sha256:26a37abafe53c00514cfc2c287d55a37a5467c83f5a573b18ca16e82defcdf80:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmMWNhY2YyNmY4NWExMTEzNmRjMGJlNmI4ZjZjZDBkZWU5OWI4MWZmMTAyN2FkMDFjN2Y2YmRhOGZmOTJhZjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwMzM4YzkxZGE5NTkzZTg1ZDVlMzI4MmU2ZDcyZTUxMzA3NTcwMjc4ZGZlZjQwMjQ1NGQ2NTBiMmVkYWI3MzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4MmU2Y2E0NDk2ZWM5YjE4ZTZhYWUyZWRhMmQ1ODcwMTBjYjYyMTk1MDhiYTcwYjJkZDk1YjY0YzQ4OTUyZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5151046250734591b05bd524517f1c89",
+      "statement": "The checked-in `llm_config.yaml` defaults to the `ollama` provider and `glm-5.3-flash`; it assigns reasoning agents to `glm-5.3-flash`, `CodingAgent` to `kimi-k2.7-code`, and orchestration agents including `TaskAgent`, `ResearchLoopAgent`, `ExperimentAgent`, and `TestAgent` to `minimax-m3:cloud`.",
+      "evidence": [
+        {
+          "resource": "repo://llm_config.yaml#L117-L197",
+          "version": "repo-lines-v1:sha256:20e032d0102ff923e90b6a97c5198b195057a8ffc824cbaef74cf9ce0beb2b68:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3YWMzMzk4MjI1MWY5NTcxYjhjYzQwMTVjYTQ5YTNhMTgyN2MzMWRkYjk4OWRkM2U0YjYyMTVhYTNkZDY4NDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlNzUyNWE3YTk2YjMyNDU3NTgwOTQ1ZjYyYzMyMGY0ODlmOTlkNDM4ZjdiY2E4M2ZhYWJlNzg5YjdjYTk4MGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3YjY0Zjk0ODMzYjQyZDc5NzBjZjA2ZTRhYjE1NWRiZjNhMjMzYzc0ZTdkN2VmODY2ZGEwMDY4MTg2YjQ5MDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://llm_config.yaml#L20-L24",
+          "version": "repo-lines-v1:sha256:510b8d34a115682265ac678c88b59c8dd0d7eb943a9598bc45c7a2dc563ebb4f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDRjYmUyMDM4NWQ4YTY1YWVhZWY0NWMwOWViZmJmYzk5NjNlNGU5YmU2MDUzODAxOGY4Y2ViMjA3ZTc4NzgxNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTkxMWNmMjNkMjAwNGYyMDNlZmJkYTBmYWY5MTIwOTE1Y2I1MDAzYTM4OWQ5YzdjNjAyMDJlNTg2ZjAyZmY5YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjRhZmQ5MTIxNTEwZTdlMDM1NWNkOTBjNjlmZGJlYzM0OTZlNmY5YjI3MzYzMDU0YTE1ZjUyYzcyMTgzNGU5NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2M5ZDJkNjVjMWIyMGZiYjBhOTY5YjlkMTg2ODYzZDJjOTQ1NmI2NzZiNzA4ZDNhMzViODVlOGZkOGM1ZjEwNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_378215a8f9414383a0f510d43d566f58",
+      "statement": "`RepositoryAgent` defaults to LLM-disabled mode and only resolves a routed provider when its `llm_enabled` constructor option is true.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/repository_agent.py#L86-L126",
+          "version": "repo-lines-v1:sha256:798d33a0f5a772b6ac41aa30e736ff9fe0b7d1c545745b5e2940ac0364a0ad47:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiNDI2NTgxYjNlMmYyZGU1NTlhYWY1MDQ2NTM5YWEzNDFlMDFkNmU3NWU0Y2JhYjEwMjM5NTc2ZDI2ZWZjNTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1OGQ3NmY1OTFjNzY3YWUzMGJlNGY4M2UxNmQ1ZmEyYmI4NTgyMTFjYTdhMWY5NGIyNzhlNjhjYmRkOWRjZWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhYjcyN2U2MmJmOTAwZDVkOWEyMDRiMTkxYzEzOTM4OGZlNzg2ZmVjYmMxYTQ0MmRmMGZiOWJmYzdlOWJhN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1OTI1ZTcxM2FlMzgyM2QxMzk3OTM0NDlhNGQwNjhjYTUzOGYxZWFmMzAyZWZiZmI4MzhjNDZmNGNjYjQ1OGEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L97-L106",
+          "version": "repo-lines-v1:sha256:0db8a7685fbdda415bfd1581640f00e635a49d1c5f854fe9efa7800f0e1baf36:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwZTViOWU4OWNlYWNiZDE3NTNmMDRkNjRmOWEzNmU1MDU1MzA1ODkzMmRhZWM0YWRjNDBhYTkwY2QzMzJmMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhNjBjN2JmOWNkOWZkYTUxYTYzZDFmZmIzMjJiODliMzYzNWRlMGE4NWNjZTkwYzgwNGU5ZjRkZWQyNDQ4YmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMzNmQxYmQzYzkwNjUwOGYxMzZmODc1ZDA5NTg2ODMxNTA4MWYwNWNkZTJlNGExY2M1MDYxNjQ1ZjQyNGMxNmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiZDgyOWVmMjBhOTNiMTM4N2E1ODE5YmUzMGI0OTEwZTE4NjBiN2IwNTUzMWM0YmNlMDQ2NzgyYTYwYzQyZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4ba05f6f34184d038ffc9079f642650d",
+      "statement": "Bound completions use retry/backoff, fail fast for permanent HTTP errors other than 429, retry truncated outputs once with a doubled positive `max_tokens` budget up to 16,384, and preserve tool-call-only responses as final to avoid duplicating calls.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/resilience.py#L116-L205",
+          "version": "repo-lines-v1:sha256:21b4d405ba0a61cd2eb96744896050f82dbb3b8f56bf53235cd768844d413b98:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkZGUyNjc4YTFjYmVlMDkxMGFkNDRiNGE4MmI5YTc5NjFmMmQ4NTI4NDhlODYxMjIzMjMzMWFkNGJhZmMyMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1NWIzYjc2MmE1NWE2MWE5M2Y0NDIzNmUxMjc3MTQ4M2NjZjllMmE4MTk3MDg0YzNhMTZlNzJhYTMzMWQ1ZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0NDc2YTM4MTBlYTUzZTQ4NTdjNmQ4NjZhYmIwMThlNDkxZmUxNjI1NDg2MWY0M2M0ZmE2OGE3ZTQzMmI3MjgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/resilience.py#L36-L113",
+          "version": "repo-lines-v1:sha256:1ec2f31a9bf215a890d7578e4878794065514208e8458ec26a04973109cf7642:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNWMzYjk5NGViMmM4ZTgwNjI0MzIxMTU3YTgyOWY3MDVkOTZjNWQyMzI3MDZlYTViMGIxY2VlY2RhNDFmYzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwYWMwMmU5ODg4N2JhYzQ2ZDRhMGY5NjMyZGQxNGJhMTJkMTM4NTNiNjY4NjIxZWI3ZGRjOTlkMTNiYmRhOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1YzFjNDYyZTJhMzlkNzQ3NTlmNWUxYjEyNmY3NjgzYTJiNzMwMTE4ZTE4ZjUxMjJiMDhjZWRlZWI2NTBlMjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhOTY0YjRhM2I0NDdmMDI5MTc5ODljOTUyY2MwYTUyYzNmNWFiOTA5ODk3ZGNjZGE0MzA3Zjc3MjJkNWU0MDcifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/router.py#L40-L67",
+          "version": "repo-lines-v1:sha256:01c04c799e32f35c34f24c96510398aaf218f24746f76d80d4a065e8f90989b7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiNjRlZWM5NTllMzJiZDQ2Y2Y1MjI4NzEwNTdmNTljZGM1ODhmMTQzYmRlMWU4NDY2YTJkMzBmYzQzODBmNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3NGEwMmJkNzhjNTYzYmIyMTIwMmJmOWJmZjg3ZGEwMDU2NTAzNDNiYjdiOTUzOWFhNDcyZjY3N2YxN2I0YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg4NTg4NWUyMDRjYzk4M2ZmODU2YjMxNzcwOWRlOTc3Mzc2NmM2YTdmMzU1MmZhNTNjNjg1ZGM0NDJhYjc4NzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_63ae8545ff0847559be6146e36a07574",
+      "statement": "Each completed bound call computes configured pricing-based usage cost, records it in a process-wide `UsageTracker`, and best-effort emits an LLM-call event; `ResearchLoopAgent` adds tracked LLM cost to its cumulative USD cost.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L305-L315",
+          "version": "repo-lines-v1:sha256:1b0b8710960b8e1c6541cbf621429de1ebe511da659e11b4987ab816d35439ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViNWRkYzgxNzRiNDg1YzQ2MDllNDc4Zjg1M2MxZjA4ZjcxMmEyZDIzMWUzOTI0N2VlMWI1ZWZkZmM2ZTEyMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0NDZjYjBjZGYwYTY4ZGE5MzkxYWQ5NWNiNDI1YjNiMWJjMzFlNWJmMzc5ZjkxNTZlMTI5ZDllMjNhNDBkZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNiODQ1OWYyYTBkMGY4ZTJiOGE0ZDdhNTExZDM0MjE2OTczMWRjN2ZkOTczOTMyODBjMjVhMDQ2Zjc1YTFjNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlYjA4N2FjNmIzMjE3ZDQ5Nzk1NzhlOWQ1OGY5OTdhY2Q3MWE1NzVhZmJhNDI3YTkxYTZkYzZmYzQ2NTFiYmEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/cost.py#L113-L148",
+          "version": "repo-lines-v1:sha256:21c5980cf369183c909e7922ac84a963bae3d76c1c7bf5e25b7769ffff49f75c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzMzNiM2ZhZTQyOGUxYWM5ZjZlYjljZjlkMjI0NTQwNzE4M2M1OTMzMmU0ZjJmMDI2MDVhZmIzZmU0ZDVkNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxMmViNjdkMmQwMmM5MTM5NTBiZGMwZGZjMjI0NzhkODljNWY3OWZiNTE0NzFhYzY1NjNlMzlmNWQyZjViOWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0ZWM1ZmE1MjMxMmFhY2ZhZDM5ZDc3OGFiYTI0ODMzYjMwNjdhNThmOTJlZTk5NDZiYWZhYjlhYWU3ZWVmYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiNDNkMGQ3Y2Q2MWU0Yjc2NWUzNTc0YWE2ZDA3NmJjNjUzNDg3NDg5MWM1OGZmZmI4N2NiYTU1YzYwNmJlMDkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/cost.py#L188-L274",
+          "version": "repo-lines-v1:sha256:ed3ae7030e2ce799a0a72d6d81d98a8c25374b6b12a1eec92c26272bd0caae88:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3Mzg1Y2RkZjJkMDRkY2RlMjRiNGM5YWY2NTFiYzFhMzM1YTllMmFlMjQzM2NmYjAzZjZhZWNiMGU4MDU1MDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZmU5NDMzN2ZjOTc0YWM2ODI0MzA2YTRkNDZmMTIxMjU4MjM0ZjMyY2Y1OGQ5MjhkOWIwNjBlM2RlYzM2YzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmOGNmNmU2MjBjMDg2ZDAzMTIyYzIxNThkMTY2ODZkMmIzYzBkZGE3YjY1ZDdkMjc4YjVkNWFlOGE2MDMxMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/router.py#L69-L105",
+          "version": "repo-lines-v1:sha256:7a5f7676eb6cbd1ff7764939ea616096700b949913f8a650c12559f592799f43:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlZTRiMWI0MmM4MDAzYmI5ZDZiOTMzODc3MDM5M2VmNTY4ODVkNTEwMjI4OGEzMjBhMzhlMGY5YTFjNjc3OGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyMDc4MzkyZmZlOTM1MTNhNGNlYzA2MjQ2ODZhOTcyM2Y4MzgxYjM4YTNjNjBmYWQ0NmYzYjEwYTc2NjVlN2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlNGZjYzJmZjU3YTRhYTA1ZjlhN2E3YzU1YWM1MjQxZmQ1ZGM0MWQxYzgxZDU4ZjhjNjFmYTJkYTIwODZkYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5ODJiMmYyZWZmZWRlYjkwNmE5NzFlZmU3ODg3NzYwNWIyMjE0ODg5ZTQ3ZWE2ZjBhYTY0YTA4Zjc4MWI2ZDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_aa1363056d7f4bf388903f8055e3fb34",
+      "statement": "Pricing entries override or extend built-in pricing, match model identifiers case-insensitively by longest prefix, and return zero cost for unknown models.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/cost.py#L113-L133",
+          "version": "repo-lines-v1:sha256:ec3e351b98f62981f928c751724ced5fb31b4aba0d42f8b000c2c91671185a82:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzMzNiM2ZhZTQyOGUxYWM5ZjZlYjljZjlkMjI0NTQwNzE4M2M1OTMzMmU0ZjJmMDI2MDVhZmIzZmU0ZDVkNWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhOGM2ZmI1NDBjODlkYTEwNGI0Y2JjYTQxODc0YzRmMWNkZjg1YjZhM2M0NmMxZDc3ZTEwOTQ5YzNhNDIwZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0ZWM1ZmE1MjMxMmFhY2ZhZDM5ZDc3OGFiYTI0ODMzYjMwNjdhNThmOTJlZTk5NDZiYWZhYjlhYWU3ZWVmYTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUwN2Q5ZjQzN2Y1NDM0YjIzYmZlZmE0YTQxYjg2YjNiNzc1YTQ2MWU5MThiMTE4YzAzNDBjNGNiOGRiODU2YWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/cost.py#L53-L100",
+          "version": "repo-lines-v1:sha256:5340cdbe9f177a1dc405218156c3c01d77e67d647a943060f91fc8dc44589fac:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmNDNjMzBmODdmNzk0NmJmZTc0ZDIyZWFlNzNjNzk1MWY5M2QwMDA2MmJlNTdhN2YyMDQ4OWNiZTdkZTUzODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc3YTc0NTZmMTVkMTI5ZmI0OTliNTg3ZDY2MzMyYmMwZDI1ZTZlNDdlYzFhNWFlMTA4YzI3YTA4MGM3M2FkN2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzYjdhZDI4NThiNmI2ZTRiMjdkMDI1MWQ5NmUxYzU2NzhhMGMxMDQ5MTNmYjk0MDBlNzM5ZjE5MTUzZDU3ZjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c344e4555ac640d69f82f338140997c8",
+      "statement": "`for_agent_with_failover()` is an opt-in route that chooses the first healthy configured provider (or the configured provider if none is healthy) while retaining the agent's configured model binding.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/factory.py#L221-L239",
+          "version": "repo-lines-v1:sha256:676c9661bab25291d7179c351d08a36d6df2ed868540954a88265c98f6a93ff7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1YjIyYTY2MzIzMjc2OGRkZmVhMDBhNjMzZjUyZDNjYzg3ODM5NzVlNWJlMTNkOGMzYTNlNmI2NDBlYjI1N2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NmJhOGM0MTFhNWI3OGQwY2UyMzJiY2EyOTA5OGJjZThmODdiNzAwZTU5NGE3Y2JjZTMwNDY2NDJkMTllZmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwZGVlMzUyZGU1MzQ5NDZjN2Q5OTk0ODA3MTJiNzkzODU5YTViNTBmZTkyYTE0MTNhY2I0ZTYwZTU0OGE4YTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5YjVmOTU3MzI5NjZmYzNkZWQxYzMzOTdjM2M3MjUzMTNhYzM4ZGQxMWRiMDU3NWNkNWYyMmMwYWZhODc3OWEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/router.py#L199-L223",
+          "version": "repo-lines-v1:sha256:07e2b007f35544e24ad663770bca04ea3e5186ad3f6807e7ed0c1d36afccc951:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmYzdjYzU2ZDNiMzc4NjAwZjAyOWQxZTFlNGFjOTA0YWUwNjZlMWI1NWRkOWMxZmVjYzI5YmM3MmNhMDVjZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3ZmE2NGNjNmIwOGEyZWMyYzc0Mzc5YTk3MWI2ZTQ2MmU1YjgxNjg5YzJiMjM0N2E1NzY0MzRhMWUwZDRhZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2YjI5NGVhMDFiYjEzMWQ3MzU5YmU2ZGVmMzBhODgwZjY1OWJmMTc4ZTBlY2Q1MzdiNTYyNmMxYTk1YmY1ZGYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkOGFjMzA5M2U4YTJjZjVjZjI5NjU2NmU2MDMxNDgzNzEwNWQ4ODNmOTdjZDMwMWEwODE3NDJiYjE3MTZhYzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_406905f49fdb48e499a845332e587fa0",
+      "statement": "The CLI exposes `research-engineer llm status` to report defaults, configured providers, and canonical per-agent routing, plus `research-engineer llm config` to dump loaded configuration.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L3358-L3410",
+          "version": "repo-lines-v1:sha256:5b6fbacf22d66544ba25259ab183ff2864e93316e8c71dbd04912a4b4c55deaa:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmNzM3ZTNiZWQ0ZDIwODYxZDZhODQzMDhiYWVjODhjYjg1ZWM2M2I5ZmNkNjUyYThkYTgyNTg4MmY5ZDRjMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dd064456339c4937bfe37a035ba07ac2",
+      "statement": "The service ReAct adapter resolves its default model provider through the same router configuration, forbids credentials in runtime overrides, and defaults to temperature 0.2 with 2048 maximum tokens per call.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/service/llm_agent.py#L409-L467",
+          "version": "repo-lines-v1:sha256:800cfc7c2c2c539c8bbeb160507b1f4d790a8a781f7b1c853c300f9da81343a3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkMTU2Y2I4N2QyNGUyN2UwNmYyOWI5YWFlNDc2ZmIxYTFjNDg3ZDIzZDQ1N2RiMzIxYzEzM2ZlNTNiMmJkY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlNmVmNzYyMjE4ZTNkNGJlMGIzZjEzM2NhNmY4YjhmNzQxMjM2NjVlZmIwMGRkOTJkN2I3MzczYjdjOGJmNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0NWI5YzFhNTI4YzJmNTBjNmI0ZjI4ZjMwZGY1YWMxYzNjMTZmMWNkYTk5OTI2MGNiYjAyZTdhYWIzNWU3MzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2dc1fb0d31b348718489d71b0ac0c2a2",
+      "statement": "`run_react_loop()` defaults to at most eight model calls and four tool calls per step, stopping on a final marker, no tool calls, or the step limit; provider and executor exceptions propagate.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/llm/react_loop.py#L56-L78",
+          "version": "repo-lines-v1:sha256:e9a63c83f8bad806b3c5b3fd9fb4664fdd580cd69c3db45aeb1ca291d6a837e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0NTkyODZkNGVjNTc2ZTI5NjkzYmMzZjQ4YjdkZTMxMTAzYjNjZTNjOGNjZTMyZDAyYzVhNWUzNGIxYjg2ODEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExNDA3ZDAzYmM2MGU4MTYyNzZlY2E5ZjNmOGEyN2MzZGQxNGE3ZmY1NjcwZDVjOTA3Y2U2MDhkMTA0ZTQxMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkxZmM1NGI1ZjkyNTZkNGQ2YzE3Nzc5OGY1ZjU2NjNjM2FiZGIyNWExY2FkN2IyOTU2OGRiMjdmNmQxMjJlNzUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/llm/react_loop.py#L93-L180",
+          "version": "repo-lines-v1:sha256:72d54f570fd9a070c84541f3c929138ace20babecda9b0b57f16066705c08a84:eyJzZWxlY3RlZExpbmVDb3VudCI6ODgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxNDQzNzk5ODE4OWI3MmJjZWU4ZWJiMjJkMzI4ODA1NzIxMjUxYmM5YjBiOTIwYzU4NWU4MzlhMTk5Y2Q5YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlODlhY2VlMmIwOWFmODMxZThmZjNjYWMxNGI5OTBhYTYyNGU1Mzk5YzEyNGY3MDdkNTZmN2Q3NGJlZDNmMDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjYmUzMjQzNDcxNjE2YzFjN2UyOGFjNjFkNjFhMjEwZjZmZmQ2OTEyODY0MGI3NTc2MjgxOThlOTkxNmQ0YmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

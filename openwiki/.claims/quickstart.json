@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:e6ccd1fd50f588e051b413d8fc34e564cb84fb88d7340b8453a9c8331975d2e4",
+  "claims": [
+    {
+      "id": "claim_87126648695f4cd1ad44d7f1ffa76154",
+      "statement": "The project requires Python >=3.12 and publishes the `research-engineer` console script through `research_engineer.cli:app`.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L1-L22",
+          "version": "repo-lines-v1:sha256:14a7d03d70df8730033c0e4460168abbf3123d9b3939336203822816a2848784:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwMmE4MWMzODM2ZWRlZjJkMGJhMTFkMjM1M2ZiNmRhYmM3NzcxNTBhN2NhODNlYTBkOWU5YTcwMzEzZmVhYmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMTNlZGU1MzMxMWNlODY1MmI5M2ExZTg3N2YwMzY2YWU4ZDMyMjRiMGUzMDNhN2E0NmUwNzAzYjRmZTcwNzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmZjYxNmFjNjMyOTI3NTk0NzRhMWEzMGNmYWIxNDlkOGI0MzU1ZDhjYWI3MmM0OTE1MmY4MmEzMTFjZjg4NzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_99b5ecfb5827451d830f446bdb9afe1e",
+      "statement": "The documented local setup uses `uv sync`, and `research-engineer --help` plus `research-engineer llm status` verify the installation and inspect LLM setup.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L458-L489",
+          "version": "repo-lines-v1:sha256:819e9ffd5df802e970acfa26a503657c524d5c0d087a07731eba6fdb9d85ea59:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIwNzZmZTgzNDIzOGJlNGNmZGE5MmNkZWM3ZTQ4YTVmYTZlY2Y3MWNkNTRkMTkxNmMxMjY0OTc1MTk1ZTYxNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b3f6665dd46c405f9e0597ac3a310457",
+      "statement": "The CLI registers memory, literature, experiment, evaluation, loop, and LLM sub-applications, and lazily composes loop dependencies from memory, literature, experiment, and evaluation agents.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L125-L181",
+          "version": "repo-lines-v1:sha256:4cebb5dc01402828da240ca0d9c02f5da2c218bb8306c6ff7cfaed7477298614:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwMTcwMmUzNDA0NDU3ZTRkMmVhOWJiYjcxOGMzZWJlOWQxOWJhZGQyZmYyYWI3M2Q5N2VlNDVmY2E3OTY2NjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjOWU0ZDRkNmU2NmRmNWJlN2E0OGM1ZGE5NTUwNTIxMmFiMjg2ZWU2MDk5Y2U1YmQ3MzFlNmFiNTQ0MGMzMTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmNDNlOGIzZDI2N2U0YTM1MjBjMWRhMGEzNjBhYmY3NzY4Njk3Njc1MGMyZDhhMzUzMDhjY2ZjN2NkYzNlMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3YjRjNTYyNTA4YTc2MDViOWI4MDc0OTcwNzMwNjM2Y2ZhZDE2MjhkNmIyZjczNDdjMDAzODA5ZWFkMDc5YWYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L27-L72",
+          "version": "repo-lines-v1:sha256:271b489d3095d7d4b6f3259db0bda88b7bae44014676d0d22db7c387f65e0035:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3NDEzNDIxMjg3YTQzN2U3YWVlNTkzZWExODM0YWE5Y2EzYjhkZTM0ZmUxYjhmOWU1NGZmZGE1NTkzYjdiOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YmVhMmYwY2IyYzg5YjYxMDFlMjRhMzc0MjUzMDZhMWY4MzlhMDBlNjg3ODc3YTQxNGE2OWU4NWQxYjhjOGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmYTU1NTQwN2E5NWU1ODY0MDU2ZWZhZWI0N2ZjYzUwYzA3ZDU5ZmEwNmRiMzYyMDEzNTFhOGQwODUyNjgyYTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5MjllNDA4ZTc0MGRhMzhmYmNlNTNhZjdkNDAwOTdiNGU0NGUyMGNjMjEzM2Y4MWZkMmNiZWQwNWQ4YzMwZDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b7c98797c410484b920ebc46bf7a5b46",
+      "statement": "The documented CLI supports paper analysis, repository analysis, experiment planning, autonomous research loops, terminal-first coding tasks, repository-memory build/query, and staged research workflows.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L493-L558",
+          "version": "repo-lines-v1:sha256:415fd74749f84b475981abdc9105cf1136dd9c9d31df4d04edd6dd37b23572a1:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMjhmOTk4MDc0ZDY4NWY0MmFlNmY4ZTMxN2E5MGFmOGQ1ZThkNmNkYzg1NDNkMGU5YzQyYjVmNDQ5YjUzYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e2971c079c24fbab07c7a140f82b765",
+      "statement": "`TaskAgent` has a default coding route of repository analysis, repository-memory retrieval, LLM planning, patch generation, diff display, and optional tests; its delegation route additionally researches, architects, reviews, tests, and repairs through capability-based routing.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L2-L25",
+          "version": "repo-lines-v1:sha256:082b17782b78f591c08d9200ef89888128507be681493b90aaeeaa5145b8d185:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiNDMyOTM2MTIyMzhmYzgxMTM5OGFiYjZkODZkOWNhMzkyNmNlOTMzOTUwZjZhZDgxNjdjMzhiZDk1MmU0Y2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxZWJmOGQ5NWM1ZDMzYWU0NjY0ZWJlMDkwYTAzYmI2MzU5MWM1NDkzYzdlYjJjYzM1MzQ4NTYzN2NjMDM5N2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L78-L90",
+          "version": "repo-lines-v1:sha256:5b3ba8b59ba2e5bd6e5099ed9302c6e98394d4af0cca595df1536bc3ad9fe843:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxNDgzMjYwNzYxMDhhNjQzNWFiZmYxMjc0YmY5ZGNhNWY5NWQxNTFmZjc1ZTUzYWU5MWRjOGE1MzAxZTM4ODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4MGZiNzg3N2Q5MmZkYjAzMDQwZDUzYzYyZjljMGQ2MDg5MDQ3YzYzMThhZjY3NzFmNDA4NGQzODJiNWRmM2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNzVjZmQ5ZGJiNjBhN2EwYjkzM2MwOGI5ZDZmNzk2OGQwNTk1MjUwZDI5OTgzYjlhMzg0NGQzNDExMTA4MmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBlOTcwMjJlNTE0NDQ5Yzc0Y2JhYWMzZGJlY2U1Y2E1MGU2NDM1ZWRmMDc3YjdjMmY3ZjQ4ZjliZGYyZjQ0YTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ed6bc25872884e14895b526a8dce8d08",
+      "statement": "`ResearchLoopAgent` orchestrates Phase 1–8 agents in sequence while managing loop state, stopping conditions, stored iterations, memory integration, approval handling, and research reports.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L2-L7",
+          "version": "repo-lines-v1:sha256:1ae6602c3350e79eb61d2e87985eab19c1d824e6681673fd120c63fa21d25d90:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTMwM2VjZGQ0YTRkMTBmMTljNzNmZDQyZmQxMjQzN2ZkMzM1NGE4MjY4MTYwNWRhNTI1NWE5N2EzOTA2OGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjEsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzgxNTNmZTQ3NjJmOWQ5ZGY5YzFmMTk1MjllZjg2NmRmY2VlNzcwNWYyNzZhNTQ1YjVlNjZkMjNkMDc1MGQ0YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTViNmU4NzA2YjQzMDQ3ZjJhNmRiNjdmMTMyNjM4NTk1NjA0ZTY3ZjM2OTY2ODc2Y2UwMTU4ZjAwNTNlNmJkMSJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L54-L85",
+          "version": "repo-lines-v1:sha256:514f15dd3ef68b781f6a56f2feec07da7a907f2b9307f02f930335919c016a50:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkNmYwMTViOTJlZDdlZWYyYjRmNjAxNjRhNzQwYTRmNTA0OTY5NmQ4ZDJjMjJhNmM2NjJjOTA5OGQ5YzFlZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4ZGQwYmVmZDg0ZDkzNzczYTFmODg2ZDQ0YTlmM2ZhZTgyZTE5NjY3Y2EyZmRiY2UzMDQ1ODdiZTRmMjdlYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyNGJlODBmZWE0ODJhMzkwZDFlOTZiYjE4NGQyYWE0ZmJjOTZkMzEyY2NlN2FlODJmZTA1NDBiYjVlNDdiNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzNWMyYjVkNmYxODg3ODIzNTY3OTlkMjE1YTI3ZmYzNDg4Nzg3NDhhYTgxMTdhMDMzYzVmMmVkNGJjNzdlNmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8c054d6c74f24272ae3c8b514c238897",
+      "statement": "The staged research workflow carries data through a shared structured context rather than prompt chaining, and its configurable pipeline can skip, reorder, or replace stages while recording each stage's timing, status, and output.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_workflow.py#L2-L22",
+          "version": "repo-lines-v1:sha256:9c9bde7ea3c399fb9334cfca2438951949c0bf5e4f23dd4503a47ace7c3d9e01:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYmFjZTAyZjNkOWI3NjNmOTFlZjE0NTlhMjNjOWZmZDAxOTI5ZTNhMDE0Nzg4ZDI1ODhlYmI3MTk3OTkyZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljMGEwZTEzOWE2MDgxZjNlMWJiYjdlYmRhYmMwZDRjOTExOTdhMTU2YjQ3YWNiOTJmZGJhYmU3MGU1ZThjMjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_workflow.py#L52-L100",
+          "version": "repo-lines-v1:sha256:84099c8ed7ff85909de7b1a59066b633b43bc782380cdc50168f36e8b965b308:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMDIyZGM4OTE1NjA2MzQ3MDM3OTE0N2I5ZGY1OGViNWVjNmMyOTkyZjMyZjFlOTBmMTJmOTc2ZjM5NzFmYjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3NzIzOWIyYjY0MGJmOTUyNzRiMDRmM2QyOGQ0NzUyMDNiOTI2YWEyNDk3YzExOGQxMmRhZjViZGRhMDNlOTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0ZmNhZTU1YmEwYzcyNjhiYzlhZDE0MGQ3MWFlMjA4ZGIzODM5M2E3MGE0Y2JmMmYzMmViNGQyZjg4Yjg3OWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7600b062331944198ca46688a969ec24",
+      "statement": "The optional service deployment runs separate API and worker processes, chooses PostgreSQL, SQLite, or in-memory checkpoint storage, and can attach gateway and safety controls to the worker.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L24-L34",
+          "version": "repo-lines-v1:sha256:2a10aa9996f9f6bca8278fe705e29bd4e719761b2bc6237efe676363c6ba2578:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5MjE4ZGM0Y2U5NzFjYmUzZDM4ZDc3NDMwZTYzOTkxODg4NGRkNzdkNzE4NGM3YjkzZGZkYzJlOTk4NjkxYjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlYWZjNmE0NGIxNmY0M2YwMzlmN2RkZTU3NGNlZTVmZDdjNjQ5NTdjNDRjZTQ3NzU4NDMxYzljMWQ4NTc4MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MDViZGVkMDY0NDAxOTgyODQ5MGIxZDU2YzkwNmE0OGE5OGMyMDNiZTE2OTAzYjRmZjUyMDJiOTU0ZmI2YWUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/serve.py#L2-L9",
+          "version": "repo-lines-v1:sha256:43aa97396c2890a990a973735dc423ac372fb6437f149233854caef4d32f2070:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTMwM2VjZGQ0YTRkMTBmMTljNzNmZDQyZmQxMjQzN2ZkMzM1NGE4MjY4MTYwNWRhNTI1NWE5N2EzOTA2OGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjEsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWU5YTkxMDZmYjAzYWJmMDEzZTNlOWNjMjViMmIyNTNiMDFjOTFmNjE3NzQ2Y2Q3MTFlNjJmMDVjNzE1ZjM3MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTViNmU4NzA2YjQzMDQ3ZjJhNmRiNjdmMTMyNjM4NTk1NjA0ZTY3ZjM2OTY2ODc2Y2UwMTU4ZjAwNTNlNmJkMSJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/serve.py#L31-L39",
+          "version": "repo-lines-v1:sha256:51c487230c679cef3f8ac12fd9ee4f940ec0bdf775c32c2af0fbe728d56c9b41:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTc0Y2Q2ZjNjMmM1MTIwZmU4MTE0OTZmZjhhZWJhMWM1MDM2MjFhOGNjM2I5MDQxODJlYjYyYjczZjE1ZTc3ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2NmMDc4MTJiYWI2MjgxMDQ2ZmY4MDY0YWVkYTI2MmNmNjc2NDk3NzEyZjM3OGQ5YzI2ZjcxODA4YWRmNzZhZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDI4YzAwZWZlNTdkN2IzYmE2YWVmYTU4MDk2ZTNmMzZjYWYwYWNjZmUzMDVhNTY2YTY4YTUyOGZkZDUxZGZjZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzczOGQ5Y2MzMmNlN2Q4MDVmNjU2MjFiYjA2NWFhMTA5Y2E1MDQzNjIxMTU4MGQxNzk0M2EwMmM1YmVhYmQyNSJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/serve.py#L75-L110",
+          "version": "repo-lines-v1:sha256:744acb6818a737af0b91c1cd92a8cf0161cf6877ae461622e9545815a6f22348:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMzg5N2VlMGI3NzJkYTcwZmI2MDU3ZGJmZWEzNzM4M2RkNTI1YTRjYjQyZmIxNzQ4NDEzYjI5NjcxMmE1YjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyMjI1YTRmNjMxMDZmYjRhYzhiNGUyOTg5MjEzYTY2ZWZmNjc1YWQ4NTY3NWJiMWRiMGM5OTdmZmViOWJjNjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZhODY0NmJjODA1MGI4ZTNmYWIxMTkxZDczODA5YTI2MzcxYjA3MzVkYzZkNzIwYWMyMzNhZTE1YjRlZTY1ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzOTM0NjkxNDYzMmE4MTE2MjhmYjg5ZDczNDQ0MDliMDNkN2NhZTAyZDhiMjgwMjk0OTRlNzQ3NzY4MTI0OGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_acb68285502b4125905dba7279d05f5e",
+      "statement": "`AgentRuntime` is an async orchestration boundary for a plan → act → observe → evaluate loop, with optional budgets, recovery classification, checkpointing/resume, tool-gateway routing, safety control, and observability.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/runtime/__init__.py#L1-L8",
+          "version": "repo-lines-v1:sha256:224d0a5dfaceba92236ee9a0d0650f2c4afcb2b12ffb74b34f5068f882a6587e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGYzOTM2MThkZWVhM2E4MjY3YzMyMzI5YTVlOGE3MTE3MzIyNTA0N2FhMDI3ZmJlNzMyMTQyOGZmNjYyYTBhOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiM2I0NmIwZDVlZjBhMjVkNGIyYWRjNmMwYzk4ZWNiODk0NDc4ZGQ3NDZmYzBkNzc0MWM5ZGU2ZDM2NDVmZTljYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDgxZTg5YTBlOGE2N2NmNWRkMDlkMjg1OWNmNjI1ZmU4MDE3ZjkzYTE0YzgxNjBhOTIwZDA0YmVhYWIwNjkxMyJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/runtime/runtime.py#L116-L148",
+          "version": "repo-lines-v1:sha256:d5628dec69feb5a23df6ecdc6d3bd7c37e7f1f58255fe68e1bfcf6965bdc7077:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3MjUwZjVjNGI1ZTdkNWIyNmI0Y2Y5YTY2MjEyODA5Y2M1ZjZjMjAwY2U0YjBlZjA2ZDI3OTE0ZjRkNDllOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZjYxZjc1ODJmYTdlZjJjMTY5YWI1MTYzMmY2ZDVjZmZmYjJlYzMxYjhkOWUzOTEyYzUyMjJhODllYTBhN2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5ZjkzMDgzYzE5NzEyMWI5ODI3MDBiYThhZmFiZDE3MjJjZjFkM2U3NDA0NTA5ZTgwZWZhMjcyNDdmNjJmMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmNzhkZjQxZTAzYmUxY2VhN2NiZDdkZDhlMDdhOWFkNjE1NjJjMGQ4ZGFmOGIyMWVkMjEwZGUwZjg1MDg0ZTgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/runtime/runtime.py#L185-L259",
+          "version": "repo-lines-v1:sha256:831eb7f70e6ab4a68498f481b41c28ff7bb15939d505de31f8ae934a548c5ad2:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1YmE4OWNjZGE4Yzg4MWFhZDgyNzMyZWFhZWY1MmYzMWI2Nzk4NjRlODFiMDQwZjc2OWUyZjVkNzZiZjczZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlNjZmNjY3N2U2ZWU4Yzc0ODdhOGU0MTJmNjVhNjhmOTYxNGIyZGM1MDYzMDJiYjMzYmI4NDI2M2UxNmQ3NzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiMjA0MzBiMWNmZjU5YWUyMWZjODE0NmE1MGYxN2E3ZmIyY2ViYWI4MDRjMTQwZTNiZjcwYTM4M2I1MzI1ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyYTRiZTQ5NjEyMDBmNDY5MGUxNDk2ZWRhZjg1ODI1MGM4NGQ1OTI2NmJiOWNkYTFkYjQ4YTkwZjlhNWNjZjgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/runtime/runtime.py#L79-L103",
+          "version": "repo-lines-v1:sha256:265204877d591e98c5c63ed70a89e3cae1a997d892e95134046e577a179ab568:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmM2QzZGM5YzdhZDJiYTlkZDRhNGU0MzEyYWVmMjFiNzY4ODM5YmFkN2E3YzU3N2Y3MmZlZGEwMzljMjMyYjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1YmM0NzExZWNjYTA0NTBhZmM4MzI3NzlhODg2NzZhN2M2OTYwZmEzZGE1YWY0MTBlZTAyZDFlMDE1MTU5MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4ZDY1OTEzYmY0ZmM5OGZhZTMyYTkzMzVlNzViNzU0ZDJhNDVkZjMxM2VhMDkwZTRiNWZmMWFkMDczZGEyNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmN2MzYjk3MjBhZWYxMmU5NWU0MDk0M2YzMDU3MDQwOWY1NjVmMmRjZGQzZGFlYzU5MTc2ZTYzNzQwNTAwYzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_29d09f35d96a414bbf7262ed348ee7d7",
+      "statement": "OpenTelemetry support is optional and designed to degrade to no-ops when unavailable or when an exporter fails, rather than breaking an agent run.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L24-L29",
+          "version": "repo-lines-v1:sha256:9378d8fb1b1486a0f600cfb2ca5794415a5a6129c7822f89561d65495a2e9fdb:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTkyMThkYzRjZTk3MWNiZTNkMzhkNzc0MzBlNjM5OTE4ODg0ZGQ3N2Q3MTg0YzdiOTNkZmRjMmU5OTg2OTFiNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjk0MTZlMDlmNzhiYTMxNmMwMzI1NjgyMTNiODU1ZWU3NTZlNDE1NjVkOTE4ZjA5NTE5YzgxZmQ2MjBmNDA2MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWVhZmM2YTQ0YjE2ZjQzZjAzOWY3ZGRlNTc0Y2VlNWZkN2M2NDk1N2M0NGNlNDc3NTg0MzFjOWMxZDg1NzgwMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTJlMjI5OGNjYWMyMzUzYzk2NjNjMzkwOTA4OGY1NzU1OWY4Mjc2NjJkZGE5OGUxY2VkYjBkY2U4NWYzOWM3NCJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/observability/otel.py#L103-L115",
+          "version": "repo-lines-v1:sha256:45ee0eeb1247dab534f750ff9aab759e82f6edbcf56bf85cd843ae47229e4582:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MWYzM2MxMzI1NjlhNzQ5NDZiMmZjZjU0NmNhM2M0NDI1ZGEwY2E1Y2Y2YjY4NmMyNjA5MGZhYTlkMTEyYjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiNWM4MjYzMmZjODJkNGIyYzM0MGY0MjU1OGJhM2RmYTMxYzc2NTVkZjZmY2MxNjhiNGZkY2U1N2ZhYzYwNDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczM2U4NDg3Yzg1ZGZkY2Y5ZmE3YjkzYzc0NmM5NDYyNWFlNDdlMTIwYzc5N2U3OTFlNzM3ZjllZDdmZmM3M2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwOWI2MDY2ZjE3Nzk1ZTE4OWNmMDFhZDI4N2YxYmVhZmJhMGI4ODFjMDFjOTUyZjE3YjhjZmUyY2U5MDMyYjIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/observability/otel.py#L2-L15",
+          "version": "repo-lines-v1:sha256:577726f4ded3a3d75b93ef28f9e092bc4aa9f7086d0ec80bec49cb306c93622c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY4ZDhlZjc1MjY2YjczYjZkNjMzNzQ3M2Y2ZGIwMmY0M2NkZWEzODVkY2YyYjE4ZjEyNTQwNWFhNDdhNmRhOTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5YWU5MzBhYmI2MDY2OWEyNGRiNmEzMzBhYWRiYjcwNzgxZDQ4YWQ0Y2JlZGU5ZWVjM2M0MDczMjJiNzFhOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/observability/otel.py#L68-L97",
+          "version": "repo-lines-v1:sha256:34326f185582278fb38f49f16f9ae2763cbe25bf7f617d6dfdee885c2bbf958b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEyOThkOWFkYzc1MTFjYTg2YmU1OWViYzRjYzdlZjVlYzc3NTFmOWMxMjI0OTdmODc5MTJlM2JlYmExMDk2N2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiN2IxYjQ5MGE5YTQ2MzNiMTM1MTk0NGU1ZmU1NjhlZjEyYzFiMDY1YzE1NzhkZWU1YjZjODEwOGI4NTBmMjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ3N2I4YzU4OWYyMmUxNjkwMDZlNTAzNTE5ZjRjODc5ZTRiODM5NzA3MDA0MzA4OTk5MTAzOGZjMzgwMzQwMzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzYTlkZmQ4MjhlODZjMDJhOWZmODk1YmZjYzFkMmU4NGYzZWRmMjY4MGY2NmRmNDhmZjAyYTk4ZmNhMzgyNmUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_47cd720976414d4885e8e0e701b6a6c7",
+      "statement": "Pytest is configured to discover tests under `tests` with `src` on `pythonpath`, enforce a 300-second timeout, and define a `network` marker for live internet tests; the repository documents pytest, Ruff, and mypy baseline commands.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L835-L844",
+          "version": "repo-lines-v1:sha256:775d85aec0b5ce7ff9d0f99ab8d1ddc26fce1774110260b37b568b88b498c68b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkZTJmNTMyOGVlNmU4MDUwZThhYWZkOGRjODY5YTA2OWNkOTU4NGVkYWFmNTRmZTU4OWQ3M2MzYjdkY2Q3OTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4Yjg2ZjBiNGU2NTE1ZjRhYzczY2Q4ODRiNGYyOWVlMWY2ZTUxMDc3NmY2MTdkZjY5ODc2YTE4MGJjNDUyNDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExMzU3MmVjZjc0ZmU4MDIxNWNjNzllMmE2Y2QyNjcwNDQ0MGIwNmU4M2Q1ZmU2MDEzNGJmNmZjMzJlZjIyNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAwMWYyZWMxNzU5M2MxMDU0ZWI0NjM2N2Q4NDUzZWYyNGExNzNjZTk2YjcxMTdkOTFmOWE2OGQ0NGZlZjhiMDEifQ"
+        },
+        {
+          "resource": "repo://pyproject.toml#L50-L63",
+          "version": "repo-lines-v1:sha256:f3ff5f9c25d6c1bbbc875618ec5f59ac601727c0db49eb98672638bcc00e1777:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2NzZlNjQxNDY1YTY1NTFlOWU5Y2ZmZDdmYWExZTZhNDJmOWI3MjQ4MDk4MTNjOTAzZDdlZGNiNTJmMzAwNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjZTk2MjQ2YTQyZWJjZTMzOWFiOTYyNDBiZTM1MzFiNDY4NWI5ZmIwOWMxY2U3MmFlZTI4M2E4NzhlNzlmMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDYwYzA4Yzc4NjMwZjcxMmQwZDRjMjMwMmNiMzUxMzE2MzZjNzEwNGVkODYxNDU0Nzk3NTQ3ZjRjZmMzYjEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

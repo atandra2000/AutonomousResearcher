@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:6a147b0313c50e1f7dafce840b887e2182e37897eeb5ceb66429559657856ff3",
+  "claims": [
+    {
+      "id": "claim_152de3e719604773a1bc5dda0888fc23",
+      "statement": "The pytest configuration discovers tests in `tests`, imports from `src`, applies a 300-second thread-based timeout, and defines a `network` marker; the autouse fixture skips marked tests when its arXiv TCP probes cannot connect.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L40-L63",
+          "version": "repo-lines-v1:sha256:154d81a777328b94f99fccc6da342308de72627c173e2a91ab92ca39e4717153:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiYjc0OTliMWNlMWM0ZjRiMjUyN2YzYTMyODRjYWM2YjZhMWUzYmY0OTg4YjU2Nzk4MmMzZGM4ZTlhMTdmMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYxMzdhYWFhYzhhZjRmMGNiYjA4YTcxZjZlNTRjMjhmYjBhNDgxYjdlYWRlZWExMjEzNGM0NzM4NzUzNGU3ZjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDYwYzA4Yzc4NjMwZjcxMmQwZDRjMjMwMmNiMzUxMzE2MzZjNzEwNGVkODYxNDU0Nzk3NTQ3ZjRjZmMzYjEifQ"
+        },
+        {
+          "resource": "repo://tests/conftest.py#L1-L51",
+          "version": "repo-lines-v1:sha256:2d4eb639f0f0bfb83367be7a6db55a13af2a16373b7311201fe8a681d1cef8ad:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZWRkNzIwN2Y0MGM5MjQyM2U3YjI3NDlmYjU5ZjJjOGQxM2I5NGE3NTM0MDAwMDNmZmRhM2NmM2NlZjdkMjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmMDkzZDA5N2U4YTRkNTMyNTM0NjMwNTQ1OWJmY2FlYmZiODVlZTliMjc1ZjA1OWU0ZGY3ODFjYjMxODMwMGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e8a320bc24c40cba67d2d0ae1e72193",
+      "statement": "TaskAgent's default coding turn analyzes the repository, retrieves memory context, plans, implements, captures a diff, and optionally tests; a failed repository-analysis step finalizes the task as failed, while delegation mode dispatches specialized stages and review/test repair work.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L133-L233",
+          "version": "repo-lines-v1:sha256:eda0d90e2fb8e2cbd1e22d3f9ad68b7182b8312ef1882a15ce9085bd75b12530:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAxLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNWJhODljY2RhOGM4ODFhYWQ4MjczMmVhYWVmNTJmMzFiNjc5ODY0ZTgxYjA0MGY3NjllMmY1ZDc2YmY3M2U3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3ZjcyOWI2OWRmNGJkODkwNDdkZWY4M2Y3NDg4ODgxMjgxYjIzM2NkMjlmZWE5NjIzNmUzNWQyNTEzYmJjZTI4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzM2ZhNWI1OWUyNmM5NWY2MThmYTkyZjFjZWYwZDAyZmNmMjg0Mzc3MDQ4NjY4ZjZiNWE4ZmJlNGIyMDk0Y2Q0In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L239-L338",
+          "version": "repo-lines-v1:sha256:1c5175ed5f42de7a70cfc5ef3853edc898acfb7033e99201ce216a91c7a41036:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxNGU1Y2EzMGNkNmMxMTFmNDg1ZjQyZTRjNjZkOTY4ZWViNzVlYTMzMWZlNDRiNDdkZjI0ZjE2ZGYwYTE0NzIzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1Zjg0ZDc4NWJiODU4ZGFkYmVmZjI1YWFjOGM0Y2UwZThjM2EyNTQyY2Y4ODdhYjk0Y2FjNGExZjUzYzc0OGY5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJhZTExMzQxOGFiOTQ1Mjk5NzU0ZDVhMzljZWZkZWJjMDU4MWJlMTcwOTQwYTNkYTgyZGY0YzVkNzJkY2NhNmRkIn0"
+        },
+        {
+          "resource": "repo://tests/test_task_agent.py#L112-L206",
+          "version": "repo-lines-v1:sha256:58c0500f144a89430888b179fe7633c767c501d9b3595507316bf0ed345872c3:eyJzZWxlY3RlZExpbmVDb3VudCI6OTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NDJmNDBhZTdmMTNmMjg2MzJlNzEyNzViNTMwZjM4OWJkNWJjZjRmMDYwMGQ0MTFmZjNiMDI0OThhMzMxN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjOWM0MDQ1NmZkM2IxMDE1ZDg4MTg5MWE3OGQ5MzJhZTNlOTcxYTU2YzhmNzA4ZWI2MzNlZTgyMTM4YzFlYWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3MjQzZDQ2YjYyMjIyN2JkNjM4M2I3ZTFjNGM1NTE3NjgxMmVmODQ2YTE2M2JjMjYyM2Q2ZThiNjcyZTNkNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0OTE0MTczNzM1MWRhZWU0ZjVkM2QxMGRiYTMxODdmMzQ5YTM4NTc0ZjZkMzU3NDdhYmEwNzA3M2ZlYmJmOGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_321b98eb646a42d6ba784e09450c7352",
+      "statement": "ResearchLoopAgent persists a running loop record, executes iterations with recalled memory, stores iterations and memory/graph updates, checks stopping conditions, finalizes the record, and attempts report generation; iteration exceptions become failed iterations and `stop_on_error` controls immediate loop failure.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L222-L406",
+          "version": "repo-lines-v1:sha256:ac7d0405d755e493d0c7050820f67bd6ef8629a2fc623e216379e45cc65f0fab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTg1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNWJhODljY2RhOGM4ODFhYWQ4MjczMmVhYWVmNTJmMzFiNjc5ODY0ZTgxYjA0MGY3NjllMmY1ZDc2YmY3M2U3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI3NzJmOTY5NWM3NDY3Yzc0NzczYzljZTdmYzQyOWM1ZDBkMGU0ODdmM2M1MWQxNWQ2NjY4YTNkMjQwNzJiYjk1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3ZjcyOWI2OWRmNGJkODkwNDdkZWY4M2Y3NDg4ODgxMjgxYjIzM2NkMjlmZWE5NjIzNmUzNWQyNTEzYmJjZTI4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4OTVmYzg3OGNiYzZjNjI4ZTllYjhjM2RiNjY4ZTJhMzVkMDNlM2IzNTM5ZDkyZjMxMWE1ZTNhYzlmZmE3MjQxIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/research_loop_agent.py#L412-L492",
+          "version": "repo-lines-v1:sha256:b733d50f4075715dcbc7c637ccf982d5e8dbbb76820716705166a2619f72e2e9:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiMjZmYzAzYzI4NGI4ZTA3OGE1Yzc5NWQ5NWEwNjJkMjY2OWMzNmEwMDEyZmRkY2Q4MGZjYTEwYmI3ZjhiMjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkOGEwNmVjNmNlYmE0ZWU3ZDdmMzJlNzZhNTVlNTljMTgwOTUxYzU4ODZmNWI0OWQzMWI0Y2I2NWYxZGMxNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRmYWIxODBmODY1ZjRjODIwNDIyZjEyZjEwN2QzOWZiY2M0MjU3NTE3MmU4ZTJjYjA2NzA2NGJjNjFhMTM4ZDUifQ"
+        },
+        {
+          "resource": "repo://tests/test_loop_agent.py#L203-L421",
+          "version": "repo-lines-v1:sha256:4ce217c4092099a855aadab8131ce1bdb8e620029083ad0e1822f3ecfff2bc8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjE5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJiMzE1ZGIxODg4NGIwMDJkNDEwZmE2YjY5MjA4ZTVhMTI0MzdkMzIwNWZhNGZhYWFhZGI5OTM4MWNmODYxYWNiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyZTgxOTRjYWUyYWRlZThjYTI3NWE3YzVmZGIxNTc2MzA0MmYzYWQ2OGM0NmFjMjE5MTMwZTEzMjMxZmI2OTk1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIyNzMzZDc5MmY4ZWQxZDU2MWFjZTk4NWI4MDljNDUxZGY1NDMzMzkyNDIyOGU0OTcxMjYyMjA0NjZkOTEwZjdkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwNDJhZGFjMWVjYmNlNjUzODAyZjM2ZDgyNGRkNDFmYzZjYTZiMTg2Y2QyOTYzYzkwNjUxNjZiNmNkYzFlNmNlIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_876c4c97519c474990c501b4befff31f",
+      "statement": "The research-loop tests protect memory propagation to planner and coder, decision branches for improvement, regression, and stagnation, persisted loop query/report behavior, and graceful operation without a memory agent.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_loop_agent.py#L424-L717",
+          "version": "repo-lines-v1:sha256:6cf6811a41311e8b0ea65edab6a91678ce782ae730682505e4f55ba14bf6f103:eyJzZWxlY3RlZExpbmVDb3VudCI6Mjk0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyNzJmZjkwZDdjOTYxNTU0NGRmOWE4NjFkZWFhNGVhYWIyMzM5YTY0MWViYWQ3NjY0NWUxMjAyMzQzNGVhNzcyIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkZDRjZmQxYzcwODhlZDQ2ODI3ODU4ZjlmZjJlNGZlYzAzN2JhZGYyZGIxNDM3MWZhZTEwNzY0ZmZjNzlkMWNmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwM2JjOGU5YjI5MjNiMTdjMGViMGJkNmNiZGRiMTgyODhhODI0NWY5NWM2M2E2YjE5ZTAwZWU3NmZhMjdmZTMzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c359cf4b6fdd47518459953aa011c106",
+      "statement": "RepositoryMemory is a repository-scoped facade that builds or incrementally refreshes a persisted index, performs hybrid retrieval and symbol-graph lookup, and assembles relevant symbols, dependencies, tests, and files into prompt context.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L149-L280",
+          "version": "repo-lines-v1:sha256:a8c9c01a71e6a9ff5b79fef57dd1f6993d80b01de79fd54de3695ede35458e13:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1MzZkYmM4NTU5MjY3NTkyZThlMjA3ZTg3OTM4YTNiNjgwN2JmYmQ2M2M3OTcxNWY5OGE2NTdmOTE3YzM0YTIxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiYWFlOGEwY2E3NmY5OGY3YjdkYzc5ODQ5NTFkNjNlNTdkYjNjNjQ1NTc5Y2E1MWJhZDZhNTM5ZDYxNGVkYmJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0NzZjYTE2YjE0MTNmNTk4ZWFkOTRkYWI2YWY5ZWJhYjNjOTM1ZGRmNjdlMzNhZWU1NmU5YmM1M2VlYzVmNWVjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJmM2VkYjcxODEyNzk5MzI1NGViM2IzOGMzN2E3MWY1OTk5ODU2ODIwODQzMjQ4YWRiNjQ2ZTgzNTk1ZTM2MWZkIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L45-L125",
+          "version": "repo-lines-v1:sha256:c760b8b2290c1f18f64437d0217c66e13fa32cce5c50eed39e6157a398c8c1e8:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4ZDhjYTAxYzViZGNkMGEyYWQwMDU3MzM4ZjliMTliNjJlMWZhNmI1YmU1N2QwOTk1ZTFlOGZhNTY0MmU5ZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxZTA3MjZiNzAxNTY0OTY0ZDI1M2I4NzE1ODVjMDg5NGM2YmJiMjRhMTNiZjBlOTdhN2E1NGQzZDZiYjFmMzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0Y2I1MTIyZmNlYzg1ZDcxZmU4ZDlkNTQ4NmQwZmQxYjc1MDFiMjczNDJkMGY4ZWNjODQwZGU0M2EzNDA3MTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8a61e79d20cd4d2ea2dd1e731485b1a3",
+      "statement": "Repository-memory tests use a synthetic repository to verify symbol/test-edge indexing, noise exclusion, incremental change detection, persistence and refresh behavior, empty-index context behavior, and TaskAgent retrieval integration.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_repository_memory.py#L164-L249",
+          "version": "repo-lines-v1:sha256:739c56e51aba1cee344b1b41a087418a705eceac83f92a4ac2d2a63588af0eb0:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MjhmODc2YjA3ZDUyNWZlZTYxMDU2M2JmZjA2OTk3NDU0YjBmNDFlNzc0MTZlZjMyNWQzODIwNGIwMGQwOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhZjkwZWFjZDViMTEyZTU2M2U1Yzk5YWU2MjI1ODA1Y2M3MmJhYjI1OWE1NzU4YmVmYTNiZWRkNjNhNTk5NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://tests/test_repository_memory.py#L32-L110",
+          "version": "repo-lines-v1:sha256:0d712e9f526f2968d08b0be45f0236565dbee51aff4356c946d00cb302dfbb82:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzZjM2NmI5YmQ5YThkMGYzNDBhMmJjMGJlMWUyMmVlYTIwNTY4ZGQ3OGE0NTI4MWI3MjFiMzBmMjJkMDg3ZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyYTA3ODg1ZmVjYzZkYzhjN2FjZTAwNTY0Mjg3NTFhMGI2NmRmODJlY2ViZTZlMjZhMWY3ZGYwNGRiZGMwZjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://tests/test_repository_memory.py#L456-L593",
+          "version": "repo-lines-v1:sha256:ae0a1704bba2f1a17d2d1bc276f97fd3a98432020e3f4e53cefb40ad41062c3e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4ZGQ5ZDQ5MjBiMGE5OGFkNjAyYTliNWE4ZGZkMWNkM2VjNTliOTBkYzYwNzg3YjMxMThhNWVhNDUxMTNjYWRhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI4MWJhZWFmMzFiODFjMTE4ZjAzMDFiNDM5ODFhOTllNzNiZWQxNTIyNmM5YWQ3ZmVmNzAyOGY3OWUxMTFjZGYzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwODI2NzZjODg4YzFhNGQ5ZmE3NzJmY2RjMzAyZjc3M2JjNzI5MGVlYmZmOWRhMzZhMzlmNDRjMzIxMTk4Mzg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjYWMzOWQ1NWIxYzQwOWFlZTdjMzE4YWU4ZmVlNGYxMjllZTgzNTllYjI3MzY1NzViZWJiODA3MTdhNTM5NjlkIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_750bf294288c412fb921627ca5f93488",
+      "statement": "TerminalTool confines command execution to the supplied repository, enforces an allowlist, supports dry-run and timeout outcomes, returns typed failures for invalid regex or nonzero commands, and validates patches with `patch --dry-run` before applying them.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L168-L287",
+          "version": "repo-lines-v1:sha256:6ee8761ae35821c32fe835cc891e28b3b035b221c27d2d4a7f0195bc3149075f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkZDRkNmMxYjRhYTQ2MWM2YjI4OGI3YWI3YzRjYjQ0M2RlZWU2NWU1NGE0OWU3YzExZTYwMjEwNmM0MzkwZjk1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwODI2NzZjODg4YzFhNGQ5ZmE3NzJmY2RjMzAyZjc3M2JjNzI5MGVlYmZmOWRhMzZhMzlmNDRjMzIxMTk4Mzg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIyOTIxYzE2OWU5NGU1ZGFlNzhjYjljMDBhMGRlMGFhNjNjNjI3ZGU4MzEyZmEyM2VkNmE2ZGMzMDc0ZTQ0OTliIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L355-L396",
+          "version": "repo-lines-v1:sha256:f89a14f4da9f3f6f2607a4fb1cae1f8f84fb1e3940aaf4a466032afc032a8da6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4OWZmZjI4OWJiYzM4YTlkYmJmMmVhY2FiNTkxN2JhNjM4YWQxZDAzNGYzMjczNDAyNTA0ZTBiZmE0ZjI5ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3NzA0ZmMzM2RkYjI1Y2QwNDNlYWVjNjY0MDhlOTMyYmNlZWM0ZWE3MDE2M2ZkMzM3M2YyN2E1NzFmNGMzMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0ZWQzNWFmOGNjZjBhMzY1NTEwZjQwZDc0NjAzODkzZmM2YzE0MTZjMzZkM2I3MmYxMGNjMDBjMTAwYTU1NWUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L36-L67",
+          "version": "repo-lines-v1:sha256:bb1c864ff78699c69a786540b8b6692e56b522ed8d97a51b977f49ca3bcfd17d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjdjMTk0ODc0NDJlN2UzYjZlNzg3OTU1ZTk3Mjg2MjM1MWE4ZGE2MGQyOWFhYmZjOGEyYjc5ODA4ZmI3NGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1Yzk0ZWRmMzlkM2JmY2E5YzUzNGVlMDgwNzNlMTQ4Y2UxNGUxOWMxNzM4N2IwMWYwOGM2MjY1OGI1Y2M2Y2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYTY0YjUyMzZmODM5YmJhMzhiMmIwN2YxMzllYjAxMTU5OThjMzA0YzhjZGY4NmE1YmJkZWZlMjI0YzUzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRmOGFmYjViN2ZhMGY0OTg4NTY4MTM4NTBmNjY0OTM5YjQ1MTBkNDMwMDY1MTY2MTVhZDg0YjAzYzNiMGZmNjkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L434-L499",
+          "version": "repo-lines-v1:sha256:e1897abca9513e2535286ed83548730d2b4f605f53796c75492ae3e2d7589804:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZTBlMzM3MmRlMjhjN2Y4ZjU2ZTdmOTZiMjkxMTUyZDQzMTY1YjI0NmVmZDI4NzU0MjU1ZjNiZjYxZWI5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkMGZjMjNkODNjMzkxNjY1Y2NlNDMyM2Q5NmIwNDA0MDRhZThjMzY4ODE5YzExZWM4MmY3YjFjYzEyMTk3MjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3MGY2YjY0MTE3ODRiOWRkNDVkYTE2NWRlYWJiNDY0ZTY1MGM5MzU0ZmFlZWMwMDNkNWVmMmUxNGEwYzBiOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIwMGNiNTU2OGRkYmQyMTFkNmFjODhhNzZlNDczODE4NGNjMzJjYmFlMjNiZTQwOWQ3Y2JmMzkwN2ExMTg4YzQifQ"
+        },
+        {
+          "resource": "repo://tests/test_terminal_tool.py#L258-L320",
+          "version": "repo-lines-v1:sha256:b5266f685f259502fbff0bede87ea51cad884d247efd15f6d3b978535b0f3e45:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4YmYwZWVlOTQ1ZmE1MjcxYjIyZGNhMjMwOGJjM2IxYmQ0YjJmM2UzMWNkOTAxZDEyMGJlZjM2NmMzZDAxZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlN2U1ZTFmNTVmNmYyNDVlMGNiMzc5OTA2MWYwOTI5ZmEyNjE5OTViMTljNDYxZGU0ZDQ5ZjliMzgxZGY3Y2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE1NDdiZDIzZWY0YzE3YWFmNDBjOWE2MzRlMDMwNWVmN2VhZjZiMzMzM2U4MTRkYTgyOWU5YWFiOTY0MDEwODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://tests/test_terminal_tool.py#L51-L116",
+          "version": "repo-lines-v1:sha256:741d528cc2bb671a2ce35da2a3c0c2347b2965aa00c1efb23448954a3e93bb4e:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2Y2EyN2IyZTNlODJlNjgxYjQzY2UwN2FkNGUwNDlkYTY5NzM0MjI4NzcwYTA4MjUyYmIwZTM1NmQ2ZDQwZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkOTQ5NDk5NTdiOWYwZmQyZWFiYjk5MDI0YjIyNWQyZmU0NGJkZWRiYWJmMWIzYTMzYjdkYzY1YTQ0M2Y2ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxY2E0MmNjNWIwMDNkZTE5YThiMWE5M2I0YzU4YTc2ZmMxOTg3MzE3MjljNjhlMTYxMzA0ODdlNjMwNjViMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiMjIzNmFhOTEzMDlkYjYwOWEzODIzYjM2M2I1ZTYwMTRkYWZhZWVhMjE3YTQ3MDNlZjJhZmRjZTA5NzBkNTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a5bf7b60cd0f4996904c93e301ca8ea3",
+      "statement": "The FastAPI service is a non-blocking run control plane: submissions persist and queue records, while RunManager owns cancellation, stale-run recovery, and resume eligibility rather than executing agents in request handling.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/service/api.py#L185-L302",
+          "version": "repo-lines-v1:sha256:2f6f0c2be21c08349b8230b40f3ae26829db0ccaf3a4a9e1766a646434cef647:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2MmM0Y2ZiMmU3Y2YzNzUyODIxYjdjMzFiZDQyNjdlYmE0Njg2YTMzMmUzMmVkNGVmNjcxNDJjMDg5MDA4YjQ1IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkYjUyMzM4MDE4N2NlZTliNzUyZjE5MGY0MGM3MTkxMjdlY2JhYmJiOTgzNjAxYmM2ODk4N2MxOWM3NjgyNzhiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxNGRhNGMwNTYzYWQ2MWYzNjU1NGVmZmRhNDc3OTE4YTE5MzlmOGM3YTdhZWQ0YTUzZWEyYWEyMDk5NGFmOTNkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlNDkzNjM3ZDAzYTU2YTU3NmZiNzI3Zjg0OGNjYWJhNDJhMWVkYWE2Nzk2NmRlODNjZTQ3NGIzZTA0NjU4MzExIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/manager.py#L3-L156",
+          "version": "repo-lines-v1:sha256:8e914c2901b392b6e3a6fbafd4df3fe0139598322177e0409ffdbc986df76e71:eyJzZWxlY3RlZExpbmVDb3VudCI6MTU0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIwZDhjOWIyYTRlYmNhOTMzZTFkZDNmZWFjNGJjZTI0MjVmODg5Mjc2OGYzNzBkYjRhMTIzY2M4ZDEzYWNmZDI2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJmMjVmZjQ2YTQ5OThlYTQ5YTcyZjQ3ODk2MjQ3NTlhNWYwYWMzNDFiNWYyYzZkOWYwY2Y0NWM4OTAyYTdkZjk4IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MiwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlMDk2OWFkNWU4NTM2YmRhM2Q2NzA5ODRjYTc0ODI0NmM1YzJmMGI0MmY1MWYyOGNlNjIyYWJkN2Y3N2IxYmNjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiNjdmOGZlMDY4YjI2ZjEwNmE0MTY3MGFmNWYwNmZjNjEzOWUzNjA2M2IwMGQ5MTI2Y2IyNTdlZGM0YWM5M2Q1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8bbfe6799f11431fa27768d1fd68eff4",
+      "statement": "Service API tests run with in-process temporary SQLite and in-memory dependencies, and verify validation, body limits, optional bearer authentication with unauthenticated probes, disabled OpenAPI/CORS defaults, run lifecycle responses, readiness, and telemetry propagation.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/service/api.py#L104-L162",
+          "version": "repo-lines-v1:sha256:6a0d056a0e2786577170262e305303751a78d0750a88d549c97550e6ee77f25e:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjYmZkNDM4ZmQ3ZWEzOThkMzM5YTU0M2QxMDExOTQwNmMyMjE3NWEyNTA3ODg3MzY0ZDQ5MmNjNTllY2YwYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MGMyMmJhMTExZjAwZmNiZjY2OGU0MGNhZTUwMTY1NjI4MmVjZTZiNDBkMTE4NmQ5NTZjNDJiZjQ0MmY1NzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlMDgyNTA1NGRmNGQ5OGUyYjcxOTZkNDA1MzU1ODZhZDIyNjRhMzFiYzYyODY0YmQ1OWFhZTQyYjYxMDU1ZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4NDRhY2Q4ZWQ4MGUzNmNkMzYyMmFiZjQwNTQ1ZTE0N2RjMmE0MDNjZTNiNGJiOTc3ODBiZGYzNTBkYmYwN2EifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/api.py#L201-L219",
+          "version": "repo-lines-v1:sha256:8e4d856481eaaca04e366b2870ddb0f3f6a50fbeae8e071a49746719d95ab121:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxZWZjODU3NzM3YTJjOWJiOWUzMmJmNGI5ZmYwZmZlMGM3NDQ3ZDJlZjcxNmVmYjI4MjgyODE2NDhjNmZiMzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1MDVjMTViZmNjOWZlODFkMGU4M2FlMGRhYjYwMWVkZGE1MzMwMTA1ZWY1MDFjNzg4OTlmMDYxMGZkNzNiNjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlZmFjOWE2YjY4ZDA5NDRmZDMzNmRjOGYzOTM4YjhhMTVjZGY2YzQ2ZWJiODViNDk4MzViODIxNGNhMDE5NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBkYmIzNDczMTg0NTdmNWQzZDg4YmUwMDVmODY1YTZjNTNkZjk5NmUyN2VmYzBmMjg5MzJmMTRiODIxMTNlZTYifQ"
+        },
+        {
+          "resource": "repo://tests/test_service_api.py#L1-L180",
+          "version": "repo-lines-v1:sha256:3c0a75ff1cd7fd745ddd05186a48256835a1122db00c89f70d57baf24a032148:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjOTQ4OTg0NjMwYTM0OTEyMTIwNzEwMDQyMTc0Y2M4M2EyZTAwOTFlYTNjYTU3MzBkYzk3NzhiMjZhMzNlN2YzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI5YTA3YzBhNGI3MmZlMmM1YzllMDg4NTdjMjkwZDVjNGVkMTM2YWVkYjE4YTliMWMxYmEzOGRmZjMzNjY3ZTJhIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MiwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3NWExMWRhNDRjODAyNDg2YmM2ZjY1NjQwYWE0OGE3MzBmMGY2ODRjNWMwN2E0MmJhM2NkMTczNWViM2ZiMDcwIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_4c6b5ed87b274ca18943917a2b315110",
+      "statement": "Dedicated checkpoint and safety suites cover checkpoint serialization/recovery concerns and autonomous-control false-positive boundaries such as distinguishing repeated identical tool calls from calls that return fresh results.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_checkpoint.py#L109-L153",
+          "version": "repo-lines-v1:sha256:d6babf617cc2a3d53abfeea54da54e41eb970c5c8919ab7117173acfe13ff4f6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzZTA3ZjcyYTU4ZjFjZWIyZjdkYzg1ZjgxNGQ4Njg3ZWI0MGMxY2E3YTk3ZjJkMWZmYTYwNjUwMzQ1MWRlZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkYTVlMDBlY2I2YmNkZDUzZWQ5MDI4OWQxZWY5NDgzZmFjMDFhZTAyNmQyYzczOGMwNzMxYzY3ZDkyN2RiZWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiZmM1ZWE2ODQ5MTZlNTU2NjAzMDA1MzdmOTY1NDE3MTVmYzdmODc5ZTI1MDcyMjA2MmVlYTEwNTg1ZTA1OTUifQ"
+        },
+        {
+          "resource": "repo://tests/test_checkpoint.py#L2-L35",
+          "version": "repo-lines-v1:sha256:52f46ae5bc02fecc31343ebd01eca5b1b11277de52f560d408a28a7d4d6bc51b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlMjY4NGI4MDhlY2QzYmI4OTM4NTRlYTk0NDZlODE4NTExNWVhNzhkYTc3ZDMwNzAwNThhMzlhMDk4Y2M4YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2YzcyMDExYzk4MTgwOTBjMjcwNjc1YzYwNWFlMTg0NTRkYWE1MTU5M2Q5MDcyNGY0OGU0OTFiNDVjMjEyOWQifQ"
+        },
+        {
+          "resource": "repo://tests/test_safety.py#L131-L189",
+          "version": "repo-lines-v1:sha256:2a64faf095e692f4336b90440a4e072fa2158c308f6b245b909def9b12407669:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5OWI1YjFmYzkzNjc5MDc2ODYzYzdlNmRmMWU4ZGJiN2UyYWU2Y2U2NWE5MjEwZDJiNmYzMzQyYTIxNjQ3OWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1ZDY3NGRkNmFlOWQ5OWE2ZGZlNGU1OTJkNGY1MWRhZjM4NzQxNDIxMjNhMGE4NWFiMzc0ZTk5MjU5MjJiNzUifQ"
+        },
+        {
+          "resource": "repo://tests/test_safety.py#L2-L7",
+          "version": "repo-lines-v1:sha256:b98d3a2c9e4af03eda38dcb617c5724ea9193562af3eb76bf37575157d340ccb:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjMyMTBhNmE5NzQ2NDgzY2RkNmQwOWYyMWY0ZWNjZDE3YzllZjJlMTc1YTBkYjA1MmQyZGUxNTg5YTJlYTRiYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjEsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDNlNGQ0NmIxMjg4NmQ2MjFiNzBjZmY0NGQzZmZmMmY3OTk0MWYyZmVlOGRhYWFhNzRiM2IzZTI3MzQ4NzYxNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWFhZjc2MzdjYjZlN2U1ZGI4NWQ2MzQyNzQ2MDE0ZGYwNDFjY2Q1NThhOTIwYjI5ZWI2YWM3MTlkN2JhZjVjMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb590ea30a414c66a4dc350001d5e7b3",
+      "statement": "CLI tests use Typer's CliRunner to cover required arguments, help, output-format options, and selected missing-resource behavior across public commands.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_cli.py#L1-L237",
+          "version": "repo-lines-v1:sha256:dda9328d6c1f3aa86ff3213f596784ab979fd96de2b5da889da091afdff0dda5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjM3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhZmMyMGI3MzdkN2YzOGFlYWJmNDEwNjAxZTJhMWZiNzdlNzI5ZWY2NTdjZTNiZjgxYzhmMGE2NmQ3ZGE0ODkzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIyZDViYjkxNjg4ZGMwNTMwNWQ3ZmFjYzEwYmJiYjEyZDZiZjAyN2E4ZWRkYmU5Y2JhYjg5Y2EyYzM1MzM1ZmRiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_d28e89bdf05e4bab9cd1e4e2cc934c40",
+      "statement": "The repository includes integration tests that exercise handoffs from paper and repository analysis into experiment planning, using temporary repositories and skipping specified live/network-sensitive failures.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_integration_phases.py#L134-L206",
+          "version": "repo-lines-v1:sha256:41dee169e2aaf46a02fec1a9e2837b59fe111897a39d965259d03917fc695baa:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM0YmExYWU2YmRkMzIxOGIyMDcxNmVjMDVlOGM2ZDIyOGRhZDU4ZDRkMGVkNjU0NWI1YzkwMTQ4ZDEwYzMwMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1ZjY4MWIzZjA3ZDJiZDI0YmE0YTBkMmM2ZGEzMWQ1NzNkZDA3MTI1Mzk5ZGI1ZmViMTcyZDQyZGExNTMxYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNjcwOWY4MDBiZmU3ODJlMmY1YzBjNjJmNGZiNDliOTIyOThkN2NiZDI1NDZjZjQ2OTkxMDY5MzdiYjBmYjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5NjNiYzEzNWM5MmZlNzA4ZGE2YjhjMDQ3ZTc4YjdlMWE1YWM5ZThlMDI2NzFiYWE3ODk0NTljNTgwMjExZTcifQ"
+        },
+        {
+          "resource": "repo://tests/test_integration_phases.py#L14-L131",
+          "version": "repo-lines-v1:sha256:754c8fcf8eed9536be3879e38e91a78153cfd99847ef5c2a9edb26e7d7a45985:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1ZjA1ZTNiZWM1MGQ2ZTQ5MGQzZjQ2Y2YxNTVjMDAzN2E4MGJkYjg2Y2E2MWYwYTk4Y2U4NTJlMjM3Nzc0NzgzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI2NTBmMzY4MjFjY2RjN2FlZDEwYjk5ZWRlMTJmNzZkZjRhN2Y0ZTVjYTVlNmY1NmRhMDI2YjE4MDIyYWJhYjQ4IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhOThiMDYzZDliNDdlNjUzNzk2MjU1NzJjY2UxOTc2NjlkNTc2N2UxMmMxOGJlMDc1NjUyYjhjZDk4MWNlOGQ1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5YTdmMGEwMTVjNjU3ZGZhNjJlN2JhNWNjMGJlMjM0NzAyZWVkZmExMWYwNGVhZDU0YWY0M2EzODZkYTBjYjUzIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_0be74e28e48f434db7aea2ddd016b567",
+      "statement": "Coverage collection is configured over `src/research_engineer`, omitting cache, private-pattern, and package initializer files.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L106-L120",
+          "version": "repo-lines-v1:sha256:0e681b6a0185db271da2d7de7e67eca8e9549f2dae30a8286fe9d30c522fc03b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmZjg3ODg3NzNlMzFjN2E5MzkzNmM5ZWFlMWViMTUzMTE2N2M4OTU3N2ZmMzNiN2Y2NWNkOGVjMDhhMmM4MGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjNmU4NzMxZjAxZjM3NmY3MmI1MmY0NDQ4M2MxZjM5NmE2OTMyZjE3ZmY0MWVlZjM2M2U0MWE0YWNiYWQwM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

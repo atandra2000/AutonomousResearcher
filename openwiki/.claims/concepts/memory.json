@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:cc4104ed7d33ddc599032a1a4d7d5fe5094ee18ddde7a406b5876825caba84f2",
+  "claims": [
+    {
+      "id": "claim_d929cf5c8d694f25b4c8d68b73b10a94",
+      "statement": "`RepositoryMemory` is a repository-scoped facade that resolves its root path and coordinates indexing, persistent storage, an in-memory symbol graph, embeddings, a vector backend, hybrid retrieval, and high-level build/refresh/query/graph/context operations.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L45-L83",
+          "version": "repo-lines-v1:sha256:b864ca3b40a6474c845590f791efbe9a00e9b0d7f0cdafaa9a47ab3a79ed0ea9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4ZDhjYTAxYzViZGNkMGEyYWQwMDU3MzM4ZjliMTliNjJlMWZhNmI1YmU1N2QwOTk1ZTFlOGZhNTY0MmU5ZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkOTYxODU2MWY1ODA4NTVlMmUwMDVhOGM1ZGQ5MjQxZTI1YWMzMzYyOWM3MDNkMTYxZGQ1NDliYWZiYTA4NWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxYWQ0MjNhMWQ5M2Y4NjI0NWJjNmIwZGFlZWUwMDUzMjQzYWRhZjIyYTg1N2FiZDVlMjE2ZGJmZGFiMzY4MDYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L89-L188",
+          "version": "repo-lines-v1:sha256:fe7066a50d02c5a12d7b6832245b71a51e49f8cb3bb2178b7ccc6ed66d00a216:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI5YTUyOTI3ZjQ1NTNjZGZhNzhkYmNiMGUzZTdkODBhZmY2ZDJkNGNhYWJhMGY3ODMxNGM4Y2U1Yzg4NzhlNWYwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJlNmIwNDQ5MTQ2OTcyMmU4MzYzYTk0ZTQwNDQ1MzhlMDEzYTJhMjE3ZTM2YjFlNTY4YmE2MGFjYjdiNGM4ZjJlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmNzRkZDU5NjQxNzU4ZjE0NmM4YTRjZWMxZjY3ZjZmNjQ4ZTIxYTBmODk1MTUzNmY5MzQ1Y2IxNmEyYjE4NjBlIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiOTNhNjZhZmJiZGRlMWFlMzQxNGYxY2QxY2E2YjZiZGMxZmEyNzYzNTYxODllNWE2NzQwZTRmN2QyNjNkMWE4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8acad6d0034a4ebc9668211e3b102187",
+      "statement": "The SQLite repository-memory catalog is partitioned by `repo_path` and persists symbols, chunks, graph edges, content hashes, and index statistics; a full replacement clears and writes that repository's catalog in one database transaction.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/storage.py#L110-L127",
+          "version": "repo-lines-v1:sha256:f6fccc38a0789d0525589ebc182acc1bde6696660b7616b7b43df0950bb07f55:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlOTAxZDY3MmY2ZWQ0YTBjMWYwZGE1MGU5N2ZjOWFhZmU3NmZhYWExMGFlOTZkMjg0MmM5MmVjNmNlYTlhMGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjYTA1NzA0MWM3ODU5YzVkMjI2ODZhYWQ5N2Y0ODAwMjM4NmMyY2VmNzFhMzYxNGIxZDdjMmU4MDIzNTliYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkNGViOWZmOGIzOWU0NTJmMTBkMmI3YjI3ODg0NTM3OGE0MTg3ZTk4ZjE2NjRlN2Y5NzZhZjYzMWFmZTA0YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxNjA3NjI5ODI2NGRhNjRmNTRlYTBkMmE2ZjJhZjE0YjdhNGQyODQxMDQ2NmY0ZjQzNDZlNDM5ZTE4YmU0ZWUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/storage.py#L26-L85",
+          "version": "repo-lines-v1:sha256:10d6a641434798002e6a6502f432f0d2daa9c42bd62eede24bdb97f95d3ed8ff:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFiY2QyMjE4YzgzYjY0MjlkZDk3ODMyMmY0NWZjYWRjNDdiOTAxOThiOGQwOTNiN2VlYTM0NzI5NjE4ZDE5Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmNWU2NjM0ZjBjMjIzOTkyYjZlYTcxNjFmOTRjOTI5ZWU3MmVmZDA4Y2YxY2Y1ZDE3YWI5N2U5NjU5NDFlYzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhZTE3MGEzZDUzNWU1ZjdlMzhhZWQ5Zjg5YzYxN2JhYmQwNjIzODQzYTY2MDRlODhiNzg4YTgzYWJlMDRmYzcifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/storage.py#L272-L328",
+          "version": "repo-lines-v1:sha256:abc07ecbad8ca6fae32bcaf48eb811b46db8769b41bb0b6685516af86edb50cf:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiNTQ0OGI0NTJhODU4Y2QxMzgwYzU1YTEzODkxYzk5ZjAwOTMxZGUyMzk5Y2MxYTRmYWNmNzIwNjAwZDRlNjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliZTM5MjJmNGE1OTZhODk1YzU1YWNkNTg2YjIyMjM1ODVmOGQ3ODJjZGZlYzg2MzkwZGY2YzI0MzdlMGY0ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVhYmNmN2YxMmEyZDIxYTI3N2JmNGJhYWRjMDFlNmNmYjQwZDdiMzkxZGE0NGZhNDQ5YzU0YjJlYzFhNTJiYTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmM2RmOTI5ZDZkMzI3OGI2YmY4MDhkZTFhNGI3MmVlYjI3NGMyNGU5ODczOTJhZmY0ZTIzNzJiMDcwOGI0NzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_913c45eb228344e5a7671fbfbf5459e0",
+      "statement": "Vector and graph query state are derived: `load()` reads durable symbols, chunks, and edges for the repository, rebuilds the graph, and re-embeds chunks into a cleared vector index; the default vector backend is in-memory.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L131-L143",
+          "version": "repo-lines-v1:sha256:09c7b5ea1f4dbaa4050cc0792ecf07181b3fbe6b079f7a1fac284779f5eb6b14:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5ZWQ2NmE5YmJjMTIzYjdjY2MwNGI4ZDdlMWMzZDY0NmM0NDczNmE5OTBkMmZhMmMyYzFlODQ1YzJmMzUyMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE1Yzk1YjgzNTlmZDI1NzYxMjM2ODc1MDk0ZTg5NzhhNzlhYWFkZGJkMDNlMThmOTdlMWQxZTljNjRiZjBiY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiODE3YzQ2ZmNkODYwNWI0MjY4MTQwOGRmNWQwY2JiNTAwMTUxMzRkNjgxMmIxNTA1OWE2MmQ4YjEzYzcxYTQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L306-L323",
+          "version": "repo-lines-v1:sha256:3e207a0f8ddb4a4f300a02d86a1fbb2d4fb114f860c44a475c1027d66be55c79:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5MTA4NmQxOTU5NjkyMTM1NzE3MDhjNTBiM2E3NTJmYzczMGViNTk5ZTE4ZGRiYWI5MzRhNGUwZTlhOGU1NWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlNDEyNGU2NzU4MTFkMzk4MjIyY2RlNjllMTE2YzgyNjQyOTUyYmM3MDA3MGY1NzFhNDM1OTljYjMwMzQ2YWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlYWYwNjJiM2Q5MTBjNTgyYzRjNTU3NmVkZmUxYTIzMjlmOWIzMzBkMjdmYjlkNjhhMmJkYmQwZDI3YmMyOGMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/vector_store.py#L1-L11",
+          "version": "repo-lines-v1:sha256:4b385e3b34690f047997dce9aaa22a67e9962f7d0606600dadbdbcad54863ec8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyNTFlNjk0OWU0ZDNkNDBkYTJjYmY0ODc5YzI2NTllOWFjNmUyYjllMDEyZGRmMjYzMDU1YWZmNDIyZGY0NjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1N2JiN2IyYjE2NmM5NTlhN2IwMGY0ZmEzMGRhZDk5ZDFiY2E1NzdmZDY5NDJkZDUwYzdhOGU0ZGRmZmUwMTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/vector_store.py#L51-L65",
+          "version": "repo-lines-v1:sha256:dc6401337b8992a45c2645a6cd14a6b1dd386fd80c67605328db8905f3aa3a93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3N2MxZDk3MTEyYzY4OTJiM2M5ZjM0YWU3YTgwOWMzMjhhODczNzE2ZmNiY2EyZTliMjFkZGY3ODZiYjA2NzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzOGUzNDkzZWExMmFhODkzODM1NzEzOTVhYWI2NGNiMGFkMDg3YWQ0YTYzNWM2ODMwMWE1MjNkODg3ZGNkNmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxZTZjNmE2MTMwMDQzMzZiYmQ4MWNkYmJmZjZkZmNkMzE4Zjg2YzY1YTU4ODRlMzQ5ZWFjMmZmZjdhM2U1YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM5YWI3YTNlMWZjMGFhYWRhZTZkYjI5ODczZmM2NTZmNzI4MDUyMGQ3NTdmNWIxMzU1NjZjYzgzYjJkNDQ1YjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e51c078485d541138460a1be3f73709b",
+      "statement": "The indexer scans Python and supported configuration files while pruning noise directories and skipping files over 1 MiB; it extracts Python symbols/chunks through `ast` and indexes configuration files as `CONFIG` chunks.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L127-L142",
+          "version": "repo-lines-v1:sha256:8a3470bdc44c82bc2bb322b34cb19432f17162bc6230abd9ead72fbf5a47d04d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlYWJjMzBmMjg0NmYyM2QyOTA5NWM4MTA0NWNjNDA0OGIxMzExMDdiM2ZhNTA3YWFhZmRkYTdjOTc3ZDM2MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE5YjE4ZjJlMDBlYmJlNWIxNmM4Y2I0M2QxMmEzYzAxYTIwYjJiMzZjMTNiYjUyYjBmYmJmNzUwYTgzNWI4NTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg0NDNhMzgxMzMxZmQ0OGMzNmQ2NTQ2ZWViYmI0MmI1YzU1Y2FkZWFjMzE2OTVmNzAyZWNkOTI2ZDlmOTgwZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwNTBjNmYyYWJkZGI2NzIyNTdkOWQ2NzI2NDkyZmY3ZGVmN2M2NzQ5ZTMyZTkyOTg5M2QxNTk2M2Y5OTFlNmEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L163-L229",
+          "version": "repo-lines-v1:sha256:b25dcfa52677c509cd57bfac105093dea548e26f00e17ad418419e0fbdbc2d96:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMzliZmNjODYxZWMxMWUxMmZkZDg5YmU5NzdhM2ZjMWRjOTRlY2ZmMDMzNTZjZWYxMDEyMmZlMjEwNDI3NGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ4YjFhNDVhYmM2NmJmZWVjNjI3M2RlYjEzZGQyOTUzNTNjYmM0NmFkNmYwYTQwZWI2MDQyOWE4OGRlNjliNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2YTcyYjBhMTBhYmU1YjU5ODJiMzlhMWI4NmZkNjEwZTAzZjJjOWUzODRkMTJlNGMwMzM0YmNlYjg2MWIzMDMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L29-L47",
+          "version": "repo-lines-v1:sha256:00d74da5030ff2a263780bf551207f702f77955fdaae83f3c6eb7fd9ed02d202:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyN2I0NDRlNmZiYzA5ZWRmMmMzMWYyZjI4MGRlNGEzYjYwMjc3YzExYjk5NDIyZTZhNjFjYzRhYTI1MThlMTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMzI4MzdmNWNlYWUxMjgzYzEzZTBmMGUyNzdiNzI5YjE5NTUzZWYzZjVkYmMzNjI5YjVmNzNhZDZjNzg4MTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkZjViY2JjZWNlYzc3N2M3ZWMzZGFhMzczNDIxYmExNjM0NmEzZGMyNWMzMTY1NmE1ODdkZjY4NDE3OTIxYTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzZWMyYmRiY2YyNmQ0MDI4Yjg4MGQzZmM4NmEwN2QyZDhhMmUxNmFlM2Q4NTcyMTc0MjEzMjJjYmEwYjE1MzMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L61-L79",
+          "version": "repo-lines-v1:sha256:f0eb08953f980739e895ed2ca6f9d28d26f535d7403d8d6916fafc9b505e6632:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwMmU4ZmM2ZjJkZmVlYTY0MzQ2MDYzMTY1NDk2OTI5MGMwZDI2N2VjMzk0MDNhOTY1OGQ0ZjU1MDY2MGZkYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZDNjMWZhYmVlNDY1YzIzNDUzMGM0NWU0YjhhYzJhOTVmNTQzZjk0NDhjODA3NmMxNTIyNzJmNDAzZDFhZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5OGMxNTZhMWY2YmQxMGU3MGE3OTNkNmZjZTBmMzRiYjVlNWY3ZDBjYTU3MGQ4ZDRhOTI4MWE5YWI0NzYzMmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAxNWE0ZTVkNWFmOWQ1ODg5MTYwYTZlOTI1ZDg0ZGJhMTgwMDUzYzhmOTViOGVkMTcyNzZjYTFlN2ZjMjYyMzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e754c7e6451b44ba891dacdce0b05649",
+      "statement": "The indexer creates definition, resolved dependency, resolved call, inverse, and test relationships, while dropping unresolved dependencies; call resolution is name-based and can emit edges to each same-named candidate.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L285-L309",
+          "version": "repo-lines-v1:sha256:559d3ad94b60fc2c138f290ff7658005491e0490760a3796aae68046c17d88d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5NDdjNDdmMmI5ZGY4ODYyMjViODJiNmUxMDMxMzU2Zjk3ZjJmMDFjNWNiNmUwZGIyMTE1NzU1YTAzZmVlMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmNjY3M2U0Mjg3Nzc0OTQ5NjMyOWZkZWEyMmRkMjUzZTJmMzk3YzcyNTFhYmQwZTdlYTZmMGEzYjQzNTkzZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5YjMxNGNkNWFiZTVkMWM5YTdjZWQwZWRkNzc5MmU0NmZmMjEyM2M4ODFlNDhjNzkxNDYzYzk0ZWJmNGMzYjUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L414-L493",
+          "version": "repo-lines-v1:sha256:008c7fdd850d9027b14bfc20fde73145e2d62b2093d30568927e0fece10e7ac4:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkOWZkMTJiMGEyZmEzZDBkNDFhYTFiMTZhZWVkMWJlNTczMTU0OGM0Yzk2MmMxZjM5NzFhZDlhMTg4OWMzMDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM0ZjZhN2I3YzNhZjM0YjFkOTgyY2U3MWE3MzMxMDFmNTA2M2NjNzM2ZWRkZWIxMGVlYTJiYzU1NTk4OGQxYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMyZTllMTIzNDhhZDhlNWIxNGRjNGQ2ZmQzMjg4NDRjZWJmM2NhNTA3MmM0ODY4MGJjM2MyYjU3MDdhNTZlYTYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L496-L527",
+          "version": "repo-lines-v1:sha256:48e4b2877c58d12abbda7f677f6d4115d6a1ab358e4cead61c0500805e13b189:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmNDlmZGRlZjliYjRlZWE3ZWUzNTQyM2I3MDU1ZThmNjg4ZTk4NWQxMDY4OThjMTk3MmJjNjJjOTJjNmQ0YjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMGZlMjMxNThhYmY5MjIyNzA3MzFmZmQ0ZWZkN2U2OTQzOWIwN2RjZTY5ZjIxZjA2NGU5NjU1NGVlZWFlMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg0ZTExOWM1YjQ4ZDUxMDNmMjc3MDllNGM0OTRhMzcxMmUzMjdjYmQ0ZjFhOTYxNTVjMzFhYjcwNzJkMTllNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4MDRhOGE2NTI2OTMwOGVkNTI2OGZiYmNjNjEyNzI4ZjViZDk4OTkzYTQ3NjM2YmVhZDE5YTdhNjNjMDI4ZDUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5b69e910c76e4298a971a13b57c56eb1",
+      "statement": "`refresh()` compares current content hashes to stored hashes, returns immediately without writes when no current files changed, and otherwise merges returned symbols/chunks before rebuilding and persisting graph edges and statistics.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L96-L121",
+          "version": "repo-lines-v1:sha256:2ef42eaf9009f13d61168104b03f9339ad1a2f8419873ccd484b243a43f3da0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzYWIxNGUyNjgwMDJkYWM5OGNmZDE2ZWE3MmM2MzZjMGY4ODMxZGEzNDU3YzFhNTdlMWVlMzdiN2RlNDI5ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2ZmQ4YmQ3ZTA4Y2Y0ZWMwOTQ5ODRjMDUwMDU3YzY1OTBhY2Q5YTUxODMyMjBhYzk0YjNmZDRhY2U5NWQ3OGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlM2NkZmRmNGI4MWMxNDE3NzNiMGVkYzkzZjczY2FhMmQ4ZDhhNTQ3MmUwYzI4YTkzMjZlYzhmOWI3YTA1NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMjlhMGI4OWQxMjY1MDFjZWJmNjc0YzE0M2Q2YWZjYTFlZDg4Njc1NDMyMjJkODg1MTU4NmEzMmRiNDU0MTIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L104-L125",
+          "version": "repo-lines-v1:sha256:80971af42bb2b76d1a3086329f7b1f125ec98a93daa09521475547ab61f6b741:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwYmUxNTUwMjg1MGRlYmE0Njk5MDRiMWFiYmYzMzQ5Njk5NjI4M2M2N2NhZjU1ZWUzMWZjNWIzOGExZDA0ZmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMxZTA3MjZiNzAxNTY0OTY0ZDI1M2I4NzE1ODVjMDg5NGM2YmJiMjRhMTNiZjBlOTdhN2E1NGQzZDZiYjFmMzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhYjM0ODJiZjk1ZGZmYTJiMzFlZmM5Nzc4OTdlY2Y0M2U5ZDgzMWNiYjRlN2FjMTM3NWZhNmQyNzAzNDhkZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0Y2I1MTIyZmNlYzg1ZDcxZmU4ZDlkNTQ4NmQwZmQxYjc1MDFiMjczNDJkMGY4ZWNjODQwZGU0M2EzNDA3MTAifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L294-L304",
+          "version": "repo-lines-v1:sha256:6a511382f788609c6ef70231c6bbdd7ae33ca97fcf72792c016c4763a758b4a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjYzc5MjM3ZTdiNTI5NTI2MDVlYWYwMDU5YmM2MGMzZmI3Zjk3Y2ZiMDZjYTgyNGQ2NzZmMDdjYzY4ODBkYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExODNkZTQ4NGFhYTdkMmM3ZDZiZjIzZTllNGVlNjE0NGUxOTA4YmNkM2UxZjlmN2VmYmRhNGRmOGQ3OGMzYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YWI0ZThjZWJhMDc1YmM5YTFkMTNhOTVhYjdhMTA1ZDE4MmRkMmU2YmMyMmE2OThkOTFlYTFiZmJkMjBmYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiYzEzNTAxMjZiZWVmN2E0YTgxMGFlZGYxMTI4ZjRhNDYwN2RhNTIxYzJmY2JmNDM4OTE1M2U5NmMyMDliOTEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/storage.py#L129-L155",
+          "version": "repo-lines-v1:sha256:e16af00811ce69c089fdbeaa2ca52b53c2544bf0f7c31f120801898d80d8df8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzYjgzMzQ4MGQwOGMyNDhmNzgwZDdkMTFmNGMzN2M0N2IzNzk1N2VhNGJkMDA1YWRkN2MxMTY5ZGQwZWY1YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjYTA1NzA0MWM3ODU5YzVkMjI2ODZhYWQ5N2Y0ODAwMjM4NmMyY2VmNzFhMzYxNGIxZDdjMmU4MDIzNTliYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwOTIwNWFiZmU4N2M5MzJmM2FkMDIyYTA5ZjJiNmQ4NDU3ZjU4MTAwYTg5ZTVmYmYxOTc0MmU3Y2Q5YjE5MTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0NjdkYzgxZDRhY2MxZDk3ZGJhZjk2ZTg3YzZjZWNkYTIxZWY1NTM4MGQxMmVhNzk2YmY0YjMzNzA3ZWExZDIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_61d73541b3ce48e9a4c9a5adeb9e4cde",
+      "statement": "Incremental refresh does not detect deleted files and reconstructs the graph from only the incremental result's edges while retaining existing symbols/chunks, so a full build is required to reliably remove stale records or reconcile whole-repository graph relationships after deletions, renames, or graph-sensitive edits.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/indexer.py#L96-L121",
+          "version": "repo-lines-v1:sha256:2ef42eaf9009f13d61168104b03f9339ad1a2f8419873ccd484b243a43f3da0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzYWIxNGUyNjgwMDJkYWM5OGNmZDE2ZWE3MmM2MzZjMGY4ODMxZGEzNDU3YzFhNTdlMWVlMzdiN2RlNDI5ZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2ZmQ4YmQ3ZTA4Y2Y0ZWMwOTQ5ODRjMDUwMDU3YzY1OTBhY2Q5YTUxODMyMjBhYzk0YjNmZDRhY2U5NWQ3OGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlM2NkZmRmNGI4MWMxNDE3NzNiMGVkYzkzZjczY2FhMmQ4ZDhhNTQ3MmUwYzI4YTkzMjZlYzhmOWI3YTA1NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMjlhMGI4OWQxMjY1MDFjZWJmNjc0YzE0M2Q2YWZjYTFlZDg4Njc1NDMyMjJkODg1MTU4NmEzMmRiNDU0MTIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L294-L304",
+          "version": "repo-lines-v1:sha256:6a511382f788609c6ef70231c6bbdd7ae33ca97fcf72792c016c4763a758b4a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjYzc5MjM3ZTdiNTI5NTI2MDVlYWYwMDU5YmM2MGMzZmI3Zjk3Y2ZiMDZjYTgyNGQ2NzZmMDdjYzY4ODBkYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExODNkZTQ4NGFhYTdkMmM3ZDZiZjIzZTllNGVlNjE0NGUxOTA4YmNkM2UxZjlmN2VmYmRhNGRmOGQ3OGMzYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YWI0ZThjZWJhMDc1YmM5YTFkMTNhOTVhYjdhMTA1ZDE4MmRkMmU2YmMyMmE2OThkOTFlYTFiZmJkMjBmYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiYzEzNTAxMjZiZWVmN2E0YTgxMGFlZGYxMTI4ZjRhNDYwN2RhNTIxYzJmY2JmNDM4OTE1M2U5NmMyMDliOTEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/storage.py#L138-L154",
+          "version": "repo-lines-v1:sha256:03bf890caf99ee8be5c56e7eab5485d0b4b86a8cda83a669dc0627bfad4603cf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4ZTFjY2Y1NjUxZTA0ZDY1ZGQyNWEwYTczZjI2NjYyZGVjYzI4NmE4Nzg4YmY3MWIyMzZkMWQ5MzdiNjEyZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjN2U5MjFhNjc3YWNiOTNhOTE3Y2ViMjFkNTk2NDdhOTg0OGY2YzEyMDhlYmU1Y2Y2NmYxNTBhMDc0ZTI3ZTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5Y2JjNjMyYWEwOWZiYTUwYzQ4ODIzY2VjYzA5YTEyOTc0YTA1YmI4OGQ2YjIyZTNhZDI4NjQ5YjZlMmJhOTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlOGFmZjgyY2RiN2I3ZDJkYmNjMjc5ODJjNWRkOTQ5MDBhNjE0OGNmNTMyYWYzYzg1NDljMzc2NTY4MjhjOGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b994c78f74674c8bae86d4dfc03ae5de",
+      "statement": "Hybrid retrieval takes vector candidates then combines normalized vector similarity, graph proximity to other hits, and metadata heuristics with default weights 0.6, 0.3, and 0.1; optional result expansion returns graph-related symbols within two hops.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/retriever.py#L151-L218",
+          "version": "repo-lines-v1:sha256:f306db1f01438b833f743fa5486bab8a30f81acd58e66f0eb7144c0488ce9d29:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmODZmNjI0MzNlNTIxYzYzMzZlYzg5YTYxZmRiODQ4NjhhOTgwMTg2MWU0N2IxNjM4YzE3MjEwMWFlZTZmM2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiYjU0MmE5MDcwY2FhNGM5OTg5ZmQxN2U0NGE5NmIwMmViNTBmY2JjZWQ2N2VhMGU0N2FjODgzZTg5NjgwZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkNzZkZTQyNGFiODQ4NzQxNjU4NGYxNmQwODNkMWIyMjRiMzI2NmM2NGI4ZmRmNzhhN2IyZWNmMDdiZjNjZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyZjlmMmFhMWU4MTFjNDEyZjkyMzAwOTZjNmM3NzM4NmQxN2ZhNTI2NjY5YTE3NGYwMThlMzI4YmJkMTQ2Y2QifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/retriever.py#L35-L72",
+          "version": "repo-lines-v1:sha256:92aa2a116807904a40bbab530b28d3c1b953805ac6ce00862861dc5401220373:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyYWRhYzYyY2EzZjA4ZGZjNWE2MDM1ZTZlMmJhMmVjYmMxMzE3YThiNjVkNTZkYjQ4MjA2ODMzMmZmYzg1MTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkYTU2ZDhjMDYzNjJhM2ZhMmUzZTE0YWMxYmU4ZDQ4YzBlZDMxZjQ1ZTg3YWJiMTliM2E3MGE0Njk4NDhlYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxMjM5MWFiMTM0ZGZhM2EzN2I3ODZlZGRkOTM0MWE0M2FlMjA4NjE1NGJkZWViMDIxYWI1M2ZkZTk1YzJjNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAxNWE0ZTVkNWFmOWQ1ODg5MTYwYTZlOTI1ZDg0ZGJhMTgwMDUzYzhmOTViOGVkMTcyNzZjYTFlN2ZjMjYyMzQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/retriever.py#L78-L145",
+          "version": "repo-lines-v1:sha256:5f888588ad993cce29aecb9c61958c336972609cdcb87f93d7d23dfbe2ca685b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZjODk1OTgyZmUwNTY1YmNjOGMyZWY5ZTNhNDgxZThjOWNmMTY4NjA2NGUyOTM3MDU4OGRjYTZiNGMzYzQ5NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllODdlOTQ1ZmFkZmIzODBiMjJjOTI0OWNhZjU4MmI2MTcxZDRiNzExMzk1Mjg5Zjg2MzVlOWYwMDI0NzA2ZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiMjA0MzBiMWNmZjU5YWUyMWZjODE0NmE1MGYxN2E3ZmIyY2ViYWI4MDRjMTQwZTNiZjcwYTM4M2I1MzI1ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyYzJjODZiZTIzYWY0YzVjOGNiZmM1ZjA0MTRkNjM3YmNhN2MyOWMyMGZjNjdlYTY4NzlhMjNjZjI1ZTg3NWEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/symbol_graph.py#L109-L144",
+          "version": "repo-lines-v1:sha256:a7e55a5157a002b73bdeca424684f167af0e95dc9ad6a4e74d973dec60a66d91:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3ODJkOTM2YzdkMjg0NzMwODcwZDM2OTYyYzExN2NkYThkOGY2ODhiYzY2NjUxODUzOWI5NjFmYWM1MDlkZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkNGQzNWMyZWQ5MGMyMmVhM2Q0Mzc1NjQ0ZTNmOGU0NjY4NTA1ZGVhMzQ4YjI4YzYyMTBjNzJjN2ZiY2U0YTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiMzNiMTM5OTdlZjg1NmY2ODhhNzczYTAwNGRkNTQ0ZGRjZGVhN2Q1N2Y3ZjM0ODFkNDM0N2ZmYzU4OTM5OTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllZWQ5Zjg3YmI0NGNhZWNlNTIyMDdiNTU2NjQwZWFhYmZkODJjYjFhN2EyNTY2ZWEzMzBhMmNhMGIyMWQwNzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_da2bde61dcc945c4ae74a94339dc60a2",
+      "statement": "The default `HashingEmbedder` is a deterministic dependency-free 256-dimensional term-frequency hashing embedder suitable for lexical overlap rather than a semantic model; sentence-transformer embeddings are optional.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/embeddings.py#L1-L10",
+          "version": "repo-lines-v1:sha256:b307ab7a6a740aa88eca0ff4715be8164e5364f2f0cc1001c2c502f28db925b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3NzVjYTZjMTYyMWZiYzQ4MTVkZDFhMzY4MzA1YzdlN2EzODBkY2Q4NDNkODgxMGRiNmUyMzVkZDRkY2MyYzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwOTFiNmU2ZTM0ZjA1ZTUyMTgwOTAyNzdjNGY3MGU1MDdmMDgwZWExYzY2MTA4MWFiMWYzMjE0MmEzNTU2ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/embeddings.py#L36-L87",
+          "version": "repo-lines-v1:sha256:40c3804606fddebba3a8271d72eaf9b2fa4bcbb58e8c09d02db0590a911306d9:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlOTFkMGNmZWQwMDQ2YjQ0MmFkNTY4MWQ0ZWU3ZjcwNjNkODVhZWNiYjNlYmM5YmM3NDQ2MjRhZDUzNmY3ZGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YzRlZmU1OTY2NWQzYjA3N2RkMGNhODNmZDIzN2I3ZTcxNzc1ZTc1OTY3Y2YxODIyOTkyZTBhMTdlZTdhZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4YmNmNGUxNDIyYmRkZmIzNjJjMzg1ODZmNDU5YzBhNDlmODI1M2U1NjIyY2MzYTg2NDhiYzRhYmVlYjQwNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiODU5NzBiOGI1ODFkYmQ5ZTQ1NmQ2MWRlYTRiOTE5MTgyMTU4ZTdmMDhiYjRkOGJmNDk4NzIwMDM3NGE4MWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/embeddings.py#L90-L147",
+          "version": "repo-lines-v1:sha256:ded056ce4f0b3592622777e24b0ca4b4f35857940d3af8621030e7a14e7544ee:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0MjdhOWNlYTA5MGE0OTUxNmIxMmM0NGEwNTk1NDliNTMyNWRjZTBhZWYzMzU4ZmZmYjY5NjZlZDZlNmM4NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3YzRlZmU1OTY2NWQzYjA3N2RkMGNhODNmZDIzN2I3ZTcxNzc1ZTc1OTY3Y2YxODIyOTkyZTBhMTdlZTdhZGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEyOTBjYTE5ZTdiN2IxOTY0MzMyMTQwMGY2Nzk4MDg1MWU5M2ZiZGJjNjYxYTViYTMwOTEzODU1NmJlYjJmMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwMzUwYWRiZmVmZTVmMjc5YTg4NGUxNDk2ZWUzMTk2N2U2MTVjNTNhNzFhOTdhNmYxOTIwNzgzZmVjMDQ1ZDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2b963fbeab7245e6a0d6cd9c5b7db318",
+      "statement": "`graph()` provides case-insensitive exact and fallback substring symbol lookup, prefers non-test implementation symbols, and returns dependencies, dependents, callers, callees, two-hop related symbols, and tests; its `limit` argument is not used to truncate these lists.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L169-L188",
+          "version": "repo-lines-v1:sha256:c6353be3b8576334447fc35a0c6d20e6e94b4d499a5608b84e4e261ddee5cbb4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlZGRhMThkNzQwM2UwMzlmZGIzMWEwYjNmYTRiMzE0MmQwMDQ5NTAxMmQ0ZmY4YjNlZmU1MDZhODU0OWI4MjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlOGU0N2VjN2VkNzlkYWUzODUzMWIzOGFkMWU3MGQyM2EzNTZkZmRjYzllODlmOGVhZDVlOGZmY2NhZTY4NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5M2E2NmFmYmJkZGUxYWUzNDE0ZjFjZDFjYTZiNmJkYzFmYTI3NjM1NjE4OWU1YTY3NDBlNGY3ZDI2M2QxYTgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L369-L392",
+          "version": "repo-lines-v1:sha256:92853e150a833a7412a824b0d8b48244a9c88b5f01ada5b71fa3e76851ecf169:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3MzBkYTQ2ZDY5ZjZlOTNiODJmZTNjZWUwNDAxZDgzNTY2OTg5ZWUzNzUwYTk3Y2YxOWY0YTMyMjFhNzU4MjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5NTk5ZTA3OTJmYTRjOTQxMzkzODM2YjU4ZmU5ZmQxZDgyNWRiMjk0ZTk5MzJmYzZlZjExNDZmZjg5MGNkYmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmNGZlMGJhNzI4MzY4ZDFhMzY3ZmYyN2M2MjE2NGNmM2NiMTk0NTY1NGM3MmRiZGIyMmI4MzJhYjQyYThmMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzZmE0Njg4MWU1YzRiZTIzNDI0NzMyZDY3MDk3OTBhMWJhM2RhMGQ5ZDU1MWQ1N2EyMWM0NzJlMTZiNTdhZWMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/symbol_graph.py#L85-L144",
+          "version": "repo-lines-v1:sha256:fc5261ec2dbb7c01763174328034caff8cd10f314e17484583bac0d8a1827e13:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxMzZiMTE2NTE1YmU2NDAxZDc2ZGZmOThhNDJkYzhlZmM5NWUyOTQ5Zjc0MTUwNTE4YzU5MThiMjNmZTMyMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkNGQzNWMyZWQ5MGMyMmVhM2Q0Mzc1NjQ0ZTNmOGU0NjY4NTA1ZGVhMzQ4YjI4YzYyMTBjNzJjN2ZiY2U0YTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI3YmQ2ZWUxYjc3M2NmNmM5MTgxZDExMjBjZmE5YWFhMmQ4ZDNkMDY2ZGI3NjA3MzY0NjVkZDU5YjgzNzYxOWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllZWQ5Zjg3YmI0NGNhZWNlNTIyMDdiNTU2NjQwZWFhYmZkODJjYjFhN2EyNTY2ZWEzMzBhMmNhMGIyMWQwNzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fc4a96c78af1472ba6fa08898901c21d",
+      "statement": "`get_context()` formats retrieved symbols, locations, docstrings, signatures, selected graph context, and deduplicated relevant files as Markdown, returning an empty string when retrieval has no results.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/repository_memory.py#L201-L280",
+          "version": "repo-lines-v1:sha256:7f48c8220a5f35eebb574cc49f393cca59c994777c4464ffa0cb9f2d11d2b6d6:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjOTFjMmRkZTI1NzcxNDg0MzIxZWY0NjFmOTA4MDUyYTdhMzY4YzhiMzg4NDQ0N2RhZDcwODFkNmU3MjNhOWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhYWU4YTBjYTc2Zjk4ZjdiN2RjNzk4NDk1MWQ2M2U1N2RiM2M2NDU1NzljYTUxYmFkNmE1MzlkNjE0ZWRiYmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkMTBkMTY5NDM5MzhlZTg0ZmYwMzVjMjk4MjBjMjkwYmYyMTFiMzRiYTA2NTk0N2YwNWEyOWEwODMwYzZkMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzZWRiNzE4MTI3OTkzMjU0ZWIzYjM4YzM3YTcxZjU5OTk4NTY4MjA4NDMyNDhhZGI2NDZlODM1OTVlMzYxZmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b65fef5b804847c184ed7eaf94c4ef74",
+      "statement": "TaskAgent creates or reuses repository memory before planning, builds it only when no stored index exists, degrades to an empty context on errors, and appends non-empty repository context to the planning prompt.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L656-L683",
+          "version": "repo-lines-v1:sha256:68e244e58283aa52eb819a33daf335e6221374ac06a25936df43e75722834011:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyYmQ2YjhiMDNjZWJlNzQ4ZDdiZTdmNTcyN2MwMTQzNTUzMjI5MDQyM2NmZDAxZGUxYjNhYWI0MzE0MzE1ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyYTljZDYwNDU5YTNlMWRiNzk3YzM1Mjg5ZTkzYzMzODlmNzg3YjdjNTU0OGZmYzQzNDQ2MDIyMDM1NjRkZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3ZTM2NmNmODIzZGZiMWUzYThkNjdjMjNhMmMxNzJjZmYyYjkxOTkyN2E3MGVjODUzMDM0ODc3MTlmMzA0YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc1ZjBkM2NjYzRlZmQxODEwYmVmMjBkYWVmNjk1MGZmZTQzNDQzMTA5ZjNiM2U2OTEwY2Y2NWM4Mzg2ZWJiNGQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L718-L777",
+          "version": "repo-lines-v1:sha256:d12f181310130337b6256d6899e7675d604ea5e21de771cc3a05125dd48dc5a9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3MjY2ZTNhZDM4OTVmZDUzOTNlMzUyZTFhMGU4M2UxYzU4MDllNTBlYzViY2ZlZTAzNGExMzk4Mzk0YmI5ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwNzQ1YTVlYThmMDgxNjRjZDIxYjFlODRiNWI2NWFhZTY3Y2ZkYTgxZmE3OWYzZWExMGEwYWVhOTQxYmY5ZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjljNGNiZTMxMjkxZDJjNmI1YWFmMzc1ZTIyODNhMzFmMWM4NDY5ZmY5NDIzOWExZjMzZGI5NjA2MjM1N2JlODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjMGM1ODlmODlhNjNlODU2MzIzYzc2Yjk5NmU4MTkyMjk1NDI5MDE0YjQ2ODgwMzg2YWNhMjBlNmQwZmMzM2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2a53c70494e402bb8d7f6ceb4e37432",
+      "statement": "Backend selection is driven by optional `embedding` and `vector_store` configuration; unavailable or failing optional choices fall back to `HashingEmbedder` and `InMemoryVectorBackend`, while Chroma can persist a vector collection when given a path.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/memory/factory.py#L1-L15",
+          "version": "repo-lines-v1:sha256:12a17d07e8dc2bcbd0c279eba3605b19f080db04d939c2d07d346b3b726cbb4e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NWZmYjlhMTU2MDBhYzgxOGQ0YzdlODY4NzYyNTgwZWExNDI1ZDIwMjljMWM3NzQxOGFmMjhhNTkzNWZlZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/factory.py#L45-L112",
+          "version": "repo-lines-v1:sha256:f3fcb90dd50b5ac350f9585bf92c2218baadd6ef542401c908d2f0e73eb016fb:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkYWY2MWNjYTE2NmJlYTg3YWZkMzkxYjliNjExMmMyYTVmNjAzNTEwNWFlMjg0YmJkMzVkMjFlOGEzYmQxZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ2MWM3MmY5YTcxMWY0NGQ3NDA1ODI2MWYzZDc5NjMxMjZiYzQwYzlkZGQ3MGU1NWExMGViMzliZWVjMTUxY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/memory/vector_backend.py#L21-L65",
+          "version": "repo-lines-v1:sha256:54f3ccb4dd37b735ea773fba7957e633620c04ec9aed45afac9ea4eaf4b269da:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MDhiMDE4OTYzNTYyMzUzNWE1NjE0Y2M2MDczZGNkNDNkYWJhYjliZDNjYmRjYjYyNTg3Njg5MWYxNWQzZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxMjM5MWFiMTM0ZGZhM2EzN2I3ODZlZGRkOTM0MWE0M2FlMjA4NjE1NGJkZWViMDIxYWI1M2ZkZTk1YzJjNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM5YWI3YTNlMWZjMGFhYWRhZTZkYjI5ODczZmM2NTZmNzI4MDUyMGQ3NTdmNWIxMzU1NjZjYzgzYjJkNDQ1YjQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3070b0e4977d49929bed974e7866d6d6",
+      "statement": "The repository-memory CLI exposes full build, incremental refresh, stats, hybrid query, and symbol-graph inspection commands, and requires an existing index for refresh/query/graph.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L1118-L1207",
+          "version": "repo-lines-v1:sha256:dda624ec017483fe67d0b874fcb43db3c4f568f2e0931df8485c7d6b5c9f9762:eyJzZWxlY3RlZExpbmVDb3VudCI6OTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZTZmMTIwYTBlNTA3MTIxYzczN2FkNmJmNjU2MjcxNjIzNmFkMzUzZTY4MWMwYzQ3MzhlMGRhMmEyMGE0ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzMDg2NmUxYmNjNWFiNzZlM2VmNTkwMTJkMGFkMzlhNjg3YWJlMDAyM2I0MzhhY2IxMTMwYTE4ODI1ZTgxOTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkZDMxN2E4NWFlYjZhY2RmZmQ2ODcwMGQxMTA3NThmZGY2MjQzZTYzYjk3NGMyZWFlZDBmMTE1OGQwOWZmNDIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L1210-L1344",
+          "version": "repo-lines-v1:sha256:554ecc2a0ac8b4f50f8176a1c0ce6032e6dc4814d059c840891b0a8e96eb68d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxOGRhMDNjYzI1ZGQ4YTZmOWY4ZDJmOTIwYTQyZWU5YTI3OGNmMDI5MmYxMTM4ZTYyZjY3MDk4ODc0N2E1OTU3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI2ZDRlNzhlMWU4MDAwYjk5MzM5ODUzYWZjMzRlZGFiOGE3ODQzMTEyYmViYjA0ZjYwNDExMzlmMDEzMmYxNzVlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2NmM3YzU1ZWYzNjMyNDg2OWNmZTVkYWUxMzEwZDk2MzAxMGY1ZWUyNTQyMzI5ODkzN2IzOTUyZjVlMjkwYjZhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0YTNhOTc4ZDM3ZGNhNjUxN2ExMTUyZWE1M2VlYmY3Y2IwNjAyZmMyZWQ0ZGRjYjlkMzk3NTkzNGFhY2RlM2U2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_e0981754ae324c518235315db22229ee",
+      "statement": "Focused repository-memory tests cover indexing, graph behavior, persistence and reload, refresh, retrieval/context, TaskAgent integration, optional backend contracts, backend persistence, and configuration fallback.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_memory_backends.py#L146-L268",
+          "version": "repo-lines-v1:sha256:976780af86a77261db4ebef49fb4adee7bbf6cabe11e398430c588954fca9926:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJjNzU2NmJiYzRmYzkwZDgxN2MzYmZhZjNmNzZhZDU4NzYwM2RkNWZlMmIyZDhhZjRmYWY1ZjBmOWMwNzIwZmIwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJjZTZhYTI1OTQ5M2FjOTA0N2EzNWE0YmVlNjQxODMzN2NkOTZjZGM5ZDVkMDk2ZjQ0YmU0ZjFhNzNjMmFjYWI1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiNjE1MWQxZTc5MDU0MzM0NzE0ZWIzYzA3MmJhODlmNzU2NjA4ZDcxYzk3ZGViNDU0NWIxODUxYjMwNWQ1MjY0IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://tests/test_memory_backends.py#L43-L97",
+          "version": "repo-lines-v1:sha256:97afeff3ea3d88d2f6b355c9ed817d8a4c87556c8cb2062b47200a5a15a94f47:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhZmY5ZGVmZjYzMzllODY0YmZlZDc3YmI4YzlmNzU1NTdlMGM3N2NhZWViMjg3MTlkMjI3Mjg4NjUwOWJhMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkMmU0NTBmN2Y2MzA0ZjE1YmZhN2Q1ZDZhN2I3YzA1ZGFlOWZjMjY4MDk0MmFjNDgzNGY1ZWJkN2RiYTk2YjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzOWNhNDliODFjN2E4NjNmOGVmMmQ1NjY3ODAwM2Y1NmZkODc5MjQwZGNlZjY5NTZiZDExYmRiMTc0OTU5NDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE1MzllZGMzYTVkYTYzMzhiODJjZmQyZjVkMDZlMDliMTQ0NjQxYzRjNTM1ZjExNzM0OGRlOWVmZTExOTM5NGIifQ"
+        },
+        {
+          "resource": "repo://tests/test_repository_memory.py#L164-L249",
+          "version": "repo-lines-v1:sha256:739c56e51aba1cee344b1b41a087418a705eceac83f92a4ac2d2a63588af0eb0:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MjhmODc2YjA3ZDUyNWZlZTYxMDU2M2JmZjA2OTk3NDU0YjBmNDFlNzc0MTZlZjMyNWQzODIwNGIwMGQwOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhZjkwZWFjZDViMTEyZTU2M2U1Yzk5YWU2MjI1ODA1Y2M3MmJhYjI1OWE1NzU4YmVmYTNiZWRkNjNhNTk5NGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://tests/test_repository_memory.py#L456-L594",
+          "version": "repo-lines-v1:sha256:aae927e377e06e205be8e7ed9e301e44e772dbcf7d37ac62cd75d8fec22855d6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4ZGQ5ZDQ5MjBiMGE5OGFkNjAyYTliNWE4ZGZkMWNkM2VjNTliOTBkYzYwNzg3YjMxMThhNWVhNDUxMTNjYWRhIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIwMWJhNDcxOWM4MGI2ZmU5MTFiMDkxYTdjMDUxMjRiNjRlZWVjZTk2NGUwOWMwNThlZjhmOTgwNWRhY2E1NDZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwODI2NzZjODg4YzFhNGQ5ZmE3NzJmY2RjMzAyZjc3M2JjNzI5MGVlYmZmOWRhMzZhMzlmNDRjMzIxMTk4Mzg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3ODE2MDhhNGUzMzYyNWY4ZmJjNjk3NzFmYTM1MDc2ZGFiNDgzZGMzZWVkM2M1MTc4ZjQ4MWU2ZDYwY2FiNzc5In0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

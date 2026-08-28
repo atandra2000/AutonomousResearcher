@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c9f7fc2715e6931b799b4ad3e42d4ebb8ede1ba761435bd23062ae9b006d4211",
+  "claims": [
+    {
+      "id": "claim_96006f615be4419886f21ad930e0504f",
+      "statement": "The `research-engineer task` CLI constructs a `TaskConfig` from the goal and options, invokes `TaskAgent.run()`, and presents the resulting task as JSON, Markdown, or console output including ordered steps, diff/test information, and delegated repair/review details when present.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L3188-L3344",
+          "version": "repo-lines-v1:sha256:c0b513e3bcf14bccd446dd63bc7338f27f215291f463cc4061267afc91ff1c8e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTU3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0NDQ4YmRlY2RiMGZlYWQ2ODNmMGNiODY1ZDZjOWE4YmQ3MmEzMTc2YWE4YzlmOWFjNmVlOWVlNzg4ZGI2NTU3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMzA4NjZlMWJjYzVhYjc2ZTNlZjU5MDEyZDBhZDM5YTY4N2FiZTAwMjNiNDM4YWNiMTEzMGExODgyNWU4MTkzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwODI2NzZjODg4YzFhNGQ5ZmE3NzJmY2RjMzAyZjc3M2JjNzI5MGVlYmZmOWRhMzZhMzlmNDRjMzIxMTk4Mzg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI3M2I2M2NiOTZhODc2ZDBlNmFhNjQyNmM2NjBkOGE1MDZmZDVkM2Q4NTZhNDUyNmQwNGVkNjFiZmM2NTM3OTdiIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L127-L172",
+          "version": "repo-lines-v1:sha256:31d7c1d47fcc7c493bad16e40dcc6b48c7fee1d589835f724dd53c1e58bd8cbc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2NjY1NmU4MTJkNjViMTUxODJjMzFjNGRlNDk0OTQxNGI5OGIwODlhOTJjZGUyNjU0OGQxYzRlNDE2ZTdmYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkMDNlMjA1NGJjN2RkODdlOWZjM2JmMGE3YjdkZTMyNTgwNzVjNTljNTBjZDY0N2FlMWIwNjRlZmQ4YWM0NWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzNDcyZDExZDE2MzZlZGI1OWE0YWM0ZTAyOGJkMmE5M2IzN2IyMTQwZDdhNTE5YTI0ZjU5ZjJlNGI3Njk3MTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fd9ff40c999d4afea14d021757261b75",
+      "statement": "Task configuration defaults to a non-mutating, non-testing legacy turn: `dry_run=True`, `run_tests=False`, `test_command=\"uv run pytest\"`, a 600-second test timeout, streaming enabled, delegation disabled, and a default repair cap of two constrained to 0–10.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/cli/__init__.py#L3204-L3243",
+          "version": "repo-lines-v1:sha256:2b6b1ec6b1070ff39751248e3cefea606c6220acc59ddabdb98b454123466b13:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzYTZhMmI5ZDk4ZDhjODg2YzdmMzFmZDFhOGM4OWZmNDA4NmI3MDRlMGM2YmIzY2Q2OTYwMmZhOGU0ZWE2NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2YjZkMGU1Y2VmMjFiZWNjNjNiZGFhZmE2NWY1ZGMyMWM5NjcxMGVkYjY5ZTQ3MTFmMmM5ODliZTVmZDNlZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3NjU0MWVkNGI4MTE0NDRiYmRmNjNjMTc2MzBmMzVjZTUyZWIzYzM1OWJkMWNlMThkMmVlOGNkMjQ1MGU2YTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwZTc5YzIwYjYxZmU1ZDNjYjllMjZjYTIyNWFjYjg2MTM2Nzc2NzAwOGUwMjIzY2RiYTZiMzFiNTNmNDEyMDYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L58-L101",
+          "version": "repo-lines-v1:sha256:43961bd55714101164436b008116fe0f6ce30694a54142d7ddde3679e9ea726e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhhYTg3OTk5NWU2ZWRmZmQ3M2YwNzBiNDZiZDI4YTFlYTJiNjFjMzFiODkwN2U0YzI1YWNlMDVjODY4YTA0OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_491581881e414d2988c72c292a8091b3",
+      "statement": "`TaskAgent.run()` makes its explicit `goal` and `repo_path` authoritative, then selects the separate delegated pipeline only when `cfg.delegate` is true; otherwise it runs the legacy pipeline.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L133-L160",
+          "version": "repo-lines-v1:sha256:81799315619e258a5397659d006ca6f79e3e6e785f2eca633f84dba6ec22bf43:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1YmE4OWNjZGE4Yzg4MWFhZDgyNzMyZWFhZWY1MmYzMWI2Nzk4NjRlODFiMDQwZjc2OWUyZjVkNzZiZjczZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMTZkZjUwZjNjNDYwNDlmZGRkYjllY2E1ZTJiOWYzZjY5MjgxODllYmU3NDI1ZWYwNDA5NTllOTc4OTRjMTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmNzI5YjY5ZGY0YmQ4OTA0N2RlZjgzZjc0ODg4ODEyODFiMjMzY2QyOWZlYTk2MjM2ZTM1ZDI1MTNiYmNlMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0MjFlYzI1MWVmYTc3NTMwYzczNTYzY2RjZDdiNjlmNzQ5NDlkYWRlMDk4NTZkNWMxM2ZjNmE2Y2JjNTEzNDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_453e581d19144249a9dd64d01a3671b2",
+      "statement": "In legacy mode, repository analysis failure is a fail-fast condition, while implementation failure skips diff/test; otherwise the workflow analyzes, retrieves best-effort memory, plans, implements, diffs, optionally tests, and finalizes based on whether any recorded step failed.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L160-L233",
+          "version": "repo-lines-v1:sha256:f3f95cecc55ed8a44874e36d9cb9bbc667d1903cdbb67be447fa2ee6de13dcb8:eyJzZWxlY3RlZExpbmVDb3VudCI6NzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMTZkZjUwZjNjNDYwNDlmZGRkYjllY2E1ZTJiOWYzZjY5MjgxODllYmU3NDI1ZWYwNDA5NTllOTc4OTRjMTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjMzI0NTBmNjE3NTI0MzIxNzQ4YzY3OWIzZDNjZjE4MzhmZjY0MmZhNmJiY2I3YjJlNjA0ODg1ZWI1ZDY1MmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMzZmE1YjU5ZTI2Yzk1ZjYxOGZhOTJmMWNlZjBkMDJmY2YyODQzNzcwNDg2NjhmNmI1YThmYmU0YjIwOTRjZDQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L622-L654",
+          "version": "repo-lines-v1:sha256:dbc32991f6abcd3ec42ae222f0061b978884f7d88959a74b268489cdbbbe0d67:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZjU3MzI2Y2FkOGJlMjJjNGM5MmE5OTgxM2YzNjk4MzU2OWUxZDkzNjc5ZjUzMDZkZjhhNjZkYjY2OTYxNTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5NzQ0NWJkZjViZjYxZmY3MDZiYzM1YWQwOGMwNTU1NTc3ZWFkYzk0OTQ5ZGE3MWZjZjk2YWU0NWIwZDI2NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3OGU2ZDJmZjllNGUyZWMzMjRkNmIwMTA0MWY5OTNlYzRhN2Y3MTUxM2M3NzlkNzU3OThlNWQ3MDdmNjgyOTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77bfaf9c751340478a864d967b5c2da1",
+      "statement": "Repository-memory retrieval is intentionally best effort: TaskAgent constructs/builds a repository index if possible and gets up to eight relevant context items, but unavailable memory construction or query errors return an empty context rather than failing the task.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L656-L683",
+          "version": "repo-lines-v1:sha256:68e244e58283aa52eb819a33daf335e6221374ac06a25936df43e75722834011:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyYmQ2YjhiMDNjZWJlNzQ4ZDdiZTdmNTcyN2MwMTQzNTUzMjI5MDQyM2NmZDAxZGUxYjNhYWI0MzE0MzE1ZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyYTljZDYwNDU5YTNlMWRiNzk3YzM1Mjg5ZTkzYzMzODlmNzg3YjdjNTU0OGZmYzQzNDQ2MDIyMDM1NjRkZmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE3ZTM2NmNmODIzZGZiMWUzYThkNjdjMjNhMmMxNzJjZmYyYjkxOTkyN2E3MGVjODUzMDM0ODc3MTlmMzA0YzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc1ZjBkM2NjYzRlZmQxODEwYmVmMjBkYWVmNjk1MGZmZTQzNDQzMTA5ZjNiM2U2OTEwY2Y2NWM4Mzg2ZWJiNGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f4b4eb9ba9e845d4a366c03062b18f58",
+      "statement": "Legacy planning persists a timestamped Markdown plan artifact and falls back to a rule-based plan when no provider is configured or an LLM completion fails; memory context, when available, is injected into the LLM prompt.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L685-L777",
+          "version": "repo-lines-v1:sha256:4173fede1b45e3a776a62734173dc66295e3eea26d3bb703b25d5ca9ab8f8a6d:eyJzZWxlY3RlZExpbmVDb3VudCI6OTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3OWRlMTc0YmU2M2RjNjAzZTY5M2EwYWU3NWQzOWU5YWYwMjIwNzY0M2ViYWI0NTBjMDY1NjY1ZDY1ZGExY2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwNzQ1YTVlYThmMDgxNjRjZDIxYjFlODRiNWI2NWFhZTY3Y2ZkYTgxZmE3OWYzZWExMGEwYWVhOTQxYmY5ZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0MDQ0MTAwMDAyM2IwOGRmOTAzMzg3Njc0NjEzNjIzMWFjZWM0YmU4M2E3OWNlNzM1NzI3ZDU1OWNiYjVkMDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjMGM1ODlmODlhNjNlODU2MzIzYzc2Yjk5NmU4MTkyMjk1NDI5MDE0YjQ2ODgwMzg2YWNhMjBlNmQwZmMzM2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_429e3ee75cd541cf9774168d3e5d78e0",
+      "statement": "Legacy implementation calls `CodingAgent.implement()` and applies returned patches only when dry run has been explicitly disabled; application counts/errors are summarized, and applying without requested tests produces a warning rather than automatically running tests.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L779-L856",
+          "version": "repo-lines-v1:sha256:a5ada027bbfef6691ab8bf717f82493ece468e4de8efd307f262ee4e902f7b0c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYzAzM2RlZTVhYjc0NTZjMjBhODY4OTRhZTU5NzgyNjdlMzEzNjA1MDBmZmFjYjlmMDViYmNlNTZiNzRjNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczMGUwNTgxZTIyMjQ1MjUzNjE3ZDc0ZmJiMTEzOGY3Yzg3ZmU4Yjc4YzNkYTRkNmI5OWM3OTI0ODNkY2ZiYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWJmY2QzYmQ2N2RhYjJiNTc3YTQ3NGFjMmUyZmFhM2M1OWZjODRkNDcxMjI2OGQ5ZjVkZDNlMTRiOGFmMzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L127-L210",
+          "version": "repo-lines-v1:sha256:03b6bc0a6228fefb40b2cd89dc8f58f5e0c7fc479dde73e7b9d0456a355b4ac9:eyJzZWxlY3RlZExpbmVDb3VudCI6ODQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5ZGY3YTY1MThkOTM0Mjc3ZjZkMTA5ZDFjZDlkYjc0ZmUxMjZmMTE2NjNlYWNlNWE4MjhjNTMzOWQ0N2ZjMGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5M2U4NWNjNjY5MGY5Y2ZkNWY2YzVjYmUxZGVhNzVlMTVlYzdmODE3MzJjMmQ3ODg1ZTAwMDk0OWM5MTk3ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4YTNhZjNiNDMxZmYyYzJiOGY2YTBmZDcxNzkzNzNkYzZhODJhYzU0OWQ0Y2U1Nzk2MGNmZmE5MzhmMWI0OTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b5ce28d991ee459e9ba5721e231eebfb",
+      "statement": "Legacy diffing prefers `git diff` but can use generated patch contents when Git fails or reports no changes, and the optional test step records terminal exit code, stdout, and stderr into the final result.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L858-L926",
+          "version": "repo-lines-v1:sha256:c86fdaff8612ce518ef7e74402c6159b5795bf978bb19adbe86ea83fcd220db5:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjM2U3NzJmZDQ5ODg0ZTVhOWIzM2M5NzgxZDI3NWJjZDU3YzkyOTM5NTM3MzA0OTVhZTI4NjVlOTU5N2U4NWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjQzZDA2MWQ5YzM3MDA4NmRiZmYxZjlkNDY0MjhhMTY3OTgwZDllZjU1YTVmNzc4YjE4MDlmY2EzMDU2MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkZDBmZmQzMjBiZTYzZmVjMjk2MWY1ZDFjZDA2ZjRkMjZmZDU0MjE4NGMzYTEwYzcyOTk2MzZmZWVmNWYxYjgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L140-L156",
+          "version": "repo-lines-v1:sha256:b667ed21f033631421e8a6bcabdc31b36d8d5a81870ee81f8a29dd4142fef7c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1ODEwMjdiNWU0NjVjNTFlNTEwZjkyZmQwYmFhMmE1MDhhOWExZTUzNWE3ZDI2OWQ4Y2VjYTk3MjE5MGY2MGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0OWVlZTJkYjU1MWI2ZjFhZDVkYjVhN2RiOTljZjY0Y2JkYzVlMzU2YzE1YmM1ZGEwYjRiY2FiNTkyOTZkZDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmMDY2NGViZjMyYTYzZDZjMWI1YjQzOTlmODhjYzBjZDU4OTM4YTBmMDhhMzI1ZjY0NzMwOTZmZGM4ZWJhNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwMmQ5NTJjODBlYjE2MDM0NjNjMGVjZmVjNzc0OGQ5MzQxZDMwYWM1MmZkYWMzMjgyYTAwZjhhNzRkZDY2NGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_11f0ddeab83141dfa9adadc17fce8799",
+      "statement": "A `TaskResult` is the durable per-turn record: it contains an ID, final status, ordered `TaskStep` records with timings/artifacts/errors, implementation and patch data, diff, test diagnostics, generated files, duration, timestamp, and top-level error; delegated results add repair and review/test fields.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L582-L616",
+          "version": "repo-lines-v1:sha256:745e077aaf87ea745540ddda518f8cd4994c2ca7ea7e66a0c2e2326b972f43b2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIzYjRhYjc0MDMyODQyOWYyMDQxOTE0NzQ3ZDVlZjQxNzQzMDEwMTUwNzE0ZmE3ZDY2ZmQ3NWVjNDVkNjNjYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjNDNiZjZjNzMzOTJkYWJlM2EyNGMwMjZkNTY1ZDYzZGMzYzQyYTUzMWRkNTNiNjQ2MTQxMGQ5NGViMDRkMmUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L932-L966",
+          "version": "repo-lines-v1:sha256:b0a1e9a90d4f93d79167b16850de2a1d0fe006873eda2082d4961f46d1525bc0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA0ZjhhZGEyODQyZDk1NDU3MDIzMTlmMWU4MTkzYWEzZGU2ZDJhNmQ4NGZmMWY5MTc4ZjNlYzFjNjI1NGViZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5ZmQ2ZWYwMWYwNjJiNTA4ZDBkYWE2ZjE0NmMzNGFhMjRkOTY0ZjhjMjk3OWJlZjg4MjVkMTA5Zjc1YmRkMzAifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L109-L177",
+          "version": "repo-lines-v1:sha256:9a1bf4e453fff3e74474c38f3eaeae98deb5ec897e2c70c73b4f986e1d89ab2a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NWZiMTJhYTBmN2RmMmNjODU0YzY0ZWRhODI1ZTliMTJkM2U5Y2E0YjcyMmRmNmQ0MWFkMmNkZDI1Mzg3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkwMjMxNjA5NDZiMjc2ZDEwMTg1MjA1Njg0MzM1ZDQ2M2FkMTc4MjE2YjI2Y2RhNWY5NTRjN2VjNjI3MjkxNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_292d396ec7094944a2e7fbc293716b6c",
+      "statement": "Delegated tasks create a per-run `SharedTaskContext` and register repository, research, coding/repair, architecture, review, and test capabilities; context is the structured accumulation point for inter-agent outputs rather than direct agent-to-agent communication.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/delegation.py#L39-L96",
+          "version": "repo-lines-v1:sha256:17d8bffa790953f08f1147b343ed20d3c39320f63bce2f99ae228f2a2d0b5080:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2ZWIwMzljMmFhMWM0ZGNlNmNiOTM0NmY2MmZjM2QwNTdhYjFhYjBmMmNhYzE0NzhjOTRkYWU2NGVhYzI1MjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2YmE0NjhhZmNiY2ViYTE0ZDYxMWQxNDUyNThmZGQ4N2NiNGI5NzdjNWNmYTk3ODgxMTYwNzI4YjA4YzYzM2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5MDE0YmRlMjg5MmY3ZWViZTQxNTFkMDkyNzgxMTY0ZjE2ZTk2MTdkYzExNTkyZTI3NTkyYjQxZDY3ZmFkZmYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L239-L376",
+          "version": "repo-lines-v1:sha256:050190282abf3a0b8352da57c90953842a3125d2cfb0b6b0a3ddef2481071ecf:eyJzZWxlY3RlZExpbmVDb3VudCI6MTM4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxNGU1Y2EzMGNkNmMxMTFmNDg1ZjQyZTRjNjZkOTY4ZWViNzVlYTMzMWZlNDRiNDdkZjI0ZjE2ZGYwYTE0NzIzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIzMmI4NGU3MjI1NTk3NjdmZDEyYmUzOGMzY2VhYzc5ZDY1MzRlZWY4MGEwM2Q1ZTg1ZGIyNWE2YmJmMmM4ODE3IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1Zjg0ZDc4NWJiODU4ZGFkYmVmZjI1YWFjOGM0Y2UwZThjM2EyNTQyY2Y4ODdhYjk0Y2FjNGExZjUzYzc0OGY5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI1N2FjYTdlNTY5OGUzYzVkZGViMzUyNTJiNWE3OTQ1NTdhOTQyNzIyODg0N2U2ODA3N2MwMWM5YTZmYjA2Njc5In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/delegation.py#L75-L152",
+          "version": "repo-lines-v1:sha256:f10b4b6374989a90ba3d400bbbc874438fbdd1824235013c7a38187af257aad4:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNjI2YWZmMTAzYTM4YTcyNmJiYmM1N2NkYmEwNWVkZGQ3NmQwNmU4MzY2MzUyNjcwZWNmYzdlZjc1OTQxNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5ODk1Y2FhMzgwZDk2YzdlMDM4MTQyZDIyN2E3ODNmN2E2ZDEzN2U3MGZmOTc0NWI5YzRhMjNhYmM5ODVlYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fdba5812e83d41dea214304ec4ebf7ae",
+      "statement": "The delegated pipeline performs repository analysis, research, best-effort memory retrieval, architecture, code generation, diffing, then a review/test/repair phase; repository-analysis and code-generation failures finalize it immediately.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L266-L338",
+          "version": "repo-lines-v1:sha256:fa945cb82b98731f43fd8dc359629dae1e76c36c65e852504005ae19c755a202:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1NjljYjA5MjgwZWUwNzgxOTQ1ZTQ4ZDQwNDFiZDJkZmFhZTY5MWFkMmVhYmY1ZDNjYmEwODQ2YzcyMTZjYWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMzNzQ4NjFkZDk2YTkzNDA2MDExZDkyZjEzNTQ1MDE3MDRjYjgyY2Q4YjhjOTljYzk5ZmQ1YzdlZDEzOGY3NzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFlMTEzNDE4YWI5NDUyOTk3NTRkNWEzOWNlZmRlYmMwNTgxYmUxNzA5NDBhM2RhODJkZjRjNWQ3MmRjY2E2ZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5a4e06627f714f648d397e3af47d68a4",
+      "statement": "Delegation routing is capability based and deterministic: the framework dispatches to the first registered descriptor for a capability, records a completed/failed delegation step, and agents communicate through the shared context.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/delegation.py#L102-L159",
+          "version": "repo-lines-v1:sha256:ebca39b942338eb71c0772c21578370ede9b74dfc454997da4a43d1adbc556b0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyNTNhOGFjNTA2MTVjOWRlMTVhMzAwZGMzMDViMDdiNjI2YjlkM2NhMGI5MTUxNzM1ZGZhNzM1OGZmODEzZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyMDZkNmU5YWM4ZjI1ZjU3Y2IxNDQzNWRjOTU0MDQ0MmNiNTJmYzMzZmU0N2I0ODcwZDk2MmE3MDhlYTkyMTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkOWY1MWY5NTNlOWFiNzBhNTIzNDVhYjJlNWUxM2RhNTZjMmU5NzYwNTQ0NDAxNzM5MzAwYmI3YjYzODNiY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0NzdhYWJjNzJkNTg2NzA3NGMxNzJmMGMzMDliMDk2ODFlMDdiYjk5M2U3YzBhODYyMzk4NzE2NWVkZGIxMGYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/delegation.py#L61-L82",
+          "version": "repo-lines-v1:sha256:4112291a2199b2a876aebfe0fb3978b11c8b97465361b7f376e6da2949abc868:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MzBlNTU3NGUyZjNjZWY1MjA0Y2E4YjBhZWE2ZjNjMGQ4ODJjYTVhYjkxM2JkNjIzODZmM2U2YjU5M2VhMzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZjRjZTAzMDJlZDFkOGE1ODY0NjljYWFkNTUxMzk2MzNiMTBlZTYxMjBiYjk5ZTVmYjg2MTA1ZWQ4NzhmMmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1NGM3OWFkMjQyYzYzOWZjM2FkN2RmOGI2YjNkOWJiOWI0OTNmMTQxMTg0NmI2ZmE4NzFmZjMyMDViMjI0MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczYjUwZjU5NzM3NTlmMzBhODMzNDhlMGQ3MGU1Y2UzZmI5ZWVjMDAzYmY1NTMzMGY3MGYwOTViMTVjMDg1MmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d1c8b2d9cd54b7d908de9e1a108aa55",
+      "statement": "The basic delegated repair loop reviews first, repairs rejected reviews while budget remains, otherwise runs the configured terminal-backed test command, and after a test failure repairs/re-diffs until it passes or the cap is exhausted; its iteration range permits one more review/test attempt than repair attempts.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L509-L580",
+          "version": "repo-lines-v1:sha256:e2f81e1718eac645a04bc0544c324137015d10aa9430b1896a8907fdccc12c6c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhYzFmMDg4MzVkMTdhNjliYWY3OGYwYzYxOGQzMmQ0MTQxNmNlM2JjZDNhMzg2ZmZjNTUwNzJlMzc4NTNiYmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5MTc2OTg2NzUzOWQ5NDM2ZDk5ZTBmMjQ5YWQxOGU1YTQ0YjhmYWI4OWU1MmQzMTZiYzdlMzExYTczMTdkOTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2ZGZjMzM4MjBjMzkzY2IzMjgyYjA0OGJmYjdmNjU4MmM1NTM3NmZmY2Q2ZTQxNzE2NTVlZTZkZDQyZjY5M2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3MjNmYWE0Zjc4NzRjYzAwNTIzMzJmNGE5NTZhZGRlNDVlOGQ2NWYxZTVjY2QxOGVkOWI1ZTg1OTZjNDk2OTUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/test_agent.py#L43-L84",
+          "version": "repo-lines-v1:sha256:066d1012c551e6597726dd51daf357e188f2ce513dcd5487355b5fa1cbdb63d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMzlmY2Y3MTA5MjE4YTc0NWUzNWY1MmRmYTAwMThhNzI1ZDdkYmY4YTY5NTI4NzRjYjVlMTI2ZDhmNTRmOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0NDQzODI0YmExYzI3YWQ2N2JlM2ZmZTI4NzE3YWU2ZTY3MDM1MTU5MGI2YTk1ZjU0ZTk5ZmNjOWE5YzBlMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyMTA0OTI1NjNjMzRlNzE2MzE3MGE1YzcyYzg4OTYwNzMxMmNhZWEyODMwZjc0NGNhMTI2NWFhN2IzYmRhOWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_22d610fce550465eb00e9b3b593703d9",
+      "statement": "ReviewerAgent writes approval feedback/issues into shared context using an LLM or heuristic checks, while TestAgent writes exit code, stdout, stderr, and up to 20 parsed pytest failure messages into that context.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/reviewer_agent.py#L39-L163",
+          "version": "repo-lines-v1:sha256:a51e3cb49ce294542fbe9536a1a63fe66f8413ed3eec48447b3c82d53f52c10b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhMTM5ZmNmNzEwOTIxOGE3NDVlMzVmNTJkZmEwMDE4YTcyNWQ3ZGJmOGE2OTUyODc0Y2I1ZTEyNmQ4ZjU0ZjllIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiZWIzZDBlY2EwNDYxZDQ2MzBjN2E4ODkwYTAzZGM4MThkOGNlNmFiNDYyYmY4YmUxYTlmODRhOWZiNmNmYWFiIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJiMDYzZjg5NTFhYTBlYzUxOTkwZTc0Mzk4MzI3YzA4NDFjYTZkNGM1YzZkNGE0MWYyYzg5ZWEyZDQ0NDZmYWVlIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/test_agent.py#L43-L107",
+          "version": "repo-lines-v1:sha256:fc32ddb76db8e2958754c3423fa33dd07e2fe4ddef453799bd193658faa14e02:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMzlmY2Y3MTA5MjE4YTc0NWUzNWY1MmRmYTAwMThhNzI1ZDdkYmY4YTY5NTI4NzRjYjVlMTI2ZDhmNTRmOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2YWFjZDA2ZGRhNzZmNzU4NGMyZGFkMDZjMTFmOGRlZGI5MzFkMGQzYjM5ZmU4NTc1NjcxZWQ3MTJhMzE4MGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0NDQzODI0YmExYzI3YWQ2N2JlM2ZmZTI4NzE3YWU2ZTY3MDM1MTU5MGI2YTk1ZjU0ZTk5ZmNjOWE5YzBlMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxMjRhNGVmOWZmZTA3MzZiYWY4NmFlNmU2OGY3YjY1YTc4MWIzYWI1NWMwNjIwYmFhZjgwYTdhOGYxNjYzM2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8e5d3a60bd7245c3bbf6bf6e0d063b9c",
+      "statement": "If injected, `SelfRepairFramework` replaces the basic repair loop with typed failure analysis, ranked viable strategies, repair, refreshed diff, review, and optionally tests; it terminates on success, budget exhaustion, no strategies, or repeated-category stagnation.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/self_repair.py#L266-L335",
+          "version": "repo-lines-v1:sha256:1471be9e11034f46871e54d0d38348098c5f83e3062a0d55975ada11e1b24d92:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyYzIzNTZhMGM1MTZjNjY3ZDBkOGMxM2YxNjRjNTU3NTkxZjA2ODdiOWYyNDRkMzgwZjkwYWY3OTNlMDBkYjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzOGM4ZmRhMTJhYjM0MzU4MDZkNmNmMjNmYjNkZTE3ZTQzMGQ4MDcyZjFkZTY0NjY0ZmVhN2RhYWY5YmM1NTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEzNmEyYzM5NmI2MGY2OTE1MjAyMDFjOTVhOWY4YzczMzVmMTMxMjAxNmU5OWRhNjUzNjYxMjUzNDMzMTM1ZjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2NGRjZjY4MTViNjdhMjQzODI0ZTgxNjQ0NjRkNjUzYTc3OWJmYzM1ODQ0NWMxN2NkYmM0YzA1NGFhYTg0NDAifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/self_repair.py#L95-L222",
+          "version": "repo-lines-v1:sha256:02af373fa0c244cfc62b5642e84e0a8c2ce9528d137edeea6454f46b9c953b3b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlNWJhODljY2RhOGM4ODFhYWQ4MjczMmVhYWVmNTJmMzFiNjc5ODY0ZTgxYjA0MGY3NjllMmY1ZDc2YmY3M2U3IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1OTA5YTUzYTYxOGQwMjhlMWQzMDAwYzBhN2FiY2VlY2JlNWZiMzdmNGU1MTFlZmU0NjY0M2ZhZDZlNjY4NzJmIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIxYjIwNDMwYjFjZmY1OWFlMjFmYzgxNDZhNTBmMTdhN2ZiMmNlYmFiODA0YzE0MGUzYmY3MGEzODNiNTMyNTgyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5NjM1M2I2ZWVkZWE1YzcwOGY4ODIyMmY3NjRjNDc0ZDBiZTFmYTQ3YzY5ODlhMDU3OGQyYWE4ZmI3NzUwNmVhIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L413-L507",
+          "version": "repo-lines-v1:sha256:0b4ce4fff15e65b78e27ca1d4939b8c18c7f9e08b645d08bd6a08a32b2ace5b2:eyJzZWxlY3RlZExpbmVDb3VudCI6OTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjZDFmYWRkYmU4MjJmYjY2OTAzMGYyNjA0YzNlYWM1N2Y1MDY0ZmViNzIzMGQ0ZmM4Yjk0ZThmOGZmMDdkMDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZTM3YmI2NGE5OTE3YjVmN2NhYmZhZDRmNGRiYjI2ZjQ2OTA0MThlN2U2NTBlZDMxYzk2NzU1N2Q2ZDJhYmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwYzA2ODQ2Y2RhZGE5NjBlMjRjYjdmNGE3ZmY5ODZmZjcyNGQ0ZjM3ZjgwNzAzNThkZDY4NTk3MzFkNGRkMTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwNzU1ZTE1ZDc3MmQ2YTBiODcxNWMwYmFmM2NmYTM5OTliNDFlMDkxNjA1YTFkMjRlYjY4OThlYTExNTZkMTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_463e2d70881140289c922e98907dd1d5",
+      "statement": "Terminal command execution runs with `cwd=repo_path`, allows only listed executable prefixes, supports dry-run, caps returned output, and kills timed-out commands; file path resolution accepts absolute paths unchanged and unchecked relative paths.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L221-L287",
+          "version": "repo-lines-v1:sha256:50765d0bb48731d8157ae9daa666a082c824cf28941329832861c5e402a63140:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyZGYyNGZlMjFhMWNlYTExMTc4OGE4N2IyYzI5YTM3ZWQyMDRhM2E4MGUyYWIyMmU0ZTU4MWI1OTljYzg0NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3MDA0MDdjYzUwYmY5NzQwZjJkNjI4Mjc0YTBkOGI1MjRhMTNiODA3NmNiZTdiNzMzNTRhMTExYTUyMzhkMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MjFjMTY5ZTk0ZTVkYWU3OGNiOWMwMGEwZGUwYWE2M2M2MjdkZTgzMTJmYTIzZWQ2YTZkYzMwNzRlNDQ5OWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L36-L74",
+          "version": "repo-lines-v1:sha256:04ae74b214342744e3f86b8ebdb57ce844614fbc301d9388209796d078ad1924:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjdjMTk0ODc0NDJlN2UzYjZlNzg3OTU1ZTk3Mjg2MjM1MWE4ZGE2MGQyOWFhYmZjOGEyYjc5ODA4ZmI3NGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYTY0YjUyMzZmODM5YmJhMzhiMmIwN2YxMzllYjAxMTU5OThjMzA0YzhjZGY4NmE1YmJkZWZlMjI0YzUzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllNGFjYzU4ZjA2NDQ5YWY0NmUxNzRkODI5MmY2YjNiYmY0MjZjNmJiNzAzY2NmNGE5YTFkNDFhNTQ2N2I5NzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L565-L583",
+          "version": "repo-lines-v1:sha256:479875c2b78c5ec96565bc7c9e8ae1354f24e8452bce9c3ba2510caaa0767d8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmNTQ2NDg1YmY1MzFjZTlhZWE2ZDM1MWJmOTI1NTUzZGY0OWY5MWFkMGNlZGVmZjBlOTEyY2ZhZjA2YTAxYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmMWYzODU4Y2E4NzkyNTAwYjY3NjJjODdjNTc2ZmIwOTVhMDE2NTZhZmQ2MzMzYjMzYjMzMDdhYTk2OTg4ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwYWI2OTFlODdiZjllZmFjODNlN2I3NzY1ZWM4OWZjMzdmODg5N2YyYWE1ZDQ2NDc4ODkwMjQyNWM4MmRiNmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6203f19c104046938b0a148bd807f36d",
+      "statement": "Terminal patch application preflights a unified diff with `patch --dry-run -p1` before real application, while the legacy patch application tool independently validates patch data, can back up modified files, and returns per-patch application/rollback information.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/patch_application.py#L99-L210",
+          "version": "repo-lines-v1:sha256:0555a4a4af5da260e8c45697a969482259b21538d1b8e71008753548911344b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJmMjU3ZWIzYTEzM2I1MDA5MjE1OWRlMDNlYWM3ZGFkMzNiMzNlM2RiOTgxNjc3MjIzZWQzZWZmMmI5MGNiNDAxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1NTAzMmU5NjRkMDkzMjM1MWU1ZDE4NTI2OTI4MWIxNzFhM2EwOWIwOGIyODZlNjYxZWE0NzAzMjNjODJlYjRkIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4Y2M0YTdkMWNjNzk2YWJhM2U0NjcyMzMyN2Y1MTdlOWY4MTE5ODJkMjUwZjA3MDI5ODZlNGI1NzY0YWQ5NTg5IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5OGEzYWYzYjQzMWZmMmMyYjhmNmEwZmQ3MTc5MzczZGM2YTgyYWM1NDlkNGNlNTc5NjBjZmZhOTM4ZjFiNDk5In0"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L434-L500",
+          "version": "repo-lines-v1:sha256:688ebf0a4c5db66c45ffc9d9dc5f3defdc3d067d89f1563b9134ae8e60cfbcb3:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZTBlMzM3MmRlMjhjN2Y4ZjU2ZTdmOTZiMjkxMTUyZDQzMTY1YjI0NmVmZDI4NzU0MjU1ZjNiZjYxZWI5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3MGY2YjY0MTE3ODRiOWRkNDVkYTE2NWRlYWJiNDY0ZTY1MGM5MzU0ZmFlZWMwMDNkNWVmMmUxNGEwYzBiOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyZTRmNDM4MTIzYmFiZmVmNjU5YmY1ZGVhYjg3NTJlNWExY2QwNjI0MDBiODU4YWVlZmRlYjAzMjUzMjYzNTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8395850ba5c046c098f23f55709add5e",
+      "statement": "Focused regression coverage uses fake collaborators for TaskAgent legacy behavior and temporary Git repositories for terminal operations, with dedicated suites for delegation and self-repair integration.",
+      "evidence": [
+        {
+          "resource": "repo://tests/test_delegation.py#L411-L540",
+          "version": "repo-lines-v1:sha256:4c32bb7a811b7233ae4eb9ce9985dd17c4790c23da2d5259eb736f7fa1e5c429:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2N2Y1OWVjOGU1MzFkZTBjZDYzNTQ4MjJiMWMwOGYzY2FhOTg3MzYxYzE4NjM0OTI3M2I4NWYwM2FiOTJiODU2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJjYjUyYWYzNmE1ZDQ2OWQ5NmViMTcxOTdmYWExYzUwYzUwNGUwZGRlZWU1MjYxNWNhNmIyOGRiZjhmMGNiY2U0IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwODI2NzZjODg4YzFhNGQ5ZmE3NzJmY2RjMzAyZjc3M2JjNzI5MGVlYmZmOWRhMzZhMzlmNDRjMzIxMTk4Mzg1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://tests/test_self_repair.py#L544-L608",
+          "version": "repo-lines-v1:sha256:2b403b12c31689093c6e5086f8d9ff7d607914ff06ba1894ae93974c290a1571:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2YWZhMGM3YTMyOGE4OTA5N2E1NDllZmMzYjAwMTIzOTU4NGI4OGI0OGIxNjYyYWVmODg0NzY0ZjU2Mjk2YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5YTA4MTU3ZGQzZTVmYzM4MTg4ODgyYjJiM2M0ZjY4YTM4MTY0YmMwMmM4MWE2MjAyNGM5MGRmYzFkMzkzZjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://tests/test_task_agent.py#L112-L206",
+          "version": "repo-lines-v1:sha256:58c0500f144a89430888b179fe7633c767c501d9b3595507316bf0ed345872c3:eyJzZWxlY3RlZExpbmVDb3VudCI6OTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NDJmNDBhZTdmMTNmMjg2MzJlNzEyNzViNTMwZjM4OWJkNWJjZjRmMDYwMGQ0MTFmZjNiMDI0OThhMzMxN2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjOWM0MDQ1NmZkM2IxMDE1ZDg4MTg5MWE3OGQ5MzJhZTNlOTcxYTU2YzhmNzA4ZWI2MzNlZTgyMTM4YzFlYWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3MjQzZDQ2YjYyMjIyN2JkNjM4M2I3ZTFjNGM1NTE3NjgxMmVmODQ2YTE2M2JjMjYyM2Q2ZThiNjcyZTNkNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0OTE0MTczNzM1MWRhZWU0ZjVkM2QxMGRiYTMxODdmMzQ5YTM4NTc0ZjZkMzU3NDdhYmEwNzA3M2ZlYmJmOGUifQ"
+        },
+        {
+          "resource": "repo://tests/test_terminal_tool.py#L14-L319",
+          "version": "repo-lines-v1:sha256:da4930801644a2c36e0332eed90f1061e95c7594aad72dbe5b9711d84b6d1f48:eyJzZWxlY3RlZExpbmVDb3VudCI6MzA2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIyM2YzNjZiOWJkOWE4ZDBmMzQwYTJiYzBiZTFlMjJlZWEyMDU2OGRkNzhhNDUyODFiNzIxYjMwZjIyZDA4N2YwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI5MjY0Mjg3ODZiNWUyNGYyODJkYTZkYmM4Y2NhOWY5YmM0MDU1YTU3ZmViNzMyNGRiNGRjOGVkYTk2MGQ4ZjVjIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJhOThiMDYzZDliNDdlNjUzNzk2MjU1NzJjY2UxOTc2NjlkNTc2N2UxMmMxOGJlMDc1NjUyYjhjZDk4MWNlOGQ1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MSwiZm9sbG93aW5nQ29udGV4dEhhc2giOiI4ZTdlNWUxZjU1ZjZmMjQ1ZTBjYjM3OTkwNjFmMDkyOWZhMjYxOTk1YjE5YzQ2MWRlNGQ0OWY5YjM4MWRmN2NkIn0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}

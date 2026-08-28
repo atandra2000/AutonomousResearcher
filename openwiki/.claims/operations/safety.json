@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:1cf837bc48d594f02219840c4c9a703fedc519889058ad35dcceffdd55c6f745",
+  "claims": [
+    {
+      "id": "claim_80a872654abe4fdb8ba3174deb5e016c",
+      "statement": "ToolGateway is the runtime tool-dispatch policy boundary: it evaluates registered/allowed policy, call budget, approval, sandbox access, execution timeout, and output validation in sequence, returning a ToolExecutionResult rather than raising policy/security failures.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L172-L240",
+          "version": "repo-lines-v1:sha256:eb117f0c14f1d40dd6c716f0ada7cca7bfa72a648ee6c884bc4020a0efee22a4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExMzlmY2Y3MTA5MjE4YTc0NWUzNWY1MmRmYTAwMThhNzI1ZDdkYmY4YTY5NTI4NzRjYjVlMTI2ZDhmNTRmOWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlNDc4OTYwZGYyNGVkMDgwY2UyNWI0YjRiOTJiMDcwOTA2OGU3OWY3MjRmMjRkMzY4YjY4YzY1MzVkZmU3NWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkOWY1MWY5NTNlOWFiNzBhNTIzNDVhYjJlNWUxM2RhNTZjMmU5NzYwNTQ0NDAxNzM5MzAwYmI3YjYzODNiY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4NzkxMTUwY2JmNDRhYmRiMDYyMmZiOTAwYmNkMDhkOTc2NjY4MjNmMTJjYzYxNjI2ZTJjM2JlYjg3NzBmNmUifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L309-L414",
+          "version": "repo-lines-v1:sha256:1dd8ade6332a392f4fae9ace40c979be5d02a55b9d8a82abd82ff13e8d50105c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI1Y2U2MjgwODAxODljOGE5NmFiMTJkMDY5NDkxYzU3YjYxZjZjNDNmZjk3NjM3N2U5YTk5M2Y1ZWI3YmRjNTIzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI3NzJmOTY5NWM3NDY3Yzc0NzczYzljZTdmYzQyOWM1ZDBkMGU0ODdmM2M1MWQxNWQ2NjY4YTNkMjQwNzJiYjk1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI1OWQ0NTRhODBkNzI3ODE0NjBlMDdmYTVlYjIxZWNmNjMyY2Y2MzZmOWY3ZjY4YzE4MGQyNGU2YTMyN2UzMWQ4IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2YzBiMmU5OWZjYjlkYzFiZjA3NzliNTRlN2EwNjM3ZDUyYjVlMDYxMGM4NjJkMjNmNWMyMDU1ZDM3NjU0ZDlhIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/models.py#L199-L239",
+          "version": "repo-lines-v1:sha256:052cb8c6e1912345860d0036310e07032adfc4eadf05960fae79f353a71049ca:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkZTZkMGQyMTM1MTRjM2FiMzU0MmU0YWVlYjgxNTViZjUxYzYzZmJlNzIzZmY5MWI4ODM5ZjdhYzJmMmNiOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMzI0ZDhjZWRmZjNhOGJiM2EzZDI0MWViNjQ1NGI3ZTgyZGEzNTY0M2IwOWE3YWIwMWVhYmYzNmU1YjUxNDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c4a8fbee45b64d7caec388cc06a6676a",
+      "statement": "Gateway policy failures—unknown or denied tools, exhausted call budget, approval denial, and sandbox violations—are classified as ToolFailureKind.POLICY, whereas timeouts and ToolError are recoverable and unexpected exceptions are internal.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L197-L230",
+          "version": "repo-lines-v1:sha256:3d35a6fa3744b90245236ef0ff3a25cb8ddcbd13bae8a757ffb25290b4aba923:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViOTYzNDk0NGI4NGE1NTQyNTY0YTllYjRjM2JmZmFlZDc1M2I5NzliZDcwMDcxMDY2NmRiOWE1ZDI2NjhhNjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNjODhiNmJjZDQyYjRjNmIwODgwOTM1YzQ1MDU1MDZhNjMwYTNkYjNmZWNhYmExODYxY2IxNjM4ZTZhODcyNjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE5MjA5ZTQ1ZWU5MzAxZDBhMmQ2NGFmZDRhNTlmZjkxYzhlN2ZjMmY2YWVmNzg4OTVmNzA2OTZjYWZiNTU2OGYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L317-L339",
+          "version": "repo-lines-v1:sha256:9d4f40374c21c6cdb25084320f4780ac1b388c6a0907482dd049d8324f6da954:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxYmM5MTUyOWU3NWVjOGVkZmVjY2FjOWNhZGFmMDBmODRkZTQ4NDUyM2FiMmRmMjkwYmJlZmZlZGJkMzk2MWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1N2VlZTQ4NWM2NjI1YjQzN2Y5ZThlZmJjYTY3YmFiOTg4ZjNhZGFiYmYyNzkzNTI2ZTFlMjdiOGY2Nzg3MmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiMzJkOWVjY2MyNWJiMzg3NTQ1ZmQ1NjI3ZDhmNjVhY2Q2NDJjNzc1ZGUwMGFjY2U4YmNiZDVjODQyYzdhNDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNmOGIzOTMyNGVjZDhkOTgxM2ZmYjhmMGYxNjc5YjUxNmI2NWFiNzA1OTEyN2ZhMTNkN2MwOTkwY2JkZTFlOGEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/models.py#L67-L80",
+          "version": "repo-lines-v1:sha256:efd01ea16e0f6168c9de788702244fc7fe8395b88296a3bd2f847bedd8a8f96b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhY2FlZWEzZjc5ZTc0MzJjNmZlN2RlY2Q0Zjk3OTI3NzNiOWU0MTAxMGUyNmE0MjZhMjdhNGZjYWNiOGNjN2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiZjg1NzNiZDM3ODhmMWU4NWNhNjI4NjFkNmEwZThhOGEwZjk5MWQzYTE1YmNiYjk2NjUzNzNiYTYwOTkzNTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExZDYxNzc4MTU0YzQzZjY1ZjliNzg2YTQ2OTU5NTIwM2M5NjM3YzlkNTU4MTJjNDRmYmM3NmYyMzlhNjQ3OTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8c3502200e1948ccbbca226e98e37ba1",
+      "statement": "Gateway configuration is least-privilege by default: unknown tools are denied, the workspace is empty, network is disabled, default execution timeout is 60 seconds, and a tool must be explicitly registered with an allowed policy to run.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L110-L143",
+          "version": "repo-lines-v1:sha256:60ba1ce58546ba2a2a9cea08e2e095fbc90c9b49f261b4599d2337cae9074551:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYzRlOWM0ODc0Yzk0N2YwNjkyYTRmMTQyODM5MDU2ODc3YWU5YmY2N2NjOTdiMDZiZTc3MTJiZGI1MzA4YjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2MGFhYmQzM2YxYjJlN2Q3YzljN2I4Y2RjMWVjMGNmOGVjYmRkY2M0MjRkNjkwMmJhODljMmQ3MzIyMDg4ODIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1NGM3OWFkMjQyYzYzOWZjM2FkN2RmOGI2YjNkOWJiOWI0OTNmMTQxMTg0NmI2ZmE4NzFmZjMyMDViMjI0MzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMzg5NTM0YmMyYmM5ZmVkODk0OWZkNTY2MjIzZmRlOTdlZmZiN2RlNWIwZjVjZWZmZWY3MzUxNTQ1MzZmNjIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/models.py#L247-L277",
+          "version": "repo-lines-v1:sha256:f4a9e4bace6b28f9cd6761488f5e6a99410cd2d9b79e74a4e0c9a33f1f958e97:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhZWNlMzJhYjg0NzFiNTY1NTJhM2UwMWYwYjRmN2Y5ZmIyMzk1ZWIwYWM5Y2Q4NmI4MzdlZGFmY2I1ZjczOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/policy.py#L24-L36",
+          "version": "repo-lines-v1:sha256:6331da3a973ceab7e574e9c6fb7677d2860e0f5aac1fa943189d3a095f667b34:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzNjAxMTk5NDQ4NDI2MTliZmIxMzc2M2JkNjFjZDBjMTk5MDdjNmE2YTlhZTVlMDMyNjlkMGU5ZGM0ZDc0ODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhZjk4MGQ5N2VhZDdlYTQ3OGQ4ZDBmYTdhNTdiMGVmYzFhOTYwNWFkMDc5MzY5ZTU4MjE2ZWNmNDcwN2JiOWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0ZDIzZWI3MTIyMGRhMzJjODU1ZWFjMGEwZWE0MmE3YzdjNmQ1NDUwNjg5YmQwMzFjYjc0ZTU5YzEzNWI3NmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d33e60f4e62541838d4896eed06b127e",
+      "statement": "Gateway sandboxing validates only declared filesystem paths and network permission before execution; it resolves workspace roots, rejects outside paths, and requires both per-tool and global network grants, but explicitly does not provide OS/container isolation.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L288-L307",
+          "version": "repo-lines-v1:sha256:1c21101aca72c429fa5509ec331c7ee075774af2664b199ff199d01af7b4873a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkMDY2YzM3ZGQyMDU0MzUyNjk0NTQ2YjJhMGNmZDgxYmZlZTZkMzc2YTMyNGI5OGVhMTI0OGE3ODI5NGE3MDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyZGM5ZjIwZmZjZWNiYzJlYTZjZGQ4MTAwOTY2NjMwNWViZGIwNzRmOTNmNzg2ZmVmM2M2YjhmNjA3NzIzYmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5MDVlYmYzYmE5ZjJkNTQzZWZkMzBhZWE0ZDc3MTBlY2VjMTJlYzkxOTUxMjMyMDIzMTc5ZGZlNzU4N2NhYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhNTE0M2ExM2Q2ZGJmOWQ5NzliNDkxYWE4MGZkNDUwZTc3MTQxMDMzNTE5YjAxNDZiNzY2NjY0MDQ4YjU3MDkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L345-L364",
+          "version": "repo-lines-v1:sha256:e401a58730e52f4db3067d78fb6a476a28e1e8585e14c7e041146c48f1867a96:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyODQ5MDdjMGU4NTFlOTYyMGZlMzQ4M2JhMTk4MzE5MDE3Y2E2Yjk2OTEyNzNiMmQyMDNmOGQ5ZTAxNDBkOTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmMWYzODU4Y2E4NzkyNTAwYjY3NjJjODdjNTc2ZmIwOTVhMDE2NTZhZmQ2MzMzYjMzYjMzMDdhYTk2OTg4ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4OGJjZjhiZGEwOWM3MWNiM2Q3NjkzM2VmMGI2ODMzMGJlNzQwNDk4YWI2MmQwNjExODY2MGZhYTU4MWE1NTgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/sandbox.py#L1-L12",
+          "version": "repo-lines-v1:sha256:df05f68c6858bdb7af6db1f4455e29b607dde58822371017c451fb4a1df72866:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkZjRjNDc5MTE4YWJkMTEzNTQ5NDJmY2QzZjM1ZWEzY2U3OTUzODljNTk5NjgyZWRkNTM5YmI4MGYzYThjMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkNDdjOTVlMGFjYTdmODhkMzMwMmYxN2QxYThjNDUzNzUxNzg2YTcwZDQ3Y2M5ODRmZWU5ZjhiZTY3YmI4ODYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/sandbox.py#L53-L100",
+          "version": "repo-lines-v1:sha256:d7305a907344ee7420e716d1120a0f203da7c9ebaa15761e6a9ad6f23db53251:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZjMmI2OGU3NTJjMjM3NzM1MjE3NTVlOWIyMGMyNzBhM2JmNzA1MWZlZTZjY2IxNDk0NmFmYTk4MDcwMjVlMmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0ZjcwYWVlNzllZTE0MTRhOTUyMjFiYzc0NTBhOTljYTA2M2EwOGVlMDJhN2M4ZGY1NGE0YTU4YjFlYmI2NzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhOGY1MjI4YjkzMGU2NTJkNDBmNWMxODc0YzIwZTdiNjM0NTZiZjNlNTQxODkxZTAyMzhjNDNmOGIyYTAyOWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExOWU5ZmIzNmYzNDNmOTA3NGE5NTFlNjIxNzUxNTdlNGExYjllNzgxYjY3NTI1ZTU5YmYxNzY2Yzc4YjM0M2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_65936675c4a147458225c4efea980c79",
+      "statement": "HIGH and CRITICAL gateway tools require approval by default; a callback exception denies, while a missing callback only denies when approval enforcement is enabled.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/approval.py#L68-L94",
+          "version": "repo-lines-v1:sha256:5ef140d9e69efb96458098f70895d4e932efcd09ebbe5f06f5310a3f7829c2b0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2ZDM0NWI0ZmY2MGY4MzA3NTU0OGE4Y2JkNWU2ZjE2NmNmOWZlMWE3ZDM0YTFmZjk1MDYyZDE0Y2ExZTRjOTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4NTY3YjcxOGYwMjdiNDZjYmVhYzBmYzc5OGFkMDk0NDUzOWI2ZWRmYzJhZTYzNDFhZDdhZWY4ZDQ2ZGIzNWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIyNGJlODBmZWE0ODJhMzkwZDFlOTZiYjE4NGQyYWE0ZmJjOTZkMzEyY2NlN2FlODJmZTA1NDBiYjVlNDdiNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L260-L286",
+          "version": "repo-lines-v1:sha256:aa7ef7c68d6bc91fbea07e21604cf1e2b7a068df686115371561455f0a131af9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0NjE3NmQ4NmJlM2RiNmYyNDk0ZjhkYmQ4YTlhOGQ0Mjk5MDgwMzM3NDAzMmUwZmZhYWVmNjdiZjk1NTg0ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxOGZhNDAzYmQxMjE4ODhhOWNlNWNhYmQyNWVlM2YyNGRlMzI0YzhkYTFiZDVhNGI4Zjk2ZGVjNjIzZTcwMTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0NjQzNzEyNTVjZDIxMzY4NTIxZjk5MjI2YmYzMDc5OTllOThlOTZiNTgyMWQxOTZlNjNiM2Y2OTFmOGJmZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA4YzNjMGJiYTRiMTI1YWNjNTkzNWRmOGNhOGFhNWJkMzhmYTJhNGY3ZTRmOGFmNGIyOWU2YWJmZDhjMjYzNDYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L51-L65",
+          "version": "repo-lines-v1:sha256:1f2bc8fdaca25fff358e6ae043f52d24d4cd1e511f8e2d946c1f421bd081fae1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxY2E2MjkwZTc5NzU4YjI0MThjNWIzODBlZjU3M2E3ODJmYjUxY2NiMzI1YTYwM2JhYmQ2YmUzMTYzNGM0OWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyY2RlNTRlYmIwZDJjMTk5NTNkNTI0M2E1ZWNkYjgzOWY3ZjBmNzY4MzE5M2I5N2ZkOGNjZTU4MTBjZjU5NTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0NGUzMWJlODZhMmFlZjkzY2FhMmY1NmU4YWFkMjFhYTNmODFiM2U5YTI5MjQ1YTgzZjA1NmIxMjYxZGIzZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwMTNmYTQyMTdmY2QxZTZmODRiYzE3OWI0ZGNkZjQ3NDM0MzU2ZTdhZjNkMjVmNjA4N2FhNDc4MGU5OTc4MzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1e2a11e3d3c34893bd55bb536ebf715f",
+      "statement": "AgentRuntime requires a configured ToolGateway for call_tool, routes calls through it, logs compact tool status metadata, and records gateway results plus configured risk into a SafetyController when one is present.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/runtime/runtime.py#L457-L538",
+          "version": "repo-lines-v1:sha256:3a50c7821a978a5b73cad5fab3d1e3daf42d191c6397265da4cf1108ad9a4984:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkMDA1NjNlNmExYjExMjExOTY4NzI1NGEyMWUwYmVjMWQ5NWVjN2MyYzYxZDE2MWY5NDFiMDRlNzAyNDNjMTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc3MmY5Njk1Yzc0NjdjNzQ3NzNjOWNlN2ZjNDI5YzVkMGQwZTQ4N2YzYzUxZDE1ZDY2NjhhM2QyNDA3MmJiOTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc5MTdhOTIwNTAyYWJiZmEwMGRjY2FmMTE3ZTBiZGNjMjEwMWIwOGY2YjkyYzk4NzI2YTY2MmI3NDExNzkwNmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzY2RiNTM1OGUxZGZiOGQ2NDM1OTdmZTlmZDBiNDI1Yjk4NTAyYWUwNmQ3OGNlYzdjMDdiZWE5YjZlNWI3YWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6a6ef01415e943569194a022ae434902",
+      "statement": "SafetyController observes completed runtime steps and deterministically evaluates progress and recorded gateway risks; safety termination is evaluated before evaluator completion and therefore overrides a success claim.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/runtime/runtime.py#L377-L400",
+          "version": "repo-lines-v1:sha256:b30a16322122751f8a44a30fe4be715b5f19934eb45e7a99ebc5f013b70c6d6d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2NTBkNWIxYTZkN2U3ZjllMzBhNzAzMGYxYWRlNGYzNDBjMWYxOTU0MDgzOGFhNjFiNWIzYmUyMTc5YWVjNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4ODZmYzNmZDhhZjgyNDI2ZDg5OWVkYjMzYjhlZmE2NTQ0YWY3YWQ0MjdiYzQ1M2ZlMDRmNTJjYTY1MTc3NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjYmJmOGVmNGFjMTdlMzg4YWU3MzNiNmI3ZDc2NzlkZDlhNTZlZWY1YzM0MmRlYmIyMDlmM2M5ODk4MmNjNjcifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/controller.py#L162-L201",
+          "version": "repo-lines-v1:sha256:0875085184e829f55f78968758ace7c1b9cc3ee35030b3db273ef7a99fa7a155:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NGI3Y2IxNTM2NDg2ZjY2OWYyMTM3Njc1MTA2OTM2OWM1YzMxNGU1MGU1YTI5NGFlZDY5ZTdmNWQ5NTU4YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4MGVlODhjNjEzZWIzMzcxMGZjNTBmY2Y2ZWE0MmZiMTBmZmVkMjcyYzIzYjFmNGU2YjI5ZGU5OGYwZjY1MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlN2MzNDc1NTViNTA4YTM0M2VlM2Y3ZDJiYTE2MDA4N2VlMzE4MDVmNWI3NjhhNjU1NzA0YTQ1YzRhNzA0YjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxYWYwMjU3MDU5MzQ2ZDk3MWJiYzI2OTk3MzMwODFlNzllZTA1NGJhNDM1OGFlMjM3Yzk0ZTRhNmY0MTFlNjEifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/policies.py#L151-L229",
+          "version": "repo-lines-v1:sha256:929935ab7d7138e1a75785e592185aae42bda524b416492c2cdd3201228b8275:eyJzZWxlY3RlZExpbmVDb3VudCI6NzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4Mzc2MTMyZWEwOWFkMjA4YmI2ZTIzMmZjZTcwZDM4ZjQ1YTRjMDA1MmUyODc0MjgzMmJhYjRhM2Q4NThlN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MTU1OTJjYzU0MTBkZDY5YjZhMWRmZmIyNzkxMGVhYjkxMDk3NTNkYzllOGNhYmRiM2Y5YzZkNmI4NjI5YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMTcyNzdmNzRkYmFhYzA2M2Y0YjczYzcwYWY1OWI1YTg2NjdjZGE1NjAzYzA3MmEyMjRjNWFlYmZmNTY4NWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmNjgxOThjZWFhMzc4OTNiN2ZjNDYzZDIwOGFlNDUxYzM0YTkzNTk4MGZjY2E1NGNiZWIyY2IwZTU2OTczYTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_27bbded929d94e809861d74d7163049c",
+      "statement": "The default safety policy prioritizes policy failures and exhausted budgets, then stagnation/diminishing returns, repeated failures/loops/duplicate calls, budget warnings, and high/critical risk escalation; defaults terminate on policy failure and pause for approval on high or critical risk.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/safety/policies.py#L151-L165",
+          "version": "repo-lines-v1:sha256:99091511356ca93a796b1ed9e25e561a58188f33553a1cbe733a2f7a567404b2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4Mzc2MTMyZWEwOWFkMjA4YmI2ZTIzMmZjZTcwZDM4ZjQ1YTRjMDA1MmUyODc0MjgzMmJhYjRhM2Q4NThlN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5OTU1YmI5YTE2YWIzYzE0NTI4MDU3ZWE2M2E3MjkyNmI0YTFiNjg0MTgwNTkxMjY1YTViYzkwNmU2YjM2NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhMTcyNzdmNzRkYmFhYzA2M2Y0YjczYzcwYWY1OWI1YTg2NjdjZGE1NjAzYzA3MmEyMjRjNWFlYmZmNTY4NWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFiZDYyMDdjZjNkNDgyYzFmYjFmYmUxYzdjMjU0NjhlYjQxYzhjM2FiOTdkNzkxZGFiZjllOWUyNTI0NmY0ODkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/policies.py#L231-L344",
+          "version": "repo-lines-v1:sha256:93913c56c37eda10fe30d45f8d5dbe25fb05150e7bcb3ddd32d83ebe39a4e7b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE0LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI4NTIyZTAyYjcxOTQzNmQ2NzZiNDgxMzk4MjRhODA4MTcxOGYxNDA2NzlhNjI4NWFlMDRlNDhkOTY3Yjk0NDU0IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJkYjgwY2NmODI4NGFmMTVmYTNkYmJlNjgzYTBhZTAzNjNiYzllODNmYjVmMzc0MDU5NTRiYWZkOTQ3OWQxMzNlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIwYWRiMDJiOGQ5M2U1MTY1N2E0MTdkMThhOTFiZTFkMDcyNTc3YzliZGVlZjIzNjk4ZDNiMWM3MjM1MzFhNGRkIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2YWQxZDQyYTMwNWRhOGZmOGRkMjhiNjg0NjA3NzcwMTRhZTZhN2RiZTUyMzFhNWFjOTU2MTEyMmMwNmI5NWQxIn0"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/policies.py#L37-L130",
+          "version": "repo-lines-v1:sha256:c2c952438cb1484bad03ec034e0d6169beb4c3afb87404c6dc7d8caf43afe41a:eyJzZWxlY3RlZExpbmVDb3VudCI6OTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4YjFiZDgyMGUwYmZhZDhkNjA4MDE0ZTBmOGZkNzEyNjY3YTViOWM1NGI0YmI2ZjA1Y2IzMDliODRjMDI1YWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmNTBhZTkwOTYwOGFjY2EzNWQxZjFiZjM3MzQzNTFkNzM3NWVjMjZmYjU3MDU4NWUzZDIyNzJlNWYwNjY5NDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_82fdacfcf4d945098d6237c1b8616f50",
+      "statement": "Safety replan requests are bounded by max_replans; when a pause requires approval, a missing, denying, or failing pause gate terminates the run, while approval records the highest approved risk to avoid repeated pauses for equivalent or lower-risk calls.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/safety/approval.py#L48-L65",
+          "version": "repo-lines-v1:sha256:30b9fcbb3bb69bac8ed48cb9a40300337f76acf2a9304377e6a3cb61ebb3d19e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiYjI2ZjIyYTRhMzgyMzVlN2Q0NDczMzk4ZWQ0M2E2OTA1MWExMDgzODJlYWNmNDY3NjU1NWMxM2YwYzZiNTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMTFlYTExZWYwMWUyZTk2OWU1ZjRjNjI3MmYzZGI2NmRlNWY4ZTU0ZDFjYWFhNGFmZWYyZDIwYmJhMmVmMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwZjA4NThlYTJlNDQ2MTAyNjY1MjRkZGM1NDVhNjkwZGI5YzMxM2Q3Y2NjZmMzZjJlMTA3ZWY5YTU0NTgxZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/controller.py#L289-L369",
+          "version": "repo-lines-v1:sha256:8fc3cb7ee71d2c830b2753e9f2c3f3ac37f5355d54272235f54cec279c394240:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzZDNlMzJkN2IzZjA4M2ZjMTc1Y2Y5YzNkMjNkMTYxZjJiZGI1YjNhNTMzZDg5OWFlMjMwYTdlMGVlY2NiZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4MGVlODhjNjEzZWIzMzcxMGZjNTBmY2Y2ZWE0MmZiMTBmZmVkMjcyYzIzYjFmNGU2YjI5ZGU5OGYwZjY1MWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzZDFmOTMwOGM4N2NhZGU4N2QxMDU4ZjIyYzRjODU0NWRkYzNmZGFkNDRhY2QwZjc5YzVkOGU2ZDFlOTllODgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1YmY4YmE5MjJkMzJmNjA0NTllY2ZiZTE3ZmRkMmI4MGY1NTFlYmE1OThjYWRjODhmNGY2YzQ1OTM1NzIxZTQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/models.py#L258-L263",
+          "version": "repo-lines-v1:sha256:8b8e207258632ef33755360cff534e5f4d4733de15e59509e08d0a1b95e76b58:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGUzY2Y1NDQ0ZDI5MDYyNzE3ZGUxYWFmZjBiMzdmMTMwZjRkMmUxZmNhOWU0YmE1OGViNWJjNzhlNWMwY2ViZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTQzM2QwZWE5ZWNmMmYzOWM5YTUwNDA3Mzk1ZWU0MTE3MmZlNjgyYzljODg1YTM1MDhmNzViZGVlMTUxZWZmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDJmZTZmNDJkMzBjYjdlNzMzNGQwYWJhMzhlZGZhNjliOTlhNGRmYjUxZGQxOTRhNzExMmFlYjVlNDg0ZGM0NCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTkwMjNhNDk3N2RlNmU4MjFmOGY0M2YzMTQzOTY0ODIzYTIyYjJlOTlmZmVkOGM5NmY0ZmE3OTMwZmFhYmQ2ZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_397f186b1869408d81bb6d03e096e6ac",
+      "statement": "Safety state, including bounded detector histories and decisions, is serialized under ctx.metadata['safety_state'] for checkpoint/resume; corrupt serialized safety state logs a warning and starts fresh.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/safety/controller.py#L120-L152",
+          "version": "repo-lines-v1:sha256:a7ddfb3cdfdc39dca3ff75477a891caa9c9decbe607eccd3bc2ef8f113dcea1a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViOGQxOGI5NTQ4ZGM4NmI0YjY2Yzg0YTgxMGYwMDllOTE1ZWFjOWE2NWQ1MjNhMjY0ZGY4MTBiMTNlNmQ3NTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYzY5NGRlMmQ1NDFiM2M2NWIwZDQ4OWE5YjlhZmNiMjgyMjExYmRhMzNhM2Y2NjAzZjBiNDRhNjA3ZmQ4N2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZjMjdjYTA0OGQ3MWFmM2IxOTQ4ZWRjNjgyYTRhZTJmYWViNTE3N2IyMDc3ZWI3NjA0OGNkYTFlYmJlMmRlYTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViZmE1YTYyNjYyMjFjMmFjNWYxNzAxYzM5ZTY0ZDY2MWIxMGYzODcyMWMzZmE0MWYyMjgzZTFjNzQyODVjNGYifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/controller.py#L60-L61",
+          "version": "repo-lines-v1:sha256:ce09b89c079d7e508a647ff4ebde41a6f29a3057f1be901728626866a26221fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzc2YTc4ZDUyMGNkYzQ3MDFkYmQzZWExNjZlZjYyNDc1MGE4MTQ2NzY0YjQ4NjNmMmE1NjNjZGE3YThmMjgyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiODhhNjQyNDRjNTQyZjEzMGQwYWM1NGVjMzhlM2RiMjZmMmRlODY0NGQ1OGI3YTU1N2Y2ZDA3Y2M5M2RiNjkzNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2Q1YjIxOGMwMzAxY2U4ODNkMzVmMzEzMjU1MTcxOTgxYmE4ZDU0ZDkxMTM4M2UzN2EzMTFhZmFmNDc3ZTY1MyJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/models.py#L209-L281",
+          "version": "repo-lines-v1:sha256:5ce97b3286b4552257f0afccdfb7f74494bdebf7a73452a133c6b7d11513873e:eyJzZWxlY3RlZExpbmVDb3VudCI6NzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0YzZjMjE0NWE4YmY4NzY0MDg3ZGYwODhiODlhNDMzYWRkZTViYWY0MzMzOWViZjlmYTc0M2UzZWM4ZTA4NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNGJmZDZhNGIxODFkNzg2MjY3MTg3YjJjMTYxZDI4NzFiODNjODcyNDhhOTgyMDE0NDMwNTU5MjllYzUwZjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNiMjM2N2JkMGRmMGE2MmRmYzNkMTIxOTkxYjI5OGZlNGU5YzNkMzI2NzUyZTY5ODU1OTQzYjZjZjRiMjQ4M2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b017c41dc324d499fd30c9546ac179c",
+      "statement": "Gateway events and safety decisions are emitted best-effort without breaking dispatch: gateway emits correlated tool_gateway lifecycle events, and the controller emits agent_runtime safety_decision events.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/gateway/gateway.py#L383-L435",
+          "version": "repo-lines-v1:sha256:3e0849b7ab4ba854a5a2d386a397cd3dd9144a0030096e97fd193e9f2c3289f7:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyMTFlMjkyMGVkODZlMWJhZjMxNTEwMjRkMTJmYjM3NzU3YzQ0Mjk1YjY4NzFkZDU3ZjNlNTg5MmZiOWI0YTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmMDg2OGQ4NjJlNTk2ZTFmYTBhMGE1ODc4YjA1MGVlYWZjNmUzNGQwZTE2MmJlMzhjNmFmM2IxY2JhY2U4ZmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3MDI5ODYwNWQwNGYwNGQwNzE0YTc1ZmM4OTdlMmRhZTQ1NTYyOTE5MzEwNjRlNTQ0MmY3NTJlMTEyNzAzNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiZmIwNzdjYTQ2Y2FjMTQ4OGZlNWMxMDA5YjA0ODBkMjk0YTA3OGY2NWQ5ZTliYmY0ODc1YzY4MjY3OWUyMTgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/safety/controller.py#L371-L404",
+          "version": "repo-lines-v1:sha256:c823393b08454da3461c9c76b949b5b51d9d3ca49e323e6b4c3ab1e8bd89b946:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlZmY5ZTcwMDZiYzA1YTZhOTk5N2Q0NzdmYzAxZjFlZTNlZmNhNDlmOTYwMWFkOTk3Zjg2NDg5OGM3MmVjY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiYzM3YjQyZGU2OTViNDgwMjYzN2M3ZjMwYjEyNDg4NGY4NDc5M2I2NWEzYzlmZGQ5MGM5ZmVjY2VjZGQyYzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2YWYzNDFmYmZhMTM4MjE3NWIxYzMyMGZjZWVkODJhN2JmNjI4NWI2YzBmNjQ2OGU1NjY1OTc2ZmMzNmM2ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5ODc3NTNkMzU2ZDE5YTFhZTM0ZGY1YjNlYjdmY2ExNzMxZTA2YjIxMmVhNzE2NjFkY2ZmNTUwYzNjZWMwNWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1b31b7a6c6d547ae892418af1a489095",
+      "statement": "TaskConfig defaults to dry-run patch generation, optional tests, a 600-second test timeout, and at most two repair iterations; TaskResult and TaskStep retain top-level, stage, test, review, and repair failure details.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L779-L856",
+          "version": "repo-lines-v1:sha256:a5ada027bbfef6691ab8bf717f82493ece468e4de8efd307f262ee4e902f7b0c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYzAzM2RlZTVhYjc0NTZjMjBhODY4OTRhZTU5NzgyNjdlMzEzNjA1MDBmZmFjYjlmMDViYmNlNTZiNzRjNWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjczMGUwNTgxZTIyMjQ1MjUzNjE3ZDc0ZmJiMTEzOGY3Yzg3ZmU4Yjc4YzNkYTRkNmI5OWM3OTI0ODNkY2ZiYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YWJmY2QzYmQ2N2RhYjJiNTc3YTQ3NGFjMmUyZmFhM2M1OWZjODRkNDcxMjI2OGQ5ZjVkZDNlMTRiOGFmMzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L109-L171",
+          "version": "repo-lines-v1:sha256:f841e8941cd658a4682b7494c6cdf7a360c2742b05f23b7bc17f10a243218163:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI1NWZiMTJhYTBmN2RmMmNjODU0YzY0ZWRhODI1ZTliMTJkM2U5Y2E0YjcyMmRmNmQ0MWFkMmNkZDI1Mzg3OGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhODI1NzFiYTdlZTE2MGU4NDU0NTQ1ZjBiMDY3NWZmM2QyZDI0MzI5MTA2NTlkNDNmMTM0NDEwMjg3MDM4Y2YiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/task.py#L58-L101",
+          "version": "repo-lines-v1:sha256:43961bd55714101164436b008116fe0f6ce30694a54142d7ddde3679e9ea726e:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhhYTg3OTk5NWU2ZWRmZmQ3M2YwNzBiNDZiZDI4YTFlYTJiNjFjMzFiODkwN2U0YzI1YWNlMDVjODY4YTA0OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_28ab7b4042be491595f116546abdbb15",
+      "statement": "LoopConfig defaults to dry-run experiments, five iterations, opt-in approval mode, and non-terminal iteration errors; loop and iteration state retain approval, cost, status, and error information.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L189-L224",
+          "version": "repo-lines-v1:sha256:55d0a6c184fd4adabbed3079585059fbd46a4a4572883df8ac035998e68fccd6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzZjRlNTU1MDYzZTU3MThjNDdiYjI3YzliYmE3YzJiZTQxNDk5NGU2ZTE4N2U1MDM3YzA0NGMzOThkNWU2YWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzM2NiN2JmNzQxMmZkMDk4MzZjNjJhNmRjZTJmMjllODFhNzhhYTQ5Y2Y2YTIyMGE5ZmQ2ZDZiOGU3OWM1YjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L232-L287",
+          "version": "repo-lines-v1:sha256:483f36dc5f9147f4851c7997bcebd8459046b827bf926e3cabcc2589455c04af:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM4NzY0MDAyODZmOGU4MGI2YTQ5MGU4MjdmZGNiYWEzZjI5M2UwYjNhNThjMTVhOTk3NDExNjM3ODE1OWY0YjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZmNlNWJmZmMyNzc4MDc5NzMxZGZlYjVjZGMxNTE5YjhmNzk4MjQ2Y2Y5ODU1NTY0MjhkMDJjNzc4OTc4OTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjY2ExYmU4OWJlODc0YTQ0ODkxN2I3ZjQ4NWU5Y2Q4NzAzNTllYTI4ZTUwZDQzNjQ2YTU5YjQ0MzFlZDY4N2UifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/models/loop.py#L74-L126",
+          "version": "repo-lines-v1:sha256:563f3cca4ef75e6b307d6474ccdb5f18949a212326479c98c54674df2f3d5d84:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2NTQ0MTllZjM0ODM0NGU1OGRhYjhjZmIyMWZmN2YyZWUxOWIwYjQwMjVlYmZmZGJmZWQ4Zjk2ZTQ3MWFjZDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4MjY3NmM4ODhjMWE0ZDlmYTc3MmZjZGMzMDJmNzczYmM3MjkwZWViZmY5ZGEzNmEzOWY0NGMzMjExOTgzODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzM5ZDU1YjFjNDA5YWVlN2MzMThhZThmZWU0ZjEyOWVlODM1OWViMjczNjU3NWJlYmI4MDcxN2E1Mzk2OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5fd96299575c46518044f739918b1d34",
+      "statement": "TerminalTool limits command execution to an executable-prefix allowlist, runs argv without a shell in repo_path, supports command dry-run, kills timed-out commands, caps decoded output, and preflights patch application with patch --dry-run.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L221-L287",
+          "version": "repo-lines-v1:sha256:50765d0bb48731d8157ae9daa666a082c824cf28941329832861c5e402a63140:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyZGYyNGZlMjFhMWNlYTExMTc4OGE4N2IyYzI5YTM3ZWQyMDRhM2E4MGUyYWIyMmU0ZTU4MWI1OTljYzg0NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3MDA0MDdjYzUwYmY5NzQwZjJkNjI4Mjc0YTBkOGI1MjRhMTNiODA3NmNiZTdiNzMzNTRhMTExYTUyMzhkMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5MjFjMTY5ZTk0ZTVkYWU3OGNiOWMwMGEwZGUwYWE2M2M2MjdkZTgzMTJmYTIzZWQ2YTZkYzMwNzRlNDQ5OWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L36-L74",
+          "version": "repo-lines-v1:sha256:04ae74b214342744e3f86b8ebdb57ce844614fbc301d9388209796d078ad1924:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjdjMTk0ODc0NDJlN2UzYjZlNzg3OTU1ZTk3Mjg2MjM1MWE4ZGE2MGQyOWFhYmZjOGEyYjc5ODA4ZmI3NGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYTY0YjUyMzZmODM5YmJhMzhiMmIwN2YxMzllYjAxMTU5OThjMzA0YzhjZGY4NmE1YmJkZWZlMjI0YzUzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllNGFjYzU4ZjA2NDQ5YWY0NmUxNzRkODI5MmY2YjNiYmY0MjZjNmJiNzAzY2NmNGE5YTFkNDFhNTQ2N2I5NzIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L434-L500",
+          "version": "repo-lines-v1:sha256:688ebf0a4c5db66c45ffc9d9dc5f3defdc3d067d89f1563b9134ae8e60cfbcb3:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ZTBlMzM3MmRlMjhjN2Y4ZjU2ZTdmOTZiMjkxMTUyZDQzMTY1YjI0NmVmZDI4NzU0MjU1ZjNiZjYxZWI5ZDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3MGY2YjY0MTE3ODRiOWRkNDVkYTE2NWRlYWJiNDY0ZTY1MGM5MzU0ZmFlZWMwMDNkNWVmMmUxNGEwYzBiOTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgyZTRmNDM4MTIzYmFiZmVmNjU5YmY1ZGVhYjg3NTJlNWExY2QwNjI0MDBiODU4YWVlZmRlYjAzMjUzMjYzNTgifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L565-L583",
+          "version": "repo-lines-v1:sha256:479875c2b78c5ec96565bc7c9e8ae1354f24e8452bce9c3ba2510caaa0767d8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmNTQ2NDg1YmY1MzFjZTlhZWE2ZDM1MWJmOTI1NTUzZGY0OWY5MWFkMGNlZGVmZjBlOTEyY2ZhZjA2YTAxYTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmMWYzODU4Y2E4NzkyNTAwYjY3NjJjODdjNTc2ZmIwOTVhMDE2NTZhZmQ2MzMzYjMzYjMzMDdhYTk2OTg4ODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwYWI2OTFlODdiZjllZmFjODNlN2I3NzY1ZWM4OWZjMzdmODg5N2YyYWE1ZDQ2NDc4ODkwMjQyNWM4MmRiNmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3f5a8fe63f454f70b5102313371392ed",
+      "statement": "TerminalTool is not a repository-containment boundary: its allowlist includes bash and sh, and its path resolver accepts absolute paths unchanged or simply joins relative paths to repo_path; TaskAgent invokes it and patch application directly rather than via ToolGateway.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L63-L67",
+          "version": "repo-lines-v1:sha256:595fd7935f1fa2392539485ffb769fb9c22f665510e77a763e59f8898a949a42:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDIxZDczMjczOTU1Mjc1OGU5MDk1MzM5MmE1Y2E5YTQ1ZGNkOGMyNGM0Zjc5OTRkYWFmMTVkZTUxODkxYjg0NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjdiMmI4YzhkYzQ1ODU5YjA3MDBmZDY1OGZiZjExNjU2YzBlOTAzZTRjMWVkNzk1NGVmYmUxMzczMDI4NjFhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmQ2NGNmNDYzMmRiMDQ4MGQ1NmZmODhhOTljNTlkYjJiNjZmZTEzNDk2ZTY4YTEzZDEyMzRhOTQ1NDI0YTVmZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTYzNjhiMzZkODA1MzI0ZGJlMDMwZmQzYTc0Y2U1MzUzMDAzZDY5MTM5M2ExNjFjYmNkMjc0ZWYzZThhZWI0MSJ9"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L800-L810",
+          "version": "repo-lines-v1:sha256:eda1f377fb32f9b2cc37924b478c3943747e243021846bf994ea7fb26b3fdac3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NGFlMTNlZDU1ZTc3NDQ2MmE3OWQ4MzNhOTNiZjgwZTUzNDk2NGY4MmUzYTUwMjRiMjAyNzczZmZmMzgxZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxMDM0ODFjNTdkMGYwZGMwZjc2Y2QyY2M4YjM2MDRjNGU4Mjk2ZGE0MTIyYWRkMTllODE3NDVkYzdlMzMxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkZmZlYWY5ZWU0ZmMzNDRlY2RlYTQ2NGNiNTg1ZjIwMjJjZmJiODM3MTZjMzRiMDEyY2RjYmE1OGM3YTc1ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxOTA2MzY5ZWY5NTEyN2JjNzcxYjgzMmE0NWJhZTZmZTI1ZDFkNGJlYTI1ZWFiMGE3NWQwM2Y3MjhhNWMxNzAifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/agents/task_agent.py#L858-L875",
+          "version": "repo-lines-v1:sha256:5198fec17b1edd53dfe4d6da40ec76c07649163085a74a34e4f308ee85087160:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjM2U3NzJmZDQ5ODg0ZTVhOWIzM2M5NzgxZDI3NWJjZDU3YzkyOTM5NTM3MzA0OTVhZTI4NjVlOTU5N2U4NWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI1YjQzZDA2MWQ5YzM3MDA4NmRiZmYxZjlkNDY0MjhhMTY3OTgwZDllZjU1YTVmNzc4YjE4MDlmY2EzMDU2MDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzZGQ1MmZmYTljNTNiNjQyOTUzMjkyZDYwNDFhODQ2ZGU2NTdmNzBhZjBjN2I4MGY4YTg2OTc5N2Y5YjkxNWMifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L36-L56",
+          "version": "repo-lines-v1:sha256:74223e742eb0112296bc5da228ecc67ce3c7efc711e08d0c38e5696c8160b746:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwYjdjMTk0ODc0NDJlN2UzYjZlNzg3OTU1ZTk3Mjg2MjM1MWE4ZGE2MGQyOWFhYmZjOGEyYjc5ODA4ZmI3NGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ODBiNzY1MThkYWU5NzlmYWViZDAyMzY3YTI5MjkyYTUwZDk3NjA5MjI1MWEzOGE2Y2UzMDg4MGJhNDI4MjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYTY0YjUyMzZmODM5YmJhMzhiMmIwN2YxMzllYjAxMTU5OThjMzA0YzhjZGY4NmE1YmJkZWZlMjI0YzUzNDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmNWZkNTEwYWFiMTBhZTQwYTEyMWU4MmMxYjRkZTU3ZWRlMWJjMzljMmM5NzRmYWE3NGY4N2Q3ZWQyYTc5MWIifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/tools/terminal.py#L565-L571",
+          "version": "repo-lines-v1:sha256:704d9473247f70b9034fa37a1792c30129a39061f81782eb854bd5671d20d70c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDFhYmNkMGNjNjkxM2Q0ZjUxZWIyMWU0ZjVhZmMyZTkwZjg2ZDM2YTQ1MGJiNDJjYjA1YzZmM2UwZDcwNmY4YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI3M2IxYTY0Mjk5MTZlZGI5ODE0YWQwNDEzOWJmNWViMjZiNjAwYTcxY2Q2OWRlZWMzMzA4N2EzYzNmMTZkZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWYxZjM4NThjYTg3OTI1MDBiNjc2MmM4N2M1NzZmYjA5NWEwMTY1NmFmZDYzMzNiMzNiMzMwN2FhOTY5ODg4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjlmZDUyODRkN2E0ZmFiM2Y3NDhmZWEyZGRiZmQ3MDUyNzJmN2U5NzQ0NmUwYmJjNmRhZWNiZjdmMjhlNmFiOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_610daa4e8cad46c2a565ddf6f9236028",
+      "statement": "The production service safety-chain builder enables gateway approval enforcement, confines the gateway workspace to the artifact directory, registers sandbox tools, and supplies a SafetyController only when enforce_safety_chain is enabled.",
+      "evidence": [
+        {
+          "resource": "repo://src/research_engineer/service/serve.py#L42-L63",
+          "version": "repo-lines-v1:sha256:8826d5272e69f4850e6cd5a3756f7bd571bdb179b087758182f685195a6a6957:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI2NTVlZTMyNzJkYzJhZjYzNDMyZjQ0ZjA3NDdjMmZmYzA2OWM0NWEwNGQ0ZTZhYzU2N2RmNzNiYmU5MmI1YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMTc1MjM4MThjYzQ3M2IzZDQ4NDVmOWMzNjc1NGNhMjdjZDVmMTRjYmEzNGE1MjJkZjQ1ZDRmZmY4NmY2MWEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwZmE0MTRkOGIxZWNhZGJlZGIwYjI5YTdkYmMwMGVhNGQyNjhiNWNmOTJmM2FjYjI5MzdhNjczMjcwZTI4ZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmMjg4YzlhYzk5MzZhMTNhNGQzZWEwYTFlZWU4ZDhmMDRkYjFkZGNlNjE2NjM3Mzg4NzZiOTNiZGNkZjBiN2UifQ"
+        },
+        {
+          "resource": "repo://src/research_engineer/service/serve.py#L92-L109",
+          "version": "repo-lines-v1:sha256:fffdc62ff3422dbed62ee4ec163d9fd06083dfd30513ef2aba8d3da07a4ec698:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQzMDEzZDNkNzdiNWE3NDFjMWNjYTQwYWU2NjY5N2Y1NGE1ZmY0ZThkZDg2Y2Q0MmNkNGIyYjMzMGM3NzQzNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZmYzNlNDE5ZjFlYWQ3N2U4YzA1MzI5NmI3MWViMjI3YmFkMGM2ZDJkMjJmMzA0YzliZWZmMTVlZTVlNjBiNjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxNjVkMzZmOGRiY2U3MDI4ZWNkZTgzNTE4NzI1YjQyYTBmYWY0ZjcwMGYwM2I4OTM1N2IwNDE3MjlmMWIyZDUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-08-28T12:25:37.430Z"
+  }
+}
