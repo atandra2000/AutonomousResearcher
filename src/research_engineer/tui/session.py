@@ -1,17 +1,20 @@
 """Codex-style interactive terminal session.
 
-``research-engineer chat`` opens a REPL where each line is either a slash
-command (``/research``, ``/analyze``, ``/llm``, ``/status``, ``/help``)
-or free-form text routed to the configured LLM provider. Results render
-as rich panels/tables — the same agents the one-shot CLI commands use,
-in a conversational loop.
+``research-engineer chat`` opens a project-aware REPL where slash commands
+run the platform's coding and research agents and free-form text is routed
+to the configured LLM provider with conversation context.
 """
 
 from __future__ import annotations
 
 import asyncio
+import re
+import shlex
+from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
+from pydantic import BaseModel, ValidationError
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -22,6 +25,19 @@ BANNER = """\
 Type a research question, or a command. [dim]([/dim]/help[dim] for the list, /exit to quit)[/dim]"""
 
 MAX_REPORT_PREVIEW = 800
+MAX_CONVERSATION_MESSAGES = 20
+SESSION_SCHEMA_VERSION = 1
+SESSION_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+
+
+class SessionState(BaseModel):
+    """Persisted interactive-session state."""
+
+    schema_version: int = SESSION_SCHEMA_VERSION
+    session_id: str
+    repo_path: str
+    turns: list[tuple[str, str]]
+    conversation: list[tuple[str, str]]
 
 
 class ChatSession:
@@ -39,6 +55,11 @@ class ChatSession:
         console: Console | None = None,
         llm: Any | None = None,
         *,
+        task_agent: Any | None = None,
+        repo_path: str | Path = ".",
+        persist: bool = True,
+        state_dir: str | Path = "output/sessions",
+        session_id: str | None = None,
         use_router: bool = True,
     ) -> None:
         self.console = console or Console()
@@ -46,7 +67,87 @@ class ChatSession:
         self._llm: Any | None = llm
         self._use_router = use_router
         self._llm_checked = llm is not None or not use_router
+        self._task_agent = task_agent
+        self.repo_path = Path(repo_path).expanduser().resolve()
+        if not self.repo_path.is_dir():
+            raise ValueError(f"Repository is not a directory: {self.repo_path}")
+        self._persist = persist
+        self.state_dir = Path(state_dir).expanduser().resolve()
+        self.session_id = session_id or f"session_{uuid4().hex[:12]}"
+        self._validate_session_id(self.session_id)
         self.turns: list[tuple[str, str]] = []
+        self._conversation: list[tuple[str, str]] = []
+
+    @classmethod
+    def from_saved(
+        cls,
+        session_id: str,
+        *,
+        console: Console | None = None,
+        llm: Any | None = None,
+        task_agent: Any | None = None,
+        state_dir: str | Path = "output/sessions",
+        use_router: bool = True,
+    ) -> ChatSession:
+        """Restore a session by ID from its typed local state file."""
+        cls._validate_session_id(session_id)
+        directory = Path(state_dir).expanduser().resolve()
+        path = directory / f"{session_id}.json"
+        try:
+            state = SessionState.model_validate_json(path.read_text())
+        except FileNotFoundError as exc:
+            raise ValueError(f"Session not found: {session_id}") from exc
+        except (OSError, ValidationError) as exc:
+            raise ValueError(f"Cannot load session {session_id}: {exc}") from exc
+        if state.schema_version != SESSION_SCHEMA_VERSION:
+            raise ValueError(
+                f"Unsupported session schema {state.schema_version}; "
+                f"expected {SESSION_SCHEMA_VERSION}"
+            )
+        session = cls(
+            console=console,
+            llm=llm,
+            task_agent=task_agent,
+            repo_path=state.repo_path,
+            persist=True,
+            state_dir=directory,
+            session_id=state.session_id,
+            use_router=use_router,
+        )
+        session.turns = state.turns
+        session._conversation = state.conversation[-MAX_CONVERSATION_MESSAGES:]
+        return session
+
+    @staticmethod
+    def _validate_session_id(session_id: str) -> None:
+        if not SESSION_ID_PATTERN.fullmatch(session_id):
+            raise ValueError(
+                "Invalid session ID; use only letters, numbers, '_' and '-'"
+            )
+
+    def _save_state(self) -> None:
+        if not self._persist:
+            return
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        path = self.state_dir / f"{self.session_id}.json"
+        temporary = path.with_suffix(".json.tmp")
+        state = SessionState(
+            session_id=self.session_id,
+            repo_path=str(self.repo_path),
+            turns=self.turns,
+            conversation=self._conversation,
+        )
+        # ponytail: one writer per session; add a lock if concurrent resume
+        # becomes a supported workflow.
+        temporary.write_text(state.model_dump_json(indent=2))
+        temporary.chmod(0o600)
+        temporary.replace(path)
+
+    def _persist_state(self) -> None:
+        try:
+            self._save_state()
+        except OSError as exc:
+            self.console.print(f"[yellow]Session state was not saved:[/yellow] {exc}")
 
     # ------------------------------------------------------------------
     # Input loop
@@ -85,6 +186,8 @@ class ChatSession:
 
     def _print_banner(self) -> None:
         self.console.print(Panel(BANNER, border_style="cyan"))
+        self.console.print(f"[dim]Workspace: {self.repo_path}[/dim]")
+        self.console.print(f"[dim]Session: {self.session_id}[/dim]")
 
     # ------------------------------------------------------------------
     # Command dispatch
@@ -109,30 +212,166 @@ class ChatSession:
                 )
                 return True
             await handler(rest.strip())
+            self._persist_state()
             return True
         await self._ask_llm(stripped)
+        self._persist_state()
         return True
 
     def _show_help(self) -> None:
         table = Table(show_header=False, box=None, pad_edge=False)
         table.add_column(style="bold cyan", no_wrap=True)
         table.add_column()
+        table.add_row(
+            "/task <goal>",
+            "Run a coding turn (--apply, --tests, --delegate)",
+        )
+        table.add_row("/repo [path]", "Show or change the active repository")
         table.add_row("/research <goal>", "Run the full autonomous "
                       "research workflow (LangGraph engine)")
         table.add_row("/analyze <paper>", "Analyze an arXiv ID/URL/PDF")
         table.add_row("/llm <prompt>", "Ask the configured LLM directly")
+        table.add_row("/clear", "Clear conversation context and turn history")
         table.add_row("/status", "Show session and LLM status")
         table.add_row("/help", "Show this help")
         table.add_row("/exit", "Leave the session")
         self.console.print(table)
         self.console.print(
-            "[dim]Free-form lines go straight to the LLM.[/dim]"
+            "[dim]/task is dry-run by default; use --apply to write changes. "
+            "Free-form lines continue the LLM conversation.[/dim]"
         )
-
 
     # ------------------------------------------------------------------
     # Commands
     # ------------------------------------------------------------------
+
+    async def _cmd_repo(self, path: str) -> None:
+        if not path:
+            self.console.print(f"[bold]Workspace:[/bold] {self.repo_path}")
+            return
+        try:
+            parts = shlex.split(path)
+        except ValueError as exc:
+            self.console.print(f"[red]Invalid repository path:[/red] {exc}")
+            return
+        if len(parts) != 1:
+            self.console.print("[yellow]Usage:[/yellow] /repo <path>")
+            return
+        candidate = Path(parts[0]).expanduser().resolve()
+        if not candidate.is_dir():
+            self.console.print(
+                f"[red]Repository is not a directory:[/red] {candidate}"
+            )
+            return
+        self.repo_path = candidate
+        self.console.print(f"[green]Workspace changed:[/green] {candidate}")
+
+    async def _cmd_task(self, raw_args: str) -> None:
+        try:
+            args = shlex.split(raw_args)
+        except ValueError as exc:
+            self.console.print(f"[red]Invalid task command:[/red] {exc}")
+            return
+
+        flags = {arg for arg in args if arg.startswith("--")}
+        supported = {"--apply", "--tests", "--delegate"}
+        unknown = flags - supported
+        if unknown:
+            self.console.print(
+                f"[red]Unknown option:[/red] {', '.join(sorted(unknown))}"
+            )
+            return
+        goal = " ".join(arg for arg in args if arg not in supported).strip()
+        if not goal:
+            self.console.print(
+                "[yellow]Usage:[/yellow] /task [--apply] [--tests] "
+                "[--delegate] <coding goal>"
+            )
+            return
+
+        from research_engineer.models.task import TaskConfig
+
+        if self._task_agent is None:
+            try:
+                from research_engineer.agents import TaskAgent
+
+                self._task_agent = TaskAgent(llm=self._ensure_llm())
+            except Exception as exc:
+                self.console.print(f"[red]Task agent unavailable:[/red] {exc}")
+                return
+
+        dry_run = "--apply" not in flags
+        run_tests = "--tests" in flags
+        delegate = "--delegate" in flags
+        mode = "dry-run" if dry_run else "apply"
+        config = TaskConfig(
+            goal=goal,
+            repo_path=str(self.repo_path),
+            dry_run=dry_run,
+            run_tests=run_tests,
+            delegate=delegate,
+        )
+        self.console.print(
+            f"[cyan]▸ Coding task ({mode}):[/cyan] {goal}\n"
+            f"[dim]Workspace: {self.repo_path}[/dim]"
+        )
+        try:
+            result = await self._task_agent.run(
+                goal,
+                str(self.repo_path),
+                config=config,
+                stream_sink=self.console.file,
+            )
+        except Exception as exc:
+            self.console.print(f"[red]Task failed:[/red] {exc}")
+            return
+
+        self.turns.append(("task", goal))
+        table = Table(title=f"Task {result.task_id}", box=None)
+        table.add_column("Step")
+        table.add_column("Status")
+        table.add_column("Summary")
+        for step in result.steps:
+            status = step.status.value
+            style = "green" if status == "completed" else "red"
+            table.add_row(
+                step.step_type.value,
+                f"[{style}]{status}[/{style}]",
+                step.summary,
+            )
+        self.console.print(table)
+        self.console.print(
+            f"Status: [bold]{result.status.value}[/bold] · "
+            f"Mode: {mode} · Patches: {result.patches_generated} · "
+            f"Time: {result.processing_time_seconds}s"
+        )
+        if result.delegated:
+            self.console.print(
+                f"Delegated · repair iterations: {result.repair_iterations}"
+            )
+        if result.diff:
+            self.console.print(
+                Panel(result.diff[:4000], title="Diff", border_style="cyan")
+            )
+        if result.test_exit_code is not None:
+            test_style = "green" if result.test_exit_code == 0 else "red"
+            self.console.print(
+                f"[{test_style}]Tests exited {result.test_exit_code}"
+                f"[/{test_style}]"
+            )
+            if result.test_stdout:
+                self.console.print(result.test_stdout[:2000])
+        if result.generated_files:
+            self.console.print(
+                "[bold]Artifacts:[/bold] " + ", ".join(result.generated_files)
+            )
+        if result.error:
+            self.console.print(f"[red]Error:[/red] {result.error}")
+
+    async def _cmd_clear(self, _: str) -> None:
+        self.turns.clear()
+        self._conversation.clear()
+        self.console.print("[green]Conversation cleared.[/green]")
 
     async def _cmd_research(self, goal: str) -> None:
         if not goal:
@@ -151,7 +390,9 @@ class ChatSession:
             f"[cyan]▸ Running research workflow:[/cyan] {goal}"
         )
         try:
-            result = await orchestrator.run(goal, ".", config=config)
+            result = await orchestrator.run(
+                goal, str(self.repo_path), config=config
+            )
         except Exception as exc:
             self.console.print(
                 f"[red]Research workflow failed:[/red] {exc}"
@@ -234,7 +475,7 @@ class ChatSession:
         if not prompt:
             self.console.print("[yellow]Usage:[/yellow] /llm <prompt>")
             return
-        await self._ask_llm(prompt, record=True)
+        await self._ask_llm(prompt)
 
     async def _cmd_status(self, _: str) -> None:
         provider = self._ensure_llm()
@@ -249,10 +490,12 @@ class ChatSession:
         table = Table(show_header=False, box=None, pad_edge=False)
         table.add_column(style="bold cyan", no_wrap=True)
         table.add_column()
+        table.add_row("Session", self.session_id)
+        table.add_row("Workspace", str(self.repo_path))
         table.add_row("LLM provider", provider_desc)
         table.add_row("Turns this session", str(len(self.turns)))
+        table.add_row("Task writes", "dry-run unless --apply is explicit")
         self.console.print(table)
-
 
     # ------------------------------------------------------------------
     # LLM plumbing
@@ -273,7 +516,7 @@ class ChatSession:
                     self._llm = None
         return self._llm
 
-    async def _ask_llm(self, prompt: str, *, record: bool = False) -> None:
+    async def _ask_llm(self, prompt: str) -> None:
         provider = self._ensure_llm()
         if provider is None:
             self.console.print(
@@ -289,18 +532,21 @@ class ChatSession:
                 LLMRole,
             )
 
-            response = await provider.complete(
-                LLMRequest(
-                    messages=[
-                        LLMMessage(role=LLMRole.USER, content=prompt),
-                    ],
-                )
-            )
+            history = self._conversation[-MAX_CONVERSATION_MESSAGES:]
+            messages = [
+                LLMMessage(role=LLMRole(role), content=content)
+                for role, content in history
+            ]
+            messages.append(LLMMessage(role=LLMRole.USER, content=prompt))
+            response = await provider.complete(LLMRequest(messages=messages))
         except Exception as exc:
             self.console.print(f"[red]LLM error:[/red] {exc}")
             return
-        if record:
-            self.turns.append(("llm", prompt))
+        self.turns.append(("llm", prompt))
+        self._conversation.extend(
+            [(LLMRole.USER.value, prompt), (LLMRole.ASSISTANT.value, response.content)]
+        )
+        self._conversation = self._conversation[-MAX_CONVERSATION_MESSAGES:]
         self.console.print(
             Panel(
                 Markdown(response.content),

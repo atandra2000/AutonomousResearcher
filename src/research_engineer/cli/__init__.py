@@ -3344,12 +3344,6 @@ def task(
         return 1
 
 
-        return 0
-    except Exception as e:
-        typer.echo(f"❌ Error: {e}", err=True)
-        return 1
-
-
 # ---------------------------------------------------------------------------
 # Phase 10: Provider-agnostic LLM layer CLI
 # ---------------------------------------------------------------------------
@@ -4051,15 +4045,38 @@ def benchmark_run(
 
 
 @app.command()
-def chat() -> None:
+def chat(
+    repo: Path = typer.Option(
+        Path("."),
+        "--repo",
+        help="Initial repository workspace",
+        exists=True,
+        file_okay=False,
+        resolve_path=True,
+    ),
+    resume: str | None = typer.Option(
+        None,
+        "--resume",
+        help="Resume a saved interactive session by ID",
+    ),
+) -> None:
     """Open the interactive codex-style research session.
 
-    Slash commands (/research, /analyze, /llm, /status, /help) dispatch
-    to the platform agents; free-form lines go to the configured LLM.
+    Use /task for patch-first coding turns, /repo to change workspaces,
+    and /research or /analyze for ML research workflows. Free-form lines
+    continue a context-aware LLM conversation.
     """
     from research_engineer.tui import ChatSession
 
-    asyncio.run(ChatSession().run())
+    try:
+        session = (
+            ChatSession.from_saved(resume)
+            if resume is not None
+            else ChatSession(repo_path=repo)
+        )
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--resume") from exc
+    asyncio.run(session.run())
 
 
 if __name__ == "__main__":
