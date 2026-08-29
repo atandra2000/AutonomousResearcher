@@ -1,5 +1,10 @@
 # P3-Short — Model Selection & Capability Validation Report
 
+> **Historical record (2026-08):** The production path described below included the
+> serving tier (API → PostgreSQL → Worker), removed in `c31c536` in the CLI-dedicated
+> rework; benchmark cases now execute directly through `AgentRuntime`. The
+> `scripts/p3/*` harnesses cited here are retained for provenance only.
+
 Date: 2026-08-27 · Scope: 3 models × 2 independent full-suite repeats × 20
 cases (P2 v2 LLM benchmark), executed through the production path
 (API → PostgreSQL → Worker → AgentRuntime → ToolGateway → SafetyController

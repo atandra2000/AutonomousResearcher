@@ -354,7 +354,7 @@ research-engineer memory graph
 ## 16. Development
 
 ```bash
-uv run python -m pytest -q    # 1475 passed, 2 skipped (network)
+uv run python -m pytest -q    # 1451 passed, 2 skipped (optional deps)
 uv run ruff check .       # lint
 uv run mypy src/research_engineer/llm   # type-check LLM layer
 ```

@@ -200,4 +200,4 @@ class MyTool(Tool[MyInput, MyOutput]):
 
 ---
 
-*Version: 2.0 · 56 tools · all typed via `Tool[Input, Output]`*
+*Version: 0.9.0 · 61 tools · all typed via `Tool[Input, Output]`*

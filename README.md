@@ -94,7 +94,7 @@ experiment planning (3), patch-first implementation (4), research memory
 (8), the autonomous loop (9), a provider-agnostic LLM layer (10),
 terminal-first coding (11), repository memory with hybrid retrieval (12),
 multi-agent delegation (13), self-repair (14), and the end-to-end
-research workflow (15) — 23 agents, 61 typed tools, 250+ pydantic models.
+research workflow (15) — 20 agents, 61 typed tools, 250+ pydantic models.
 
 **LangGraph is the research engine.** The seven research stages run as a
 LangGraph `StateGraph` (`graphs/research.py`) with checkpointed,

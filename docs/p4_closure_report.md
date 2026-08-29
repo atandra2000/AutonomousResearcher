@@ -1,5 +1,11 @@
 # P4 — Production Readiness Closure Report
 
+> **Historical record (2026-08):** This closure report predates the CLI-dedicated
+> rework: the Docker deployment verification and the serving tier it exercised were
+> removed in `c31c536`, and `scripts/p4_rescore.py` / `scripts/pilot_benchmark.py`
+> are retained for provenance only. The grader-hardening and E8 findings remain
+> valid.
+
 **Date:** 2026-08-27 · **Scope:** E4 grader hardening, DeepSeek candidate
 re-evaluation, production ImprovementStore, safety-chain regression test,
 CI stabilization, Docker deployment verification.

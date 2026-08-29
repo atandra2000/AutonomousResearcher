@@ -33,7 +33,7 @@ Detailed technical design for the Autonomous ML Research Engineer v2.0. This doc
 
 ## 2. Domain models
 
-**186 Pydantic v2 models** across 18 modules. All enums use `StrEnum`. See [Models Reference](models.md) for the complete list.
+**251 Pydantic v2 models** across 17 modules. All enums use `StrEnum`. See [Models Reference](models.md) for the complete list.
 
 ### Core entities
 
@@ -232,7 +232,7 @@ class Tool(ABC, Generic[InputType, OutputType]):
         return await self.execute(input)
 ```
 
-**56 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
+**61 tools** implement this contract. See [Tools Reference](tools.md) for every tool's input/output and key logic.
 
 ### Caching & rate limiting
 
@@ -362,7 +362,9 @@ class ToolError(Exception):
 
 ## 7. CLI layer
 
-**56 commands** across 7 Typer sub-apps: `core`, `memory`, `literature`, `experiment`, `evaluate`, `loop`, `llm`. See [CLI Reference](cli_reference.md).
+**73 commands**: 11 top-level plus 10 Typer sub-apps — `memory`, `literature`,
+`experiment`, `evaluate`, `loop`, `llm`, `review`, `eval-harness`, `improve`,
+`benchmark`. See [CLI Reference](cli_reference.md).
 
 Global agent instances are lazily constructed by `_get_*()` helpers in `cli/__init__.py`.
 
@@ -426,4 +428,4 @@ Optimization strategies: async I/O, connection pooling, caching (`SimpleCache`/`
 
 ---
 
-*Version: 0.9.0 · 15/15 phases · 1477 tests (1475 passed, 2 network-skipped)*
+*Version: 0.9.0 · 15/15 phases · 1453 tests (1451 passed, 2 optional-dependency skipped)*

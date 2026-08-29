@@ -1,6 +1,6 @@
 # Agents Reference
 
-Deep-dive into the 23 agents that power the Autonomous ML Research Engineer. Each agent has a single responsibility, a typed result model, and an LLM provider resolved through `resolve_llm()`.
+Deep-dive into the 20 agents that power the Autonomous ML Research Engineer — plus the self-repair (`FailureAnalyzer`, `RepairStrategist`) and orchestration (`ResearchOrchestrator`) framework classes documented alongside them. Each agent has a single responsibility, a typed result model, and an LLM provider resolved through `resolve_llm()`.
 
 > See [Architecture](architecture.md) for how agents fit together and [LLM Integration](llm_integration.md) for provider routing.
 
@@ -745,4 +745,4 @@ The platform uses three specialized models:
 
 ---
 
-*Version: 0.9.0 · 23 agents · all routed via `resolve_llm()`*
+*Version: 0.9.0 · 20 agents · all routed via `resolve_llm()`*

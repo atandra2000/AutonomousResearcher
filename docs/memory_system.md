@@ -263,4 +263,4 @@ research-engineer memory stats --repo <path>           # Index statistics
 
 ---
 
-*Version: 2.0 · 9 memory types (Phase 5) + repository memory (Phase 12) · 10 relationship types · 6 retrieval strategies*
+*Version: 0.9.0 · 9 memory types (Phase 5) + repository memory (Phase 12) · 10 relationship types · 6 retrieval strategies*

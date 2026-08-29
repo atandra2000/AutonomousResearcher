@@ -264,7 +264,7 @@ research-engineer llm config --config path/to/llm_config.yaml
 ## Verification
 
 ```bash
-uv run pytest -q            # 1475 passed, 2 skipped (network)
+uv run python -m pytest -q    # 1451 passed, 2 skipped (optional deps)
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check src/research_engineer/llm src/research_engineer/agents/_llm_support.py tests/test_llm.py   # clean
 ```

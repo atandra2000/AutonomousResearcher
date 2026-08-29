@@ -1,6 +1,6 @@
 # CLI Reference
 
-Complete reference for all **56 CLI commands** in the Autonomous ML Research Engineer, organized by sub-app.
+Complete reference for all **73 CLI commands** in the Autonomous ML Research Engineer, organized by command family.
 
 > Run `research-engineer <command> --help` for the full flag list.
 
@@ -345,4 +345,4 @@ See [Agents](agents.md) for the full agent API.
 
 ---
 
-*Version: 2.0 · 56 commands · 7 sub-apps*
+*Version: 0.9.0 · 73 commands · 10 sub-apps*

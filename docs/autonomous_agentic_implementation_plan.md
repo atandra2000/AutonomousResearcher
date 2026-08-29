@@ -1,5 +1,9 @@
 # Autonomous Agentic Implementation Plan
 
+> **Historical record:** Counts and scope below reflect this plan's completion time.
+> The serving tier later added on top was removed in `c31c536` (CLI-dedicated
+> rework). Current inventory: 20 agents · 61 tools · 251 models · 1451 tests.
+
 > **Goal:** Transform the Autonomous ML Research Engineer from a sequential
 > pipeline orchestrator into a fully autonomous, industry-grade, deployable
 > agentic research system.

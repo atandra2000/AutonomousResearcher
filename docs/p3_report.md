@@ -1,5 +1,11 @@
 # P3 Final Report — Agent Capability Optimization Experiment
 
+> **Historical record (2026-08):** This report documents runs executed through the
+> serving tier (run API → store → worker), which was removed in `c31c536` when the
+> product became CLI-dedicated. The `scripts/p3/*` harnesses referenced here target
+> that removed tier and are retained for provenance only — they no longer run.
+> The measured results below remain valid as recorded.
+
 > Status: IN PROGRESS — this report is finalized when all arms complete.
 > Everything below is generated from measured runs; nothing fabricated.
 

@@ -1,8 +1,8 @@
 # Architecture
 
-Technical architecture for the Autonomous ML Research Engineer v2.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
+Technical architecture for the Autonomous ML Research Engineer v0.9.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
 
-> **Status:** 15/15 phases complete · 23 agents · 61 tools · 251 Pydantic models across 17 modules · 70+ CLI commands · 1477 tests (1475 passed, 2 network-skipped) · opt-in LangGraph/LangChain runtime.
+> **Status:** 15/15 phases complete · 20 agents · 61 tools · 251 Pydantic models across 17 modules · 73 CLI commands · 1453 tests (1451 passed, 2 optional-dependency skipped) · LangGraph-only research engine.
 
 ---
 
@@ -51,9 +51,9 @@ The platform decomposes ML research work into **fifteen cooperating phases**, ea
 > The dotted arrows in the original mermaid (every agent → ModelRouter)
 > are summarised here as the bottom-up call chain above.
 ┌─────────────────────────────────────────────────────────────────┐
-│  CLI Layer  (Typer — 56 commands across 7 sub-apps)             │
+│  CLI Layer  (Typer — 73 commands across 10 sub-apps)              │
 ├─────────────────────────────────────────────────────────────────┤
-│  Agent Layer  (23 agents + frameworks + _llm_support.resolve_llm)│
+│  Agent Layer  (20 agents + frameworks + _llm_support.resolve_llm)│
 │   Phases 1–9: ResearchAgent · RepositoryAgent ·                 │
 │   ExperimentPlannerAgent · CodingAgent · MemoryAgent ·          │
 │   LiteratureAgent · ExperimentAgent · EvaluationAgent ·         │
@@ -70,7 +70,7 @@ The platform decomposes ML research work into **fifteen cooperating phases**, ea
 │   LLMProvider ABC · OllamaCloudProvider · ProviderFactory      │
 │   ModelRouter · _BoundProvider · resolve_llm                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  Domain Layer  (251 Pydantic models across 17 modules across 18 modules)         │
+│  Domain Layer  (251 Pydantic models across 17 modules)           │
 ├─────────────────────────────────────────────────────────────────┤
 │  Infrastructure Layer                                          │
 │   SQLite · ChromaDB · arXiv API · PyMuPDF · AST · httpx       │
@@ -302,7 +302,7 @@ flowchart TD
     CFG["llm_config.yaml"] --> FAC["ProviderFactory<br/>builds + caches providers<br/>\${VAR} env expansion"]
     FAC --> ROUT["ModelRouter<br/>for_agent(name) → _BoundProvider"]
     ROUT --> PROV["OllamaCloudProvider<br/>POST /v1/chat/completions"]
-    AGENTS["23 agents<br/>resolve_llm(agent_name, llm)"] --> ROUT
+    AGENTS["20 agents<br/>resolve_llm(agent_name, llm)"] --> ROUT
     PROV --> RESP["LLMResponse<br/>content + usage + model"]
 ```
 
@@ -470,13 +470,13 @@ See [Storage Schema](storage_schema.md) for every table and column.
 
 ```
 src/research_engineer/
-├── agents/      # 23 agents + delegation + self-repair + research workflow + _llm_support.py
+├── agents/      # 20 agents + delegation + self-repair + research workflow + _llm_support.py
 ├── llm/          # Phase 10: base, ollama_provider, factory, router
 ├── memory/       # Phase 12: indexer, symbol_graph, retriever, storage
-├── models/       # 251 Pydantic models across 17 modules across 18 modules
+├── models/       # 251 Pydantic models across 17 modules
 ├── tools/        # 61 typed tools
-└── cli/          # 56 Typer commands
-tests/            # 70+ test files, 1477 tests (1475 passed, 2 network-skipped)
+└── cli/          # 73 Typer commands
+tests/            # 70+ test files, 1453 tests (1451 passed, 2 optional-dependency skipped)
 llm_config.yaml   # provider + per-agent model config
 docs/             # this documentation set
 ```
@@ -493,14 +493,14 @@ flowchart BT
     INT --> E2E["End-to-end tests<br/>(CLI, full pipelines)"]
 ```
 
-- **1477 tests (1475 passed, 2 network-skipped)** across 45+ files.
+- **1453 tests (1451 passed, 2 optional-dependency skipped)** across 45+ files.
 - Every phase has dedicated model, tool, agent, and CLI test files.
 - `test_integration.py` and `test_integration_phases.py` cover end-to-end pipelines.
 - `test_llm.py` (29 tests) covers the LLM layer with a mock httpx transport.
 - Phase-specific tests: 60 task/terminal, 51 repo memory, 31 delegation, 31 self-repair, 39 research workflow.
 
 ```bash
-uv run pytest -q          # 1475 passed, 2 skipped (network)
+uv run python -m pytest -q    # 1451 passed, 2 skipped (optional deps)
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check .       # lint
 ```
@@ -517,4 +517,4 @@ uv run ruff check .       # lint
 
 ---
 
-*Version: 0.9.0 · Phase 15 complete · 1475 passing, 2 network-skipped*
+*Version: 0.9.0 · Phase 15 complete · 1451 passing, 2 optional-dependency skipped*

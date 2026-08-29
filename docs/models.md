@@ -1,6 +1,6 @@
 # Models Reference
 
-Reference for all **186 Pydantic v2 models** across 18 modules in the Autonomous ML Research Engineer. All enums use `StrEnum`.
+Reference for all **251 Pydantic v2 models** across 17 modules in the Autonomous ML Research Engineer. All enums use `StrEnum`.
 
 > See [System Design](system_design.md) for enum values and [Tools](tools.md) for I/O contracts.
 
@@ -168,4 +168,4 @@ See [Memory System](memory_system.md) for details.
 
 ---
 
-*Version: 2.0 · 186 Pydantic models · 18 modules*
+*Version: 0.9.0 · 251 Pydantic models · 17 modules*

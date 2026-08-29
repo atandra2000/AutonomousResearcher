@@ -121,4 +121,4 @@ uv run research-engineer benchmark p2        # LLM-backed tier with judge + ReAc
   and Pydantic v2 schemas; never `dict` / `Any` for inter-agent contracts.
 - **Output goes to `output/<phase>/<id>/`** — never write to repo root.
 - **Secrets stay out of git** — API keys only via `${VAR}` expansion in
-  `llm_config.yaml` / `deploy/.env` (both gitignored or env-sourced).
+  `llm_config.yaml` or environment variables (never committed).

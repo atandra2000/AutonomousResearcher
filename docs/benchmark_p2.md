@@ -3,7 +3,7 @@
 P2 adds the **LLM-backed tier** to the existing E1-E9 + P1 architecture.
 No new evaluation framework was introduced: the tier reuses the E4
 `EvalSuite`/`EvalTask` model, the P1 `BenchmarkRunner` production path
-(API -> store -> worker -> `AgentRuntime` -> `ToolGateway` ->
+(`AgentRuntime` -> `ToolGateway` ->
 `SafetyController` -> checkpointing -> evaluation -> E6 telemetry -> E8
 failure mining), and the Phase 10 provider abstraction.
 

@@ -2,9 +2,9 @@
 
 Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a multi-agent platform that automates the full ML research lifecycle.
 
-> **Current state:** 15/15 phases complete · 23 agents · 61 typed tools ·
-> 17 Pydantic v2 schema modules (251 classes) · 70+ CLI commands across 20
-> command families · **1475 passing, 2 network-skipped** · plus the E4 agent-eval harness,
+> **Current state:** 15/15 phases complete · 20 agents · 61 typed tools ·
+> 17 Pydantic v2 schema modules (251 classes) · 73 CLI commands across 10
+> sub-apps · **1451 passing, 2 optional-dependency skipped** · plus the E4 agent-eval harness,
 > E8 continuous-improvement loop, and P1/P2 research benchmarks.
 
 ---
@@ -22,14 +22,14 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 |----------|----------|-------------|
 | [**Architecture**](architecture.md) | Engineers, architects | High-level architecture, 15-phase pipeline, component layers, data flow. |
 | [**System Design**](system_design.md) | Engineers | Detailed design: domain models, tool contracts, storage schema, enums, error handling, testing strategy. |
-| [**Agents**](agents.md) | Engineers | Deep-dive on all 23 agents: responsibilities, constructors, workflows, LLM wiring. |
+| [**Agents**](agents.md) | Engineers | Deep-dive on all 20 agents: responsibilities, constructors, workflows, LLM wiring. |
 | [**Tools**](tools.md) | Engineers, contributors | Reference for all 61 typed tools: input/output models, key logic. |
-| [**Models**](models.md) | Engineers | Reference for Pydantic v2 models across 19 schema modules grouped by phase. |
+| [**Models**](models.md) | Engineers | Reference for Pydantic v2 models across 17 schema modules grouped by phase. |
 | [**Memory System**](memory_system.md) | Engineers | Memory types, retrieval strategies, knowledge graph, vector store, repository memory (Phase 12). |
 | [**Storage Schema**](storage_schema.md) | Engineers, DBAs | All SQLite tables, columns, relationships, output directory layout. |
-| [**CLI Reference**](cli_reference.md) | Users, engineers | All 70+ CLI commands with flags and examples. |
-| [**LLM Integration**](llm_integration.md) | GenAI engineers | Provider-agnostic LLM layer, Ollama Cloud, per-agent routing, 23-agent config. |
-| [**Framework-Stack Migration**](framework_stack_migration.md) | Engineers, architects | Opt-in LangGraph/LangChain runtime: research graph engine, Postgres checkpointing, LangChain provider, gateway adapter, web console. |
+| [**CLI Reference**](cli_reference.md) | Users, engineers | All 73 CLI commands with flags and examples. |
+| [**LLM Integration**](llm_integration.md) | GenAI engineers | Provider-agnostic LLM layer, Ollama Cloud, per-agent routing, 23-component config (20 agents + 3 framework classes). |
+| [**Framework-Stack Migration**](framework_stack_migration.md) | Engineers, architects | LangGraph as the only research engine: research graph, Postgres checkpointing, LangChain provider, gateway adapter. |
 
 ## Guides
 
@@ -37,6 +37,21 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 |----------|----------|-------------|
 | [**Roadmap**](roadmap.md) | Maintainers, contributors | Versioned roadmap — v1.0 through v2.0 and beyond. |
 | [**Contributing**](contributing.md) | Contributors | Setup, conventions, how to add providers/tools/agents, PR checklist. |
+| [**P2 Benchmark**](benchmark_p2.md) | Engineers, researchers | The LLM-backed research tier: suites, budgets, fail-closed guarantees. |
+
+## Historical records
+
+Point-in-time reports kept as provenance for measured experiments. They describe
+the serving tier that was later removed in `c31c536`; read them as history, not
+as current architecture.
+
+| Document | Description |
+|----------|-------------|
+| [**Implementation Plan**](autonomous_agentic_implementation_plan.md) | The 14-workstream plan that built the autonomous platform (complete). |
+| [**P2 Session Notes**](P2_SESSION_NOTES.md) | Working notes from the P2 benchmark build (ephemeral). |
+| [**P3 Report**](p3_report.md) | Agent capability optimization experiment over the frozen baseline. |
+| [**P3-Short Report**](p3_short_report.md) | Model selection & capability validation across 3 models × 2 repeats. |
+| [**P4 Closure Report**](p4_closure_report.md) | Production-readiness closure: grader hardening, E8 gate, CI stabilization. |
 
 ---
 
@@ -51,7 +66,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 ## Verification commands
 
 ```bash
-uv run python -m pytest -q                     # 1475 passed, 2 skipped (network)
+uv run python -m pytest -q                     # 1451 passed, 2 skipped (optional deps)
 uv run mypy src/research_engineer/llm         # type-check the LLM layer
 uv run ruff check .                            # lint
 research-engineer llm status                   # inspect provider/model routing

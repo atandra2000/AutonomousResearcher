@@ -2,7 +2,7 @@
 
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
 > multi-agent ML research platform as a CLI-dedicated product ·
-> **Version:** 0.9.0 · **Stats:** 23 agents · 61 typed tools · 17 pydantic
+> **Version:** 0.9.0 · **Stats:** 20 agents · 61 typed tools · 17 pydantic
 > v2 schema modules (251 classes) · **tests — see Test Status** · plus
 > agent-eval harness (`eval/`, E4), continuous-improvement loop
 > (`improve/`, E8), and P1/P2 research benchmarks (`benchmark` CLI)
@@ -53,7 +53,7 @@ research-engineer llm {status|config [--config path]}
 # Top-level workflows
 research-engineer task <goal> --repo <path>      # Phase 11: terminal-first autonomous coding
 research-engineer research <goal>                # Phase 15: end-to-end paper→report
-research-engineer research <goal> --engine langgraph [--thread-id ID]   # LangGraph engine
+research-engineer research <goal> --thread-id ID # LangGraph engine (the only engine)
 
 # Agent evaluation & self-improvement
 research-engineer eval-harness --suite <name>    # E4: graded eval suites (deterministic + LLM-judged)
@@ -245,6 +245,10 @@ Resolution rules:
 3. Otherwise `ModelRouter.for_agent(agent_name)` resolves from
    `llm_config.yaml`.
 
+Routing roster: `llm_config.yaml` carries **23** entries — the 20 agent
+classes plus the three framework components that take LLM calls
+(`FailureAnalyzer`, `RepairStrategist`, `ResearchOrchestrator`).
+
 ### Phase 11: Terminal-First Autonomous Coding
 
 ```
@@ -314,7 +318,7 @@ CLI → ResearchOrchestrator
       output/research/<workflow_id>/research_report.md + .json
 ```
 
-Opt-in LangGraph engine — now the ONLY engine: the seven stages run as a
+LangGraph engine — the only engine: the seven stages run as a
 LangGraph state machine (`graphs/research.py`); with
 `RE_LANGGRAPH_CHECKPOINT_DSN` set, `AsyncPostgresSaver` snapshots each
 node. `ResearchOrchestrator` always delegates to the graph; the workflow
@@ -327,7 +331,7 @@ framework is the stage-executor authority. See
 
 ```
 src/research_engineer/
-├── cli/                       # Typer CLI (single main.py, 20 command families, 70+ commands)
+├── cli/                       # Typer CLI (single main.py, 73 commands across 10 sub-apps)
 ├── agents/                    # one file per agent + support (_llm_support, _adapters,
 │                              #   _streaming, research_stages, research_workflow, delegation)
 ├── memory/                    # Phase 12: indexer, symbol graph, embeddings, retriever,
@@ -337,8 +341,8 @@ src/research_engineer/
 │                              #   react_loop, streaming, resilience, cost
 ├── eval/                      # E4 agent-eval harness: graders, metrics, runner, scripted suites
 ├── improve/                   # E8 continuous improvement: mining, proposals, gate, pipeline
-├── graphs/                    # LangGraph adapter for Phase 15 (ResearchGraph, env-based
-│                              #   Postgres checkpoints; opt-in via --engine langgraph)
+├── graphs/                    # LangGraph engine for Phase 15 (ResearchGraph, env-based
+│                              #   Postgres checkpoints; the only research engine)
 ├── gateway/ runtime/ benchmark/ safety/ observability/  # E1–E3/E5 platform infra + benchmark machinery
 ├── models/                    # 17 pydantic v2 schema modules, 251 classes total
 └── tools/                     # 61 typed tools + base.py, base_cache.py, rate_limiter, _stats.py
