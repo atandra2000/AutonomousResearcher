@@ -72,11 +72,17 @@ markers = [
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-extend-ignore = ["D203", "D212"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C90", "I", "N", "U"]
 ignore = ["E501"]
+extend-ignore = ["D203", "D212"]
+
+[tool.ruff.lint.isort]
+# Pin first-party classification explicitly: without this, ruff infers it from
+# what resolves on disk, so scripts importing removed sub-packages (e.g. the
+# retired research_engineer.service tier) sort differently on CI vs local.
+known-first-party = ["research_engineer"]
 
 [tool.ruff.lint.mccabe]
 # Legacy codebase: several core orchestration functions exceed the default
