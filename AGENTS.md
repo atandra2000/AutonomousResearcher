@@ -66,7 +66,9 @@ research-engineer benchmark {p1|p2|list|compare} # P1 deterministic / P2 LLM-bac
 research-engineer review                         # interactive approval of plans/patches/experiments
 
 # Interactive session (codex-style REPL)
-research-engineer chat                           # /research, /analyze, /llm, /status, /help
+research-engineer chat                            # /task, /repo, /research, /analyze, /llm, /clear, /status
+research-engineer chat --repo ./my-repo           # start in a project workspace
+research-engineer chat --resume <session_id>      # restore a saved session (output/sessions/)
 
 # Dev — NOTE: bare `uv run pytest` resolves to Homebrew's Python 3.14
 # pytest on this machine and fails collection; always go through python -m.
@@ -252,6 +254,13 @@ CLI → TaskAgent → TerminalTool (7 ops: run_command, read_file,
                 → TaskResult → output/tasks/<task_id>/
 ```
 
+The interactive chat REPL (`research-engineer chat`) exposes the same
+`TaskAgent` through `/task` — dry-run by default, with explicit
+`--apply`, `--tests`, `--delegate` flags — against the session's active
+workspace (`/repo`). Session state (workspace, turns, bounded LLM
+conversation) persists atomically under `output/sessions/` and is
+restorable via `chat --resume <session_id>`.
+
 ### Phase 12: Repository Memory
 
 ```
@@ -376,7 +385,8 @@ layers (all under `src/research_engineer/` unless noted):
 
 1. **`uv run` everywhere** — never `python` directly (root rule).
 2. **Pytest-then-lint-then-mypy** before declaring any change complete.
-3. **Never** reduce test coverage below **1442 passing** (2 network-skipped).
+3. **Never** reduce test coverage below **1451 passing** (2 optional-dependency
+   skipped).
 4. **Repository-agnostic** — never hardcode assumptions about specific repos.
 5. **Paper-agnostic** — must work for any ML paper (attention, MoE,
    diffusion, etc.).
@@ -420,9 +430,9 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-**1444 tests — 1442 passing, 2 network-skipped** (verified via
-`uv run python -m pytest -q`, 2026-08-30, CLI-dedicated rework) — never
-reduce. Includes the original phase suites plus tests for the E4 eval
+**1453 tests — 1451 passing, 2 optional-dependency skipped** (verified via
+`uv run python -m pytest -q`, 2026-08-30, Codex-like interactive CLI pass) —
+never reduce. Includes the original phase suites plus tests for the E4 eval
 harness, E8 improvement loop, the platform layers (runtime,
 checkpoints, gateway policy, safety), LLM layer extensions (openai /
 anthropic / local ollama providers, streaming, resilience), P1/P2

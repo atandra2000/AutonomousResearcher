@@ -102,14 +102,21 @@ See [Framework-Stack Migration](framework_stack_migration.md).
 
 ### `chat`
 
-Interactive codex-style session over the same agents. Slash commands
-(`/research`, `/analyze`, `/llm`, `/status`, `/help`, `/exit`) dispatch
-to the platform; free-form lines go to the configured LLM. Rendered
-with rich; input history via prompt_toolkit.
+Interactive, project-aware codex-style session over the same agents. Use
+`/task [--apply] [--tests] [--delegate] <goal>` for coding turns, `/repo`
+to change the active repository, `/research` and `/analyze` for research,
+and `/clear` to reset conversation context. Coding is dry-run by default;
+only `--apply` writes generated changes. Free-form lines continue a bounded
+LLM conversation. Session UI state is saved under `output/sessions/`.
 
 ```bash
-research-engineer chat
+research-engineer chat --repo ./my-repo
+research-engineer chat --resume session_ab12cd34ef56
 ```
+
+`--resume` restores the workspace, LLM conversation, and turn history. It does
+not resume an interrupted TaskAgent step; durable mid-task recovery remains an
+`AgentRuntime` migration item.
 
 ### `get`
 

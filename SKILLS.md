@@ -28,27 +28,19 @@ modification):
 uv run research-engineer task "Implement Grouped Query Attention in the GPT-2 block" --repo ../LLM/GPT2
 ```
 
-## Skill 3: Deploy the Production Stack (E7)
+## Skill 3: Verify the Production Runtime Path (E1–E7)
 
-Run the platform as a long-running service (FastAPI api + worker +
-Postgres queue + OTel collector), then verify with the crash-recovery
-smoke test:
+The product is CLI-dedicated; the former FastAPI/worker/deploy tier was
+removed. Verify the shipped runtime, gateway, safety, checkpoint, and
+benchmark path directly:
 
 ```bash
-cd deploy
-cp .env.example .env             # REQUIRED: set POSTGRES_PASSWORD + RE_SERVICE_API_TOKEN
-docker compose up -d --build
-curl -s localhost:8000/health    # liveness (no auth)
-curl -s localhost:8000/ready     # readiness incl. dependency checks
-
-# Full probe from repo root: submit → queue → worker → checkpoint →
-# completion → result query, plus a simulated worker crash and
-# recovery-from-checkpoint.
-scripts/smoke_test.sh [--down]   # --down tears the stack down afterwards
+uv run research-engineer benchmark p1
+uv run research-engineer benchmark p2   # requires configured LLM credentials
 ```
 
-Never commit `deploy/.env` — it is gitignored on purpose; only
-`deploy/.env.example` is tracked.
+P1 is deterministic and offline. P2 uses the configured provider and grades
+cases executed through `AgentRuntime` + gateway/safety + checkpointing.
 
 ## Skill 4: Add a New Agent to the Platform
 
@@ -88,7 +80,7 @@ If agents encounter API errors or routing failures:
 Always run before committing any change:
 
 ```bash
-# 1. Tests (1462 passing, 2 network-skipped — always via python -m)
+# 1. Tests (1451 passing, 2 optional-dependency skipped — always via python -m)
 uv run python -m pytest
 
 # 2. Lint + format

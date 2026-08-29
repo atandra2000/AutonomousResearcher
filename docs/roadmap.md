@@ -70,21 +70,41 @@ orchestration layer for autonomous agents.
 
 **Goal:** Let agents use LLM tool-calling for richer code generation and analysis.
 
-- [ ] `LLMRequest.tools` field for function declarations
-- [ ] `LLMResponse.tool_calls` parsing
-- [ ] `CodingAgent` uses tool-calling for multi-file edits
-- [ ] `EvaluationAgent` uses tool-calling for natural-language metric interpretation
-- [ ] Structured output schemas (JSON Schema → Pydantic)
+- [x] Typed function declarations and tool-call/result contracts
+- [x] Provider tool-call parsing and ReAct execution loop
+- [x] Coding and benchmark agents route tools through the policy gateway
+- [x] Evaluation agents can use LLM-backed typed analysis
+- [x] Pydantic schemas at agent/tool boundaries
 
 ---
 
 ## v2.3 — CLI-native ergonomics
 
+- [x] Project-aware chat startup (`chat --repo`) and `/repo` switching
+- [x] Interactive `/task` over the production `TaskAgent`
+- [x] Safe task modes: dry-run default; explicit apply/tests/delegation
+- [x] Bounded multi-turn LLM context and `/clear`
+- [x] Atomic local session state and `chat --resume` for UI continuity
 - [ ] Streaming token output in the chat session (`/research` stages + LLM turns)
-- [ ] Session persistence: resume a chat thread from a checkpoint
+- [ ] Mid-task resume from an `AgentRuntime` checkpoint
 - [ ] Knowledge-graph + memory visualization rendered as terminal graphs
 - [ ] Experiment metric sparklines in the loop monitor
 - [ ] Approval-gate prompts inline in the chat session
+
+### Completion path to a production Codex-like CLI
+
+1. **Unify execution:** model TaskAgent stages as `AgentRuntime` steps so coding
+   turns gain durable checkpoints, resume, cancellation, budgets, and one event
+   stream instead of a parallel orchestration path.
+2. **Make safety interactive:** connect `ToolGateway` approval requests to the
+   chat prompt and show the command, workspace, risk, and diff before consent.
+3. **Persist sessions:** store the active repository, LLM messages, task IDs,
+   and runtime execution ID; add `chat --resume <session-id>`.
+4. **Stream truthful progress:** render runtime/tool/stage events and token
+   deltas without claiming completion until persisted results are available.
+5. **Prove the product path:** add PTY-level smoke tests for interrupt, resume,
+   approval denial, failed tests, and a successful dry-run task; benchmark this
+   same path in P1/P2.
 
 ---
 

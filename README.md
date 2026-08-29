@@ -41,7 +41,8 @@ uv run research-engineer --help
 
 ```bash
 # 1. The interactive session (codex-style REPL)
-uv run research-engineer chat
+uv run research-engineer chat --repo ./my-repo
+# Later: uv run research-engineer chat --resume session_ab12cd34ef56
 
 #    research-engineer> /research "Design a more efficient diffusion transformer"
 #    research-engineer> /analyze 2503.12345
@@ -69,14 +70,21 @@ one-shot commands use:
 
 | Command | What it does |
 |---------|--------------|
+| `/task [--apply] [--tests] [--delegate] <goal>` | Run the terminal-first coding agent in the active repository; dry-run by default |
+| `/repo [path]` | Show or change the active repository workspace |
 | `/research <goal>` | Full autonomous workflow: literature → synthesis → hypotheses → planning → execution → analysis → report |
 | `/analyze <paper>` | Analyze an arXiv ID, arXiv URL, or local PDF |
 | `/llm <prompt>` | Ask the configured LLM directly |
+| `/clear` | Clear the bounded LLM conversation context and turn history |
 | `/status` | Session + provider status |
 | `/help`, `/exit` | The usual |
 
-Free-form lines go straight to the LLM. Output renders as rich
-panels/tables; input history via prompt_toolkit.
+Free-form lines continue a bounded LLM conversation. Coding turns reuse the
+same `TaskAgent` as the one-shot `task` command, including repository memory,
+delegation, review/repair, and patch-first safety. Output renders as rich
+panels/tables; input history uses prompt_toolkit. Workspace, turn history, and
+conversation context are saved atomically under `output/sessions/`; the banner
+shows the session ID accepted by `chat --resume`.
 
 ## What's inside
 
