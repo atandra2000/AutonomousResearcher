@@ -11,6 +11,7 @@ long-running service.
 | `worker`       | Long-running executor driving E1 `AgentRuntime`     |
 | `postgres`     | Runs table, queue (`SKIP LOCKED`), E2 checkpoints   |
 | `otel-collector` | OpenTelemetry OTLP receiver (E6 telemetry)        |
+| `web`          | Next.js console proxying the run API (Auth.js OIDC gate) |
 | artifacts      | Named Docker volume mounted into api+worker         |
 
 No Redis is used: PostgreSQL provides both durable persistence *and* the
@@ -61,3 +62,22 @@ GET  /ready                     readiness incl. dependency checks (no auth)
 * No secrets in logs: the service never logs goals/metadata payloads.
 * This is process-level hardening, **not** sandbox-grade workload isolation;
   tool sandboxing remains E3 gateway policy.
+
+## LangGraph & web console (framework-stack integration)
+
+* `RE_LANGGRAPH_CHECKPOINT_DSN` is pre-wired to the in-stack Postgres for
+  the api/worker env block: `research-engineer research --engine langgraph`
+  then persists durable per-node snapshots via `AsyncPostgresSaver`
+  (requires the `[service]` extra, already in the image). Without the DSN
+  the LangGraph engine simply runs without snapshots.
+* `LANGSMITH_TRACING` (default `false`), `LANGSMITH_PROJECT`,
+  `LANGSMITH_ENDPOINT`, and `LANGSMITH_API_KEY` enable LangSmith tracing
+  for LangChain-backed LLM runs; they are pass-throughs and stay off by
+  default.
+* The `web` service builds `apps/web/Dockerfile`, waits for `api` to be
+  healthy, and proxies the run API with the same bearer token. It is gated
+  by Auth.js OIDC — set `AUTH_SECRET`, `AUTH_OIDC_ISSUER`, and
+  `AUTH_OIDC_CLIENT_ID` in `.env` (compose fails fast without them).
+
+See [Framework-Stack Migration](framework_stack_migration.md) for the
+full component map.

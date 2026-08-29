@@ -31,3 +31,25 @@ jobs:
 
       - name: Tests (pytest, offline)
         run: uv run python -m pytest -q -m "not network"
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Production build
+        run: pnpm build

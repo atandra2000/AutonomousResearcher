@@ -66,6 +66,17 @@ providers:
   #   default_model: gpt-4o
   #   timeout: 60
 
+  # --- LangChain + LangSmith (OpenAI-compatible) ----------------------
+  # Maps to LangChainChatProvider. It preserves the local LLMProvider
+  # contract while enabling LangChain tool schemas and optional LangSmith
+  # tracing. Set LANGSMITH_TRACING/LANGSMITH_API_KEY only in deployment.
+  # langchain:
+  #   type: langchain
+  #   base_url: https://api.openai.com
+  #   api_key: ${OPENAI_API_KEY}
+  #   default_model: gpt-4o
+  #   timeout: 60
+
   # --- Anthropic (see llm/anthropic_provider.py) ------------------------
   # Maps to AnthropicProvider. Native Anthropic Messages API (Claude 3.5/3.7
   # Sonnet, Opus). Note: the Messages API requires an explicit max_tokens;

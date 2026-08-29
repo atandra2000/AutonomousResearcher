@@ -43,6 +43,7 @@ from typing import Any
 from research_engineer.llm.anthropic_provider import AnthropicProvider
 from research_engineer.llm.base import LLMProvider, ProviderError
 from research_engineer.llm.cost import PricingTable, load_pricing_table
+from research_engineer.llm.langchain_provider import LangChainChatProvider
 from research_engineer.llm.local_ollama_provider import LocalOllamaProvider
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
 from research_engineer.llm.openai_provider import OpenAIProvider
@@ -52,6 +53,7 @@ _PROVIDER_REGISTRY: dict[str, type[LLMProvider]] = {
     "ollama": OllamaCloudProvider,
     "openai": OpenAIProvider,
     "anthropic": AnthropicProvider,
+    "langchain": LangChainChatProvider,
     "local_ollama": LocalOllamaProvider,
 }
 

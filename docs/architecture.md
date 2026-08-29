@@ -2,7 +2,7 @@
 
 Technical architecture for the Autonomous ML Research Engineer v2.0 — a fifteen-phase, agent-based platform that automates the ML research lifecycle.
 
-> **Status:** 15/15 phases complete · 23 agents · 61 tools · 251 Pydantic models across 17 modules · 70+ CLI commands · 1464 tests (1462 passed, 2 network-skipped).
+> **Status:** 15/15 phases complete · 23 agents · 61 tools · 251 Pydantic models across 17 modules · 70+ CLI commands · 1477 tests (1475 passed, 2 network-skipped) · opt-in LangGraph/LangChain runtime.
 
 ---
 
@@ -476,7 +476,7 @@ src/research_engineer/
 ├── models/       # 251 Pydantic models across 17 modules across 18 modules
 ├── tools/        # 61 typed tools
 └── cli/          # 56 Typer commands
-tests/            # 70+ test files, 1464 tests (1462 passed, 2 network-skipped)
+tests/            # 70+ test files, 1477 tests (1475 passed, 2 network-skipped)
 llm_config.yaml   # provider + per-agent model config
 docs/             # this documentation set
 ```
@@ -493,14 +493,14 @@ flowchart BT
     INT --> E2E["End-to-end tests<br/>(CLI, full pipelines)"]
 ```
 
-- **1464 tests (1462 passed, 2 network-skipped)** across 45+ files.
+- **1477 tests (1475 passed, 2 network-skipped)** across 45+ files.
 - Every phase has dedicated model, tool, agent, and CLI test files.
 - `test_integration.py` and `test_integration_phases.py` cover end-to-end pipelines.
 - `test_llm.py` (29 tests) covers the LLM layer with a mock httpx transport.
 - Phase-specific tests: 60 task/terminal, 51 repo memory, 31 delegation, 31 self-repair, 39 research workflow.
 
 ```bash
-uv run pytest -q          # 1462 passed, 2 skipped
+uv run pytest -q          # 1475 passed, 2 skipped (network)
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check .       # lint
 ```
@@ -517,4 +517,4 @@ uv run ruff check .       # lint
 
 ---
 
-*Version: 0.9.0 · Phase 15 complete · 1462 passing, 2 network-skipped*
+*Version: 0.9.0 · Phase 15 complete · 1475 passing, 2 network-skipped*

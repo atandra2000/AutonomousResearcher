@@ -601,6 +601,28 @@ class TestResearchOrchestrator:
         assert len(result.stages) == 7
         assert len(result.final_report) > 0
 
+    @pytest.mark.asyncio
+    async def test_orchestrator_runs_the_langgraph_engine(self, tmp_path):
+        from research_engineer.agents import ResearchConfig, ResearchOrchestrator
+
+        orch = ResearchOrchestrator(
+            terminal_tool=_FakeTerminal(),  # type: ignore[arg-type]
+        )
+        result = await orch.run(
+            research_goal="Graph-backed efficient attention",
+            repo_path=str(tmp_path),
+            config=ResearchConfig(
+                engine="langgraph",
+                max_papers=3,
+                max_hypotheses=2,
+                dry_run_experiments=True,
+                output_dir=str(tmp_path / "out"),
+                llm_enabled=False,
+            ),
+        )
+        assert result.status == ResearchWorkflowStatus.COMPLETED
+        assert len(result.stages) == 7
+
 
 # ---------------------------------------------------------------------------
 # CLI tests
@@ -618,6 +640,24 @@ class TestResearchCLI:
         assert result.exit_code == 0
         assert "research" in result.output.lower()
         assert "goal" in result.output.lower()
+
+    def test_research_help_lists_graph_engine(self):
+        from typer.testing import CliRunner
+
+        from research_engineer.cli import app
+
+        result = CliRunner().invoke(app, ["research", "--help"])
+        assert result.exit_code == 0
+        assert "--engine" in result.output
+
+    def test_research_help_lists_graph_thread_id(self):
+        from typer.testing import CliRunner
+
+        from research_engineer.cli import app
+
+        result = CliRunner().invoke(app, ["research", "--help"])
+        assert result.exit_code == 0
+        assert "--thread-id" in result.output
 
     def test_research_missing_goal(self):
         from typer.testing import CliRunner

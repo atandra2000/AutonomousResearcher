@@ -3470,6 +3470,16 @@ def research(
         "--llm/--no-llm",
         help="Use LLM for synthesis/hypothesis/report stages (disable for offline rule-based mode)",
     ),
+    engine: str = typer.Option(
+        "native",
+        "--engine",
+        help="Workflow engine: native (default) or langgraph",
+    ),
+    thread_id: str | None = typer.Option(
+        None,
+        "--thread-id",
+        help="LangGraph checkpoint thread identifier (requires configured checkpointer)",
+    ),
 ):
     """Run an autonomous research workflow.
 
@@ -3483,6 +3493,8 @@ def research(
         research-engineer research "Improve attention efficiency" --max-papers 30
         research-engineer research "Novel loss function" --no-dry-run --repo ./my_repo
         research-engineer research "Topic" --no-llm   # offline rule-based mode
+        research-engineer research "Topic" --engine langgraph
+        research-engineer research "Topic" --engine langgraph --thread-id migration-001
     """
     from research_engineer.agents import ResearchConfig
 
@@ -3494,6 +3506,8 @@ def research(
         experiment_timeout=timeout,
         output_dir=output_dir,
         llm_enabled=llm_enabled,
+        engine=engine.lower(),
+        thread_id=thread_id,
     )
     try:
         result = asyncio.run(orchestrator.run(goal, repo, config=config))

@@ -13,6 +13,7 @@ change**.
 |------|---------|
 | `src/research_engineer/llm/base.py` | `LLMProvider` ABC + `LLMRequest`/`LLMResponse`/`LLMMessage`/`LLMRole`/`LLMUsage`/`ProviderError` |
 | `src/research_engineer/llm/ollama_provider.py` | `OllamaCloudProvider` (OpenAI-compatible Chat Completions over httpx) |
+| `src/research_engineer/llm/langchain_provider.py` | `LangChainChatProvider` — LangChain chat model adapted to the local contract |
 | `src/research_engineer/llm/factory.py` | `ProviderFactory`, config loading, env expansion, provider registry |
 | `src/research_engineer/llm/router.py` | `ModelRouter` — resolves provider+model per agent, binds model on every request |
 | `src/research_engineer/llm/__init__.py` | Public exports |
@@ -107,6 +108,9 @@ agents:
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider | `glm-5.2:cloud` |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
+| `OPENAI_API_KEY` | LangChainChatProvider | (none) |
+| `OPENAI_BASE_URL` | LangChainChatProvider | (none — official OpenAI API) |
+| `LANGCHAIN_MODEL` / `OPENAI_MODEL` | LangChainChatProvider model fallback | `gpt-4o` |
 
 `${VAR}` placeholders in the YAML are expanded against the process
 environment, so secrets never need to be committed.
@@ -161,6 +165,29 @@ CodingAgent              -> ollama / kimi-k2.7-code
 All other agents keep their configured models. Reload is automatic on
 process restart (the factory is a lazy singleton; tests call
 `reset_factory()`/`reset_router()`).
+
+## LangChain provider (optional)
+
+`LangChainChatProvider` is registered as provider type `langchain` in the
+factory. It wraps any LangChain chat model (default: `ChatOpenAI`, which
+also supports OpenAI-compatible gateways via `base_url`) while preserving
+the `LLMProvider` contract, enabling LangChain tool-schema binding
+(`bind_tools` — schemas only; **tool execution still flows through the
+gateway**) and optional LangSmith tracing.
+
+```yaml
+providers:
+  langchain:
+    type: langchain
+    base_url: https://api.openai.com
+    api_key: ${OPENAI_API_KEY}
+    default_model: gpt-4o
+    timeout: 60
+```
+
+Set `LANGSMITH_TRACING=true` + `LANGSMITH_API_KEY` in deployment to trace
+LangChain runs. See [Framework-Stack Migration](framework_stack_migration.md)
+for the graph/gateway side of the integration.
 
 ## Adding a new provider
 
@@ -237,7 +264,7 @@ research-engineer llm config --config path/to/llm_config.yaml
 ## Verification
 
 ```bash
-uv run pytest -q            # 878 passed (849 existing + 29 new)
+uv run pytest -q            # 1475 passed, 2 skipped (network)
 uv run mypy src/research_engineer/llm   # clean
 uv run ruff check src/research_engineer/llm src/research_engineer/agents/_llm_support.py tests/test_llm.py   # clean
 ```

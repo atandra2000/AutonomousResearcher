@@ -40,6 +40,7 @@ from research_engineer.gateway.approval import (
     CallbackApprovalHandler,
 )
 from research_engineer.gateway.gateway import APPROVAL_RISK_THRESHOLD, ToolGateway
+from research_engineer.gateway.langchain import as_langchain_tool
 from research_engineer.gateway.models import (
     RiskLevel,
     ToolBudget,
@@ -73,4 +74,5 @@ __all__ = [
     "Sandbox",
     "SandboxError",
     "APPROVAL_RISK_THRESHOLD",
+    "as_langchain_tool",
 ]

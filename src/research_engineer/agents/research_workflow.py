@@ -69,7 +69,11 @@ class ResearchConfig:
         llm_enabled: bool = True,
         parallel_stages: bool = False,
         max_concurrent: int = 4,
+        engine: str = "native",
+        thread_id: str | None = None,
     ) -> None:
+        if engine not in {"native", "langgraph"}:
+            raise ValueError("engine must be 'native' or 'langgraph'")
         self.max_papers = max_papers
         self.max_hypotheses = max_hypotheses
         self.dry_run_experiments = dry_run_experiments
@@ -80,6 +84,8 @@ class ResearchConfig:
         self.llm_enabled = llm_enabled
         self.parallel_stages = parallel_stages
         self.max_concurrent = max_concurrent
+        self.engine = engine
+        self.thread_id = thread_id
 
 
 class ResearchWorkflowFramework:

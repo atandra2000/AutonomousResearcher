@@ -64,6 +64,7 @@ from research_engineer.llm.factory import (
     register_provider_type,
     reset_factory,
 )
+from research_engineer.llm.langchain_provider import LangChainChatProvider
 from research_engineer.llm.local_ollama_provider import LocalOllamaProvider
 from research_engineer.llm.ollama_provider import OllamaCloudProvider
 from research_engineer.llm.openai_provider import OpenAIProvider
@@ -98,6 +99,7 @@ __all__ = [
     "OpenAIProvider",
     "AnthropicProvider",
     "LocalOllamaProvider",
+    "LangChainChatProvider",
     # Factory
     "ProviderFactory",
     "AgentModelSpec",

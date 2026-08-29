@@ -3,13 +3,14 @@
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
 > multi-agent ML research platform + production deployment stack ·
 > **Version:** 0.9.0 · **Stats:** 23 agents · 61 typed tools · 17 pydantic
-> v2 schema modules (251 classes) · **1464 tests — 1462 passing, 2 network-skipped** · plus agent-eval
+> v2 schema modules (251 classes) · **1477 tests — 1475 passing, 2 network-skipped** · plus agent-eval
 > harness (`eval/`, E4), continuous-improvement loop (`improve/`, E8),
-> P1/P2 research benchmarks (`benchmark` CLI), and a Docker Compose
-> production stack (`deploy/`: FastAPI api + worker + Postgres queue +
-> OTel collector, E7). **Stack:** Python 3.12, pydantic v2, typer, httpx,
-> arxiv, pymupdf, chromadb, sentence-transformers, pytest-asyncio, ruff,
-> mypy.
+> P1/P2 research benchmarks (`benchmark` CLI), a Next.js console
+> (`apps/web`), and a Docker Compose production stack (`deploy/`: FastAPI
+> api + worker + Postgres queue + OTel collector + web console, E7).
+> **Stack:** Python 3.12, pydantic v2, typer, httpx, arxiv, pymupdf,
+> chromadb, sentence-transformers, langgraph/langchain (opt-in),
+> pytest-asyncio, ruff, mypy.
 
 This file is the **developer reference manual** for the platform. It is
 intentionally detailed (architecture diagrams, source tree, CLI command
@@ -53,6 +54,7 @@ research-engineer llm {status|config [--config path]}
 # Top-level workflows
 research-engineer task <goal> --repo <path>      # Phase 11: terminal-first autonomous coding
 research-engineer research <goal>                # Phase 15: end-to-end paper→report
+research-engineer research <goal> --engine langgraph [--thread-id ID]   # LangGraph engine
 
 # Agent evaluation & self-improvement
 research-engineer eval-harness --suite <name>    # E4: graded eval suites (deterministic + LLM-judged)
@@ -307,6 +309,12 @@ CLI → ResearchOrchestrator
       output/research/<workflow_id>/research_report.md + .json
 ```
 
+Opt-in LangGraph engine: `--engine langgraph` runs the same seven stages
+as a LangGraph state machine (`graphs/research.py`); with
+`RE_LANGGRAPH_CHECKPOINT_DSN` set, `AsyncPostgresSaver` snapshots each
+node. `ResearchConfig.engine` defaults to `"native"` — behavior is
+unchanged unless opted in. See `docs/framework_stack_migration.md`.
+
 ---
 
 ## Source Structure (top-level only — full tree is 200+ files)
@@ -319,19 +327,22 @@ src/research_engineer/
 ├── memory/                    # Phase 12: indexer, symbol graph, embeddings, retriever,
 │                              #   vector backends, storage
 ├── llm/                       # Phase 10: base ABC, factory, router + providers
-│                              #   (ollama cloud/local, openai, anthropic), react_loop,
-│                              #   streaming, resilience, cost
+│                              #   (ollama cloud/local, openai, anthropic, langchain),
+│                              #   react_loop, streaming, resilience, cost
 ├── eval/                      # E4 agent-eval harness: graders, metrics, runner, scripted suites
 ├── improve/                   # E8 continuous improvement: mining, proposals, gate, pipeline
+├── graphs/                    # LangGraph adapter for Phase 15 (ResearchGraph, env-based
+│                              #   Postgres checkpoints; opt-in via --engine langgraph)
 ├── gateway/ runtime/ service/ safety/ observability/   # E1–E3/E5–E7 platform infra layers
 ├── models/                    # 17 pydantic v2 schema modules, 251 classes total
 └── tools/                     # 61 typed tools + base.py, base_cache.py, rate_limiter, _stats.py
 
 deploy/                        # E7 production stack: Dockerfile, docker-compose.yml
-                               #   (api + worker + postgres + otel-collector), .env.example
+                               #   (api + worker + postgres + otel-collector + web), .env.example
+apps/web/                      # Next.js console for the E7 run API (CI: pnpm typecheck + build)
 scripts/                       # smoke_test.sh (deploy probe), ci_mypy.sh (baseline gate)
 configs/                       # mypy-baseline.txt + experiment configs
-docs/                          # 20 documentation files (architecture, deployment, CLI, …)
+docs/                          # 21 documentation files (architecture, deployment, CLI, …)
 ```
 
 Model schema modules (`models/`): paper, summary, plan, planner, repo,
@@ -400,6 +411,10 @@ All tools follow `Tool[Input, Output]` ABC:
 | `OLLAMA_API_KEY` | OllamaCloudProvider | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | OllamaCloudProvider fallback | `llama3` (routing default comes from `llm_config.yaml`: `glm-5.3-flash`) |
 | `OLLAMA_TIMEOUT` | OllamaCloudProvider | `60` |
+| `OPENAI_API_KEY` / `OPENAI_BASE_URL` | LangChainChatProvider | (none) |
+| `LANGCHAIN_MODEL` / `OPENAI_MODEL` | LangChainChatProvider model fallback | `gpt-4o` |
+| `RE_LANGGRAPH_CHECKPOINT_DSN` | graphs/checkpoints.py | (none — no snapshots) |
+| `LANGSMITH_TRACING` / `LANGSMITH_API_KEY` | LangChain runs | off |
 
 ## Storage
 
@@ -409,12 +424,14 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-**1464 tests — 1462 passing, 2 network-skipped** (verified via
-`uv run python -m pytest -q`, 2026-08-27) — never reduce. Includes the
+**1477 tests — 1475 passing, 2 network-skipped** (verified via
+`uv run python -m pytest -q`, 2026-08-30) — never reduce. Includes the
 original phase suites plus tests for the E4 eval harness, E8 improvement
 loop, the E1–E7 platform layers (runtime, checkpoints, gateway policy,
 service API, Postgres queue), LLM layer extensions (openai / anthropic /
-local ollama providers, streaming, resilience), and P1/P2 benchmarks.
+local ollama providers, streaming, resilience), P1/P2 benchmarks, and
+the framework-stack suites (LangGraph research graph, LangGraph
+checkpoints, LangChain provider + gateway adapter).
 Coverage target >90%.
 
 ## CI / Type-Debt Policy
@@ -424,7 +441,8 @@ Coverage target >90%.
   the legacy debt can shrink but never grow. Re-baseline deliberately
   after fixing a batch.
 - GitHub Actions runs pytest + ruff + the mypy baseline gate on every push
-  (see `.github/workflows/ci.yml`).
+  (see `.github/workflows/ci.yml`). A separate `web` job runs
+  `pnpm typecheck` + `pnpm build` for `apps/web`.
 - `network` pytest marker: tests needing live internet (arXiv API) are
   skipped when offline — CI runs fully offline.
 

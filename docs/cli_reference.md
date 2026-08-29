@@ -83,13 +83,22 @@ research-engineer task "Add EMA checkpoint support" --delegate --max-repairs 3 -
 Run an end-to-end autonomous research workflow. Orchestrates literature → synthesis → hypotheses → experiments → analysis → report.
 
 ```bash
-research-engineer research <goal> [--repo PATH] [--max-papers N] [--max-hypotheses N] [--dry-run] [--output-dir DIR]
+research-engineer research <goal> [--repo PATH] [--max-papers N] [--max-hypotheses N] [--dry-run] [--timeout SEC]
+                 [--output-dir DIR] [--format console|json|markdown] [--llm/--no-llm]
+                 [--engine native|langgraph] [--thread-id ID]
 ```
 
 ```bash
 research-engineer research "Design a more efficient diffusion transformer" --max-papers 30
 research-engineer research "Design a more efficient diffusion transformer" --max-papers 30 --max-hypotheses 5 --dry-run
+research-engineer research "Design a more efficient diffusion transformer" --engine langgraph
+research-engineer research "Novel loss function" --engine langgraph --thread-id migration-001
 ```
+
+`--engine langgraph` routes the same seven stages through the LangGraph
+state machine (`src/research_engineer/graphs/`); durable per-node
+snapshots additionally require `RE_LANGGRAPH_CHECKPOINT_DSN` (Postgres).
+See [Framework-Stack Migration](framework_stack_migration.md).
 
 ### `get`
 

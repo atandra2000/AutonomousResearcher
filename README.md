@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-e92063?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-1462%20passing-success)](#15-testing-statistics)
+[![Tests](https://img.shields.io/badge/tests-1475%20passing-success)](#15-testing-statistics)
 [![Coverage](https://img.shields.io/badge/phases-1%E2%80%9315%20complete-blue)](#16-roadmap)
 [![Deploy](https://img.shields.io/badge/deploy-Docker%20Compose-2496ED?logo=docker&logoColor=white)](#13-production-deployment)
 
@@ -82,6 +82,7 @@ It is built for **ML engineers** who want to reproduce or extend papers against 
 | **Multi-agent delegation** (Phase 13) | Generic `DelegationFramework` with role/capability routing, `SharedTaskContext` for inter-agent communication, review/test repair loops, `ArchitectAgent`, `ReviewerAgent`, `TestAgent`. |
 | **Autonomous self-repair** (Phase 14) | `SelfRepairFramework` with structured `FailureReport`, `RepairStrategist`, `FailureAnalyzer`, configurable retry budgets, stagnation detection, four termination conditions. |
 | **Research workflows** (Phase 15) | `ResearchOrchestrator` → literature discovery → knowledge synthesis → hypothesis generation → experiment planning → execution → result analysis → report generation. |
+| **Framework-stack engine** (opt-in) | `--engine langgraph` runs the same seven stages through a LangGraph state machine with optional Postgres checkpointing; LangChain LLM provider + gateway-routed tool adapter + Next.js console (`apps/web`). Native engine stays the default. |
 
 ---
 
@@ -441,7 +442,7 @@ agents:
   # ... 23 agents total
 ```
 
-**Switching a model is a config-only change** — no source edits. Adding a new provider is `register_provider_type()` + a YAML block. Built-in provider types: `ollama` (cloud), `local_ollama`, `openai`, `anthropic`.
+**Switching a model is a config-only change** — no source edits. Adding a new provider is `register_provider_type()` + a YAML block. Built-in provider types: `ollama` (cloud), `local_ollama`, `openai`, `anthropic`, `langchain` (LangChain models + optional LangSmith tracing).
 
 ### Environment variables
 
@@ -452,6 +453,8 @@ agents:
 | `OLLAMA_API_KEY` | (none) |
 | `OLLAMA_MODEL` / `OLLAMA_DEFAULT_MODEL` | `glm-5.3-flash` |
 | `OLLAMA_TIMEOUT` | `60` |
+| `OPENAI_API_KEY` / `OPENAI_BASE_URL` | (none) — used by the `langchain` provider |
+| `LANGCHAIN_MODEL` / `OPENAI_MODEL` | `gpt-4o` — `langchain` provider model fallback |
 
 ---
 
@@ -817,7 +820,7 @@ research-engineer research "Design a more efficient diffusion transformer" \
 
 | Metric | Value |
 |--------|-------|
-| **Total tests** | 1464 (1462 passed, 2 network-skipped) |
+| **Total tests** | 1477 (1475 passed, 2 network-skipped) |
 | **Phase 10 (LLM) tests** | 29 |
 | **Phase 11 (Task/Terminal) tests** | 60 |
 | **Phase 12 (Repository Memory) tests** | 51 |
@@ -833,7 +836,7 @@ research-engineer research "Design a more efficient diffusion transformer" \
 | **Phases complete** | 15 / 15 |
 
 ```bash
-uv run python -m pytest -q   # 1462 passed, 2 skipped (network)
+uv run python -m pytest -q   # 1475 passed, 2 skipped (network)
 uv run ruff check .          # lint
 scripts/ci_mypy.sh           # mypy — fails only on NEW errors vs baseline
 ```
@@ -952,7 +955,7 @@ src/research_engineer/
 └── gateway/ runtime/ service/ safety/ observability/   # E1–E7 platform layers
 deploy/          # Docker Compose stack: api + worker + postgres + otel-collector
 scripts/         # smoke_test.sh (deploy probe), ci_mypy.sh (baseline gate)
-tests/           # 70+ test files, 1462 tests passing (1464 collected)
+tests/           # 70+ test files, 1475 tests passing (1477 collected)
 llm_config.yaml  # provider + per-agent model config
 docs/            # 20 documentation files
 ```

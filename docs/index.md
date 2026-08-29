@@ -4,7 +4,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 
 > **Current state:** 15/15 phases complete · 23 agents · 61 typed tools ·
 > 17 Pydantic v2 schema modules (251 classes) · 70+ CLI commands across 20
-> command families · **1462 passing, 2 network-skipped** · plus the E4 agent-eval harness,
+> command families · **1475 passing, 2 network-skipped** · plus the E4 agent-eval harness,
 > E8 continuous-improvement loop, and P1/P2 research benchmarks.
 
 ---
@@ -29,6 +29,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 | [**Storage Schema**](storage_schema.md) | Engineers, DBAs | All SQLite tables, columns, relationships, output directory layout. |
 | [**CLI Reference**](cli_reference.md) | Users, engineers | All 70+ CLI commands with flags and examples. |
 | [**LLM Integration**](llm_integration.md) | GenAI engineers | Provider-agnostic LLM layer, Ollama Cloud, per-agent routing, 23-agent config. |
+| [**Framework-Stack Migration**](framework_stack_migration.md) | Engineers, architects | Opt-in LangGraph/LangChain runtime: research graph engine, Postgres checkpointing, LangChain provider, gateway adapter, web console. |
 
 ## Guides
 
@@ -50,7 +51,7 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 ## Verification commands
 
 ```bash
-uv run python -m pytest -q                     # 1462 passed, 2 skipped (network)
+uv run python -m pytest -q                     # 1475 passed, 2 skipped (network)
 uv run mypy src/research_engineer/llm         # type-check the LLM layer
 uv run ruff check .                            # lint
 research-engineer llm status                   # inspect provider/model routing

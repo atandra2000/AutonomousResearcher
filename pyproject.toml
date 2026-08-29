@@ -16,6 +16,10 @@ dependencies = [
     "numpy>=2.4.6",
     "chromadb>=1.5.9",
     "sentence-transformers>=5.5.1",
+    "langchain>=1.0.0",
+    "langchain-openai>=1.0.0",
+    "langgraph>=1.0.0",
+    "langsmith>=0.4.0",
 ]
 
 [project.scripts]
@@ -29,6 +33,7 @@ telemetry = [
 ]
 service = [
     "fastapi>=0.115",
+    "langgraph-checkpoint-postgres>=3.0.0",
     "psycopg[binary]>=3.1",
     "uvicorn[standard]>=0.30",
 ]
@@ -39,12 +44,16 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    # Service tests import FastAPI during collection; keep the documented
+    # `uv run python -m pytest` command self-contained for contributors.
+    "fastapi>=0.115",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "pytest-timeout>=2.4.0",
     "ruff>=0.6.0",
     "mypy>=1.11.0",
+    "psycopg[binary]>=3.1",
 ]
 
 [tool.pytest.ini_options]

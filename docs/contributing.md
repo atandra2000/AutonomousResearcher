@@ -24,7 +24,7 @@ research-engineer llm status
 ### Run the checks before every PR
 
 ```bash
-uv run pytest -q                              # 1462 passed, 2 skipped (network)
+uv run pytest -q                              # 1475 passed, 2 skipped (network)
 uv run ruff check .                            # lint
 uv run mypy src/research_engineer/llm          # type-check the LLM layer
 ```
