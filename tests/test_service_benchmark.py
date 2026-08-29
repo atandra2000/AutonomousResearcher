@@ -7,14 +7,14 @@ from collections.abc import Callable
 
 import pytest
 
-from research_engineer.eval.models import EvalSuite
-from research_engineer.eval.runner import load_suite
-from research_engineer.service.benchmark import (
+from research_engineer.benchmark.benchmark import (
     BENCHMARK_CATEGORIES,
     DEFAULT_SUITE_PATH,
     load_benchmark_suite,
     validate_benchmark_suite,
 )
+from research_engineer.eval.models import EvalSuite
+from research_engineer.eval.runner import load_suite
 
 
 @pytest.fixture(scope="module")
@@ -48,7 +48,7 @@ class TestBenchmarkContract:
         assert all(c.revision for c in suite.cases)
 
     def test_known_kinds_and_modes(self, suite: EvalSuite) -> None:
-        from research_engineer.service.benchmark import (
+        from research_engineer.benchmark.benchmark import (
             BENCHMARK_AGENT_KINDS,
             BENCHMARK_MODES,
         )

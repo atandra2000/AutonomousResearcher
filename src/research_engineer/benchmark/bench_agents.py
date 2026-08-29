@@ -29,9 +29,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from research_engineer.benchmark.agents import AgentFactoryRegistry, AgentFactoryReturn
 from research_engineer.gateway.models import RiskLevel
 from research_engineer.runtime.adapters import AgentAdapter
-from research_engineer.service.agents import AgentFactoryRegistry, AgentFactoryReturn
 from research_engineer.tools.base import Tool, ToolError
 
 # Registry keys; the E7 default kind remains ``planning_checklist``.
@@ -231,7 +231,7 @@ class BenchToolAdapter(RuntimeAwareAdapter):
 
     @staticmethod
     def checklist(goal: str) -> list[str]:
-        from research_engineer.service.agents import _sentence_chunks
+        from research_engineer.benchmark.agents import _sentence_chunks
 
         items = [c for c in _sentence_chunks(goal) if len(c) > 8][:4]
         return items or ["summarize objective"]

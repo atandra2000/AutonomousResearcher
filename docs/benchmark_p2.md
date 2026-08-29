@@ -19,7 +19,7 @@ mode family.
 
 ## Real-agent execution path
 
-`llm_react` (`src/research_engineer/service/llm_agent.py`) runs one model
+`llm_react` (`src/research_engineer/benchmark/llm_agent.py`) runs one model
 call per runtime step through `LLMProvider.complete_with_tools` (router
 bound provider = retry/backoff + USD cost stamping). Every tool request the
 model makes is dispatched via `AgentRuntime.call_tool`, i.e. the full E3
@@ -94,18 +94,18 @@ reported, never applied automatically.
 ## Files added/changed (P2)
 
 Added:
-- `src/research_engineer/service/llm_agent.py` - `llm_react` agent kind
-- `src/research_engineer/service/llm_judge.py` - rubric judge wiring
-- `src/research_engineer/service/p2_benchmark.py` - orchestration/reporting
+- `src/research_engineer/benchmark/llm_agent.py` - `llm_react` agent kind
+- `src/research_engineer/benchmark/llm_judge.py` - rubric judge wiring
+- `src/research_engineer/benchmark/p2_benchmark.py` - orchestration/reporting
 - `evals/research_benchmark/v2/suite.yaml` - 20-case LLM suite
 - `tests/test_llm_benchmark.py`
 
 Changed:
-- `service/benchmark.py` - validation for `llm_agent` mode / `llm_react`
+- `benchmark/benchmark.py` - validation for `llm_agent` mode / `llm_react`
   kind / optional `llm_quality` criteria
-- `service/benchmark_runner.py` - optional `extra_graders`/`factories`,
+- `benchmark/benchmark_runner.py` - optional `extra_graders`/`factories`,
   unknown-grader fail-closed criterion
-- `service/agents.py` - token/cost/tool-call budget override plumbing
+- `benchmark/agents.py` - token/cost/tool-call budget override plumbing
 - `eval/graders.py` - comparison ops for `output_json_field`
 - `llm/resilience.py` - tool-call responses are final (no empty-content retry)
 - `llm/ollama_provider.py`, `llm/openai_provider.py` - OpenAI-wire shape

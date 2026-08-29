@@ -15,17 +15,17 @@ from typing import Any
 
 import pytest
 
-from research_engineer.service.agents import AgentFactoryRegistry
-from research_engineer.service.benchmark import (
+from research_engineer.benchmark.agents import AgentFactoryRegistry
+from research_engineer.benchmark.benchmark import (
     DEFAULT_SUITE_V2_PATH,
     load_benchmark_suite,
 )
-from research_engineer.service.llm_agent import (
+from research_engineer.benchmark.llm_agent import (
     STRATEGY_PROMPTS,
     LLMReActAdapter,
     system_prompt,
 )
-from research_engineer.service.p3_experiment import (
+from research_engineer.benchmark.p3_experiment import (
     ArmMutation,
     CaseSelector,
     derive_suite,

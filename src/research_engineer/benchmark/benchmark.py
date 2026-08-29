@@ -12,16 +12,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from research_engineer.eval.graders import DETERMINISTIC_GRADERS
-from research_engineer.eval.models import EvalSuite
-from research_engineer.eval.runner import load_suite
-from research_engineer.service.bench_agents import (
+from research_engineer.benchmark.bench_agents import (
     KIND_BENCH_FLAKY,
     KIND_BENCH_LOOP,
     KIND_BENCH_RISKY,
     KIND_BENCH_TOOL,
 )
-from research_engineer.service.llm_agent import KIND_LLM_REACT
+from research_engineer.benchmark.llm_agent import KIND_LLM_REACT
+from research_engineer.eval.graders import DETERMINISTIC_GRADERS
+from research_engineer.eval.models import EvalSuite
+from research_engineer.eval.runner import load_suite
 
 #: Packaged v1 benchmark suite.
 DEFAULT_SUITE_PATH = (

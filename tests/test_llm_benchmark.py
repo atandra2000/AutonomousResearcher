@@ -14,6 +14,19 @@ from typing import Any
 
 import pytest
 
+from research_engineer.benchmark.bench_agents import (
+    NoteWriteInput,
+    NoteWriteOutput,
+)
+from research_engineer.benchmark.benchmark_runner import (
+    CaseOutcome,
+    _grade_case,
+    _StoredExecutionView,
+)
+from research_engineer.benchmark.llm_agent import (
+    KIND_LLM_REACT,
+    LLMReActAdapter,
+)
 from research_engineer.eval.graders import LLMPromptGrader
 from research_engineer.eval.models import EvalTask, SuccessCriterion
 from research_engineer.llm.base import (
@@ -22,19 +35,6 @@ from research_engineer.llm.base import (
     ToolCall,
 )
 from research_engineer.runtime.models import AgentTermination
-from research_engineer.service.bench_agents import (
-    NoteWriteInput,
-    NoteWriteOutput,
-)
-from research_engineer.service.benchmark_runner import (
-    CaseOutcome,
-    _grade_case,
-    _StoredExecutionView,
-)
-from research_engineer.service.llm_agent import (
-    KIND_LLM_REACT,
-    LLMReActAdapter,
-)
 
 # ---------------------------------------------------------------------------
 # Fakes
@@ -139,7 +139,7 @@ def _write_call(note: str = "note_a") -> ToolCall:
 
 
 def test_v2_suite_loads_and_validates() -> None:
-    from research_engineer.service.benchmark import (
+    from research_engineer.benchmark.benchmark import (
         BENCHMARK_CATEGORIES,
         DEFAULT_SUITE_V2_PATH,
         load_benchmark_suite,
@@ -264,7 +264,7 @@ def test_adapter_records_invalid_arguments_as_failed_calls() -> None:
 
 
 def test_resolve_provider_prefers_injected_instance() -> None:
-    from research_engineer.service.llm_agent import resolve_llm_provider
+    from research_engineer.benchmark.llm_agent import resolve_llm_provider
 
     injected = ScriptedProvider([])
     provider, model = resolve_llm_provider({}, injected=injected)
@@ -278,7 +278,7 @@ def test_resolve_provider_prefers_injected_instance() -> None:
 
 
 def test_registry_honors_extended_budget_overrides() -> None:
-    from research_engineer.service.p2_benchmark import build_p2_factories
+    from research_engineer.benchmark.p2_benchmark import build_p2_factories
 
     registry = build_p2_factories(provider=ScriptedProvider([]))
     adapter, policy = asyncio.run(registry.build(
@@ -302,8 +302,8 @@ def test_registry_honors_extended_budget_overrides() -> None:
 
 
 def test_default_registry_still_builds_deterministic_kinds() -> None:
-    from research_engineer.service.agents import AgentFactoryRegistry
-    from research_engineer.service.bench_agents import (
+    from research_engineer.benchmark.agents import AgentFactoryRegistry
+    from research_engineer.benchmark.bench_agents import (
         KIND_BENCH_TOOL,
         register_benchmark_kinds,
     )
@@ -372,7 +372,7 @@ def test_llm_quality_grader_through_extra_graders(tmp_path: Path) -> None:
             seen_prompts.append(request.messages[1].content)
             return _Reply("SCORE: 0.9")
 
-    from research_engineer.service.llm_judge import make_judge_score_fn
+    from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
     grader = LLMPromptGrader(make_judge_score_fn(JudgeProvider()))
     grader.configure({"threshold": 0.7, "rubric": "be excellent"})
@@ -387,7 +387,7 @@ def test_llm_quality_grader_through_extra_graders(tmp_path: Path) -> None:
 
 
 def test_judge_fail_closed_on_unparseable_reply() -> None:
-    from research_engineer.service.llm_judge import make_judge_score_fn
+    from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
     class BadProvider:
         async def complete(self, request: Any) -> Any:
@@ -405,7 +405,7 @@ def test_judge_fail_closed_on_unparseable_reply() -> None:
 
 
 def test_judge_requires_rubric() -> None:
-    from research_engineer.service.llm_judge import make_judge_score_fn
+    from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
     class NeverProvider:
         async def complete(self, request: Any) -> Any:  # pragma: no cover
@@ -441,7 +441,7 @@ def test_extra_grader_receives_per_criterion_config(tmp_path: Path) -> None:
             seen_rubrics.append(request.messages[1].content)
             return _Reply("SCORE: 0.8")
 
-    from research_engineer.service.llm_judge import make_judge_score_fn
+    from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
     # Deliberately UNCONFIGURED instance (as run_p2 wires it).
     grader = LLMPromptGrader(make_judge_score_fn(JudgeProvider()))
@@ -490,7 +490,7 @@ def _outcome(**overrides: object) -> CaseOutcome:
 
 
 def test_tier_metrics_kept_separate_per_mode() -> None:
-    from research_engineer.service.p2_benchmark import tier_metrics_for
+    from research_engineer.benchmark.p2_benchmark import tier_metrics_for
 
     outcomes = [
         _outcome(case_id=f"llm{i}", repeat=1)
@@ -514,8 +514,8 @@ def test_tier_metrics_kept_separate_per_mode() -> None:
 
 
 def test_variance_stats_detect_instability() -> None:
-    from research_engineer.service.benchmark_runner import BenchmarkReport
-    from research_engineer.service.p2_benchmark import (
+    from research_engineer.benchmark.benchmark_runner import BenchmarkReport
+    from research_engineer.benchmark.p2_benchmark import (
         _variance_from_reports,
     )
 
@@ -547,11 +547,11 @@ def test_variance_stats_detect_instability() -> None:
 
 
 def test_suite_fingerprint_changes_with_revision() -> None:
-    from research_engineer.service.benchmark import (
+    from research_engineer.benchmark.benchmark import (
         DEFAULT_SUITE_V2_PATH,
         load_benchmark_suite,
     )
-    from research_engineer.service.p2_benchmark import suite_fingerprint
+    from research_engineer.benchmark.p2_benchmark import suite_fingerprint
 
     suite = load_benchmark_suite(DEFAULT_SUITE_V2_PATH)
     fp1 = suite_fingerprint(suite)
@@ -565,7 +565,7 @@ def test_suite_fingerprint_changes_with_revision() -> None:
 def test_regression_comparison_flags_config_mismatch(tmp_path: Path) -> None:
     import json as jsonlib
 
-    from research_engineer.service.p2_benchmark import (
+    from research_engineer.benchmark.p2_benchmark import (
         P2Report,
         compare_reports,
         tier_metrics_for,
@@ -596,96 +596,74 @@ def test_regression_comparison_flags_config_mismatch(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# End-to-end production stack with a scripted LLM (no credentials)
+# End-to-end runtime path with a scripted LLM (no credentials)
 # ---------------------------------------------------------------------------
 
 
-class _Shim:
-    postgres_dsn = ""
-    checkpoint_db_path = None
+def test_e2e_llm_agent_through_runtime_path(tmp_path: Path) -> None:
+    """Direct runtime execution: AgentRuntime -> gateway -> safety chain."""
+    from datetime import datetime
 
-    def __init__(self, artifact_dir: Path) -> None:
-        self.artifact_dir = artifact_dir
-
-
-def test_e2e_llm_agent_through_production_stack(tmp_path: Path) -> None:
-    """Full E7 stack: store -> queue -> worker -> runtime -> gateway."""
+    from research_engineer.benchmark.benchmark_runner import (
+        _payload_from_context,
+    )
+    from research_engineer.benchmark.p2_benchmark import build_p2_factories
+    from research_engineer.benchmark.safety import (
+        build_default_safety_chain,
+    )
     from research_engineer.runtime.checkpoint_stores import (
         SQLiteCheckpointStore,
     )
-    from research_engineer.service.artifacts import ArtifactStore
-    from research_engineer.service.manager import RunManager
-    from research_engineer.service.models import CreateRunRequest
-    from research_engineer.service.p2_benchmark import build_p2_factories
-    from research_engineer.service.queue import build_run_queue
-    from research_engineer.service.serve import build_default_safety_chain
-    from research_engineer.service.store import SQLiteRunStore
-    from research_engineer.service.telemetry import ServiceTelemetry
-    from research_engineer.service.worker import AgentWorker
+    from research_engineer.runtime.runtime import AgentRuntime
 
-    artifact_root = tmp_path / "artifacts"
-    gateway, controller = build_default_safety_chain(_Shim(artifact_root))
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    gateway, controller = build_default_safety_chain(workspace)
     responses = [
         _resp(tool_calls=[_write_call("e2e_note")]),
         _resp(content="SURVEY: ok\nFINAL_ANSWER:\ndone"),
     ]
     registry = build_p2_factories(provider=ScriptedProvider(responses))
 
-    store = SQLiteRunStore(tmp_path / "runs.db")
-    queue = build_run_queue(_Shim(tmp_path))
-    manager = RunManager(store, queue, ServiceTelemetry())
-    worker = AgentWorker(
-        store=store,
-        queue=queue,
-        checkpoint_store=SQLiteCheckpointStore(str(tmp_path / "cp.db")),
-        artifacts=ArtifactStore(artifact_root),
-        factories=registry,
-        telemetry=ServiceTelemetry(),
-        tool_gateway=gateway,
-        safety_controller=controller,
-        require_safety_chain=True,
-    )
-
     async def scenario() -> Any:
-        created = await manager.submit(CreateRunRequest(
-            goal="Survey the provided digest and record findings.",
-            metadata={
-                "agent_kind": KIND_LLM_REACT,
-                "category": "literature_discovery",
-                "mode": "llm_agent",
-            },
-            budget_overrides={"max_steps": 5, "max_tool_calls": 8,
-                              "max_tokens": 5000},
-        ))
-        for _ in range(300):
-            await worker.try_claim_and_execute()
-            record = await store.get(created.run_id)
-            if record is not None and record.status.is_terminal():
-                return record
-            await asyncio.sleep(0.01)
-        raise AssertionError("run never reached terminal state")
+        adapter, policy = await registry.build(
+            KIND_LLM_REACT,
+            {"max_steps": 5, "max_tool_calls": 8, "max_tokens": 5000},
+        )
+        runtime = AgentRuntime(
+            planner=adapter.planner,
+            actor=adapter.actor,
+            observer=adapter.observer,
+            evaluator=adapter.evaluator,
+            policy=policy,
+            checkpoint_store=SQLiteCheckpointStore(str(tmp_path / "cp.db")),
+            tool_gateway=gateway,
+            safety_controller=controller,
+        )
+        attach = getattr(adapter, "attach_runtime", None)
+        if attach is not None:
+            attach(runtime)
+        execution = await runtime.run(
+            "Survey the provided digest and record findings.",
+            metadata={"case_id": "e2e_llm"},
+        )
+        return execution.context
 
-    record = asyncio.run(scenario())
-    assert record.status.value == "completed", record.error
-    result = record.result or {}
-    assert result["termination"] == "success"
-    output = result["output"]
+    context = asyncio.run(scenario())
+    payload = _payload_from_context(context, datetime.now())
+    assert payload["termination"] == "success"
+    output = payload["output"]
     assert output["llm_agent"] is True
     assert output["notes_written"] == 1
-    summary = result["context"]
+    summary = payload["context"]
     # Real usage accounting reached the persisted payload.
     assert summary["tokens"] >= 20
     assert summary["tool_calls"] >= 1
     assert summary["cost_usd"] > 0.0
     # The note physically exists under the approved sandbox root.
-    notes = sorted((artifact_root / "sandbox" / "notes").glob("*.txt"))
+    notes = sorted((workspace / "sandbox" / "notes").glob("*.txt"))
     assert [p.name for p in notes] == ["e2e_note.txt"]
     assert notes[0].read_text(encoding="utf-8") == "structured findings"
-
-    async def cleanup() -> None:
-        await worker.drain(2)
-
-    asyncio.run(cleanup())
 
 
 
@@ -694,7 +672,7 @@ def test_e2e_llm_agent_through_production_stack(tmp_path: Path) -> None:
 def test_tier_metrics_antiguardrail_only_mode_does_not_crash() -> None:
     """Regression: a mode family consisting only of guardrail anti-cases
     must aggregate to neutral metrics, not raise StatisticsError."""
-    from research_engineer.service.p2_benchmark import tier_metrics_for
+    from research_engineer.benchmark.p2_benchmark import tier_metrics_for
 
     outcomes = [
         _outcome(mode="policy_guardrail", agent_kind="bench_tool",
@@ -712,8 +690,8 @@ def test_judge_grade_surfaces_unparseable_cause() -> None:
     """Judge failures must be auditable in criterion detail, not silently
     conflated with a legitimate 0.0 quality score."""
 
+    from research_engineer.benchmark.llm_judge import make_judge_score_fn
     from research_engineer.eval.graders import GradingRequest, LLMPromptGrader
-    from research_engineer.service.llm_judge import make_judge_score_fn
 
     class BadProvider:
         async def complete(self, request: Any) -> Any:

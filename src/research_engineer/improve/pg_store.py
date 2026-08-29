@@ -1,15 +1,15 @@
 """E8/P4 - PostgreSQL-backed ImprovementStore for multi-process production.
 
 The JSON :class:`~research_engineer.improve.pipeline.ImprovementStore` is
-perfect for development and tests, but a deployed multi-process service
+perfect for development and tests, but a multi-process deployment
 (API + N workers, concurrent operators) needs transactional semantics:
 JSON files only atomically rename whole files, so two operators performing
 read-modify-write on the active-pointer table can silently lose updates,
 and the append-only decisions log can interleave partial lines.
 
 This store keeps the exact same interface as the JSON store but persists
-to PostgreSQL (the same E7 infrastructure and lazy ``psycopg`` import the
-:mod:`~research_engineer.service.store` run store uses):
+to PostgreSQL (the same lazy ``psycopg`` import pattern the runtime's
+Postgres checkpoint store uses):
 
 * ``baselines`` / ``candidates``: whole-payload rows keyed by immutable id
   (``INSERT ... ON CONFLICT DO UPDATE`` - candidates are immutable in

@@ -1,9 +1,9 @@
 """Phase 15 - Research orchestrator agent.
 
 The top-level coordinator for autonomous research workflows. Wraps the
-:class:`ResearchWorkflowFramework` and integrates with the existing
-agent ecosystem (LiteratureAgent, RepositoryMemory, TerminalTool,
-ModelRouter).
+:class:`ResearchWorkflowFramework` (stage executor) behind the LangGraph
+research graph and integrates with the existing agent ecosystem
+(LiteratureAgent, RepositoryMemory, TerminalTool, ModelRouter).
 
 This agent is the entry point for the ``research-engineer research``
 CLI command. It builds the workflow framework with the appropriate
@@ -72,7 +72,7 @@ class ResearchOrchestrator:
         config: ResearchConfig | None = None,
         stream_sink: Any | None = None,
     ) -> ResearchResult:
-        """Run the full autonomous research workflow.
+        """Run the full autonomous research workflow (LangGraph engine).
 
         Args:
             research_goal: The research objective to investigate.
@@ -86,26 +86,21 @@ class ResearchOrchestrator:
         """
         framework = self._get_framework(config)
         effective_config = config or framework.config
-        if effective_config.engine == "langgraph":
-            from research_engineer.graphs import (
-                ResearchGraph,
-                checkpoint_from_environment,
-            )
-
-            async with checkpoint_from_environment() as checkpointer:
-                return await ResearchGraph(framework, checkpointer=checkpointer).run(
-                    research_goal=research_goal,
-                    repo_path=repo_path,
-                    config=effective_config,
-                    stream_sink=stream_sink,
-                    thread_id=effective_config.thread_id,
-                )
-        return await framework.run(
-            research_goal=research_goal,
-            repo_path=repo_path,
-            config=effective_config,
-            stream_sink=stream_sink,
+        from research_engineer.graphs import (
+            ResearchGraph,
+            checkpoint_from_environment,
         )
+
+        async with checkpoint_from_environment() as checkpointer:
+            return await ResearchGraph(
+                framework, checkpointer=checkpointer,
+            ).run(
+                research_goal=research_goal,
+                repo_path=repo_path,
+                config=effective_config,
+                stream_sink=stream_sink,
+                thread_id=effective_config.thread_id,
+            )
 
 
 __all__ = ["ResearchOrchestrator"]

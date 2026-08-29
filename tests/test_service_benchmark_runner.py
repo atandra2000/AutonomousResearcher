@@ -8,15 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from research_engineer.runtime.models import AgentTermination
-from research_engineer.service.benchmark import DEFAULT_SUITE_PATH
-from research_engineer.service.benchmark_runner import (
+from research_engineer.benchmark.benchmark import DEFAULT_SUITE_PATH
+from research_engineer.benchmark.benchmark_runner import (
     FAILURE_TAXONOMY,
     BenchmarkRunner,
     CaseOutcome,
     classify_failure,
 )
-from research_engineer.service.models import RunStatus
+from research_engineer.runtime.models import AgentTermination
 
 
 def _outcome(**overrides: object) -> CaseOutcome:
@@ -25,7 +24,7 @@ def _outcome(**overrides: object) -> CaseOutcome:
         case_id="case_x", repeat=1, category="implementation",
         mode="deterministic_sandbox", agent_kind="bench_tool",
         submitted_at=__import__("datetime").datetime.now(),
-        latency_seconds=0.01, status=RunStatus.COMPLETED.value,
+        latency_seconds=0.01, status="completed",
         runtime_success=True, graded_success=True, weighted_score=1.0,
         criteria=[], steps=3, tool_calls=6, tokens=0, cost_usd=0.0,
         recoverable_errors=0, fatal_errors=0, recovered=False,
@@ -42,12 +41,12 @@ class TestStepDelayThrottle:
     def test_step_delay_applies_to_all_agent_kinds(self) -> None:
         import asyncio
 
-        from research_engineer.service.agents import AgentFactoryRegistry
-        from research_engineer.service.bench_agents import (
+        from research_engineer.benchmark.agents import AgentFactoryRegistry
+        from research_engineer.benchmark.bench_agents import (
             KIND_BENCH_FLAKY,
             register_benchmark_kinds,
         )
-        from research_engineer.service.bench_agents import (
+        from research_engineer.benchmark.bench_agents import (
             RuntimeAwareAdapter as _RuntimeAware,
         )
 
@@ -82,7 +81,7 @@ class TestStepDelayThrottle:
 
 class TestStoredViewsAndTaxonomy:
     def test_payload_view_parses_worker_result(self) -> None:
-        from research_engineer.service.benchmark_runner import (
+        from research_engineer.benchmark.benchmark_runner import (
             _StoredExecutionView,
         )
 
@@ -110,7 +109,7 @@ class TestStoredViewsAndTaxonomy:
         assert view.output == {"notes_written": 2}
 
     def test_unknown_termination_maps_to_none(self) -> None:
-        from research_engineer.service.benchmark_runner import (
+        from research_engineer.benchmark.benchmark_runner import (
             _StoredContextView,
         )
 
@@ -126,24 +125,24 @@ class TestStoredViewsAndTaxonomy:
         }
 
     def test_budget_and_timeout_labels(self) -> None:
-        o = _outcome(status=RunStatus.FAILED.value,
+        o = _outcome(status="failed",
                      termination="budget_exhausted",
                      termination_reason="max steps budget exhausted")
         assert classify_failure(o) == ["budget"]
-        o = _outcome(status=RunStatus.FAILED.value,
+        o = _outcome(status="failed",
                      termination="timeout")
         assert classify_failure(o) == ["budget", "infrastructure"]
 
     def test_safety_and_replan_labels(self) -> None:
         o = _outcome(
-            status=RunStatus.FAILED.value,
+            status="failed",
             termination="safety_terminated",
             termination_reason="safety:replan_limit.replans=2 reached",
         )
         assert classify_failure(o) == ["safety"]
 
     def test_incomplete_without_recovery_is_recovery_failure(self) -> None:
-        o = _outcome(status=RunStatus.FAILED.value,
+        o = _outcome(status="failed",
                      termination="error",
                      termination_reason="unrecoverable boom",
                      recoverable_errors=3, recovered=False)
@@ -153,7 +152,7 @@ class TestStoredViewsAndTaxonomy:
 
     def test_gateway_denials_label_tool_use_plus_safety(self) -> None:
         o = _outcome(graded_success=False, runtime_success=False,
-                     gateway_denials=1, status=RunStatus.FAILED.value,
+                     gateway_denials=1, status="failed",
                      termination="safety_terminated",
                      termination_reason="safety:policy_violation ...")
         labels = classify_failure(o)
@@ -165,7 +164,7 @@ class TestStoredViewsAndTaxonomy:
     def test_failed_grading_after_success_runtime_labeled_evaluation(
         self,
     ) -> None:
-        from research_engineer.service.benchmark_runner import (
+        from research_engineer.benchmark.benchmark_runner import (
             CriterionOutcome,
         )
 
@@ -204,7 +203,7 @@ class TestEndToEndStackRun:
                 if o.case_id.startswith("litdisc")]
         assert len(rows) == 2
         for o in rows:
-            assert o.status == RunStatus.COMPLETED.value
+            assert o.status == "completed"
             assert o.graded_success and o.weighted_score == 1.0
             # write + list per checklist item through the real gateway.
             assert o.tool_calls >= 2 * o.steps > 0
@@ -213,7 +212,7 @@ class TestEndToEndStackRun:
     def test_flaky_case_recovers_transient_failures(self, e2e: dict) -> None:
         rows = [o for o in e2e["report"].outcomes
                 if o.case_id.startswith("impl_03")]
-        assert all(o.status == RunStatus.COMPLETED.value for o in rows)
+        assert all(o.status == "completed" for o in rows)
         assert all(o.graded_success for o in rows)
         assert all(o.recoverable_errors >= 1 for o in rows)
         assert all(o.recovered for o in rows)
@@ -223,7 +222,7 @@ class TestEndToEndStackRun:
                 if o.case_id.startswith("e2e_04")]
         assert rows
         for o in rows:
-            assert o.status == RunStatus.FAILED.value
+            assert o.status == "failed"
             assert o.termination == AgentTermination.SAFETY_TERMINATED.value
             assert o.gateway_denials == 1
             assert o.safety_interventions >= 1
@@ -241,7 +240,7 @@ class TestEndToEndStackRun:
         completed = sum(
             1 for o in e2e["report"].outcomes
             if not o.expected_failed_by_design and o.graded_success
-            and o.status == RunStatus.COMPLETED.value
+            and o.status == "completed"
             and o.human_interventions == 0
         )
         assert m["autonomous_completion_rate"] == pytest.approx(

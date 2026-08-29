@@ -20,6 +20,8 @@ dependencies = [
     "langchain-openai>=1.0.0",
     "langgraph>=1.0.0",
     "langsmith>=0.4.0",
+    "rich>=13.7.0",
+    "prompt_toolkit>=3.0.43",
 ]
 
 [project.scripts]
@@ -31,11 +33,11 @@ telemetry = [
     "opentelemetry-api>=1.20",
     "opentelemetry-sdk>=1.20",
 ]
-service = [
-    "fastapi>=0.115",
+postgres = [
+    # Optional durable checkpointing (RE_LANGGRAPH_CHECKPOINT_DSN) and the
+    # E8 PostgreSQL improvement store.
     "langgraph-checkpoint-postgres>=3.0.0",
     "psycopg[binary]>=3.1",
-    "uvicorn[standard]>=0.30",
 ]
 
 [build-system]
@@ -44,16 +46,12 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    # Service tests import FastAPI during collection; keep the documented
-    # `uv run python -m pytest` command self-contained for contributors.
-    "fastapi>=0.115",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "pytest-timeout>=2.4.0",
     "ruff>=0.6.0",
     "mypy>=1.11.0",
-    "psycopg[binary]>=3.1",
 ]
 
 [tool.pytest.ini_options]
@@ -111,6 +109,16 @@ warn_subclass_override = true
 strict_equality = true
 strict_optional = true
 exclude = ["tests"]
+
+[[tool.mypy.overrides]]
+# Optional Postgres drivers are imported lazily; their stubs ship with
+# the `postgres` extra, not the default dev environment.
+module = [
+    "psycopg",
+    "psycopg.*",
+    "langgraph.checkpoint.postgres.*",
+]
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["src/research_engineer"]

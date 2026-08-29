@@ -3470,15 +3470,10 @@ def research(
         "--llm/--no-llm",
         help="Use LLM for synthesis/hypothesis/report stages (disable for offline rule-based mode)",
     ),
-    engine: str = typer.Option(
-        "native",
-        "--engine",
-        help="Workflow engine: native (default) or langgraph",
-    ),
     thread_id: str | None = typer.Option(
         None,
         "--thread-id",
-        help="LangGraph checkpoint thread identifier (requires configured checkpointer)",
+        help="LangGraph checkpoint thread identifier for resumable runs",
     ),
 ):
     """Run an autonomous research workflow.
@@ -3493,8 +3488,7 @@ def research(
         research-engineer research "Improve attention efficiency" --max-papers 30
         research-engineer research "Novel loss function" --no-dry-run --repo ./my_repo
         research-engineer research "Topic" --no-llm   # offline rule-based mode
-        research-engineer research "Topic" --engine langgraph
-        research-engineer research "Topic" --engine langgraph --thread-id migration-001
+        research-engineer research "Topic" --thread-id migration-001
     """
     from research_engineer.agents import ResearchConfig
 
@@ -3506,7 +3500,6 @@ def research(
         experiment_timeout=timeout,
         output_dir=output_dir,
         llm_enabled=llm_enabled,
-        engine=engine.lower(),
         thread_id=thread_id,
     )
     try:
@@ -4019,14 +4012,14 @@ def benchmark_run(
     """
     import asyncio
 
-    from research_engineer.service.p2_benchmark import run_p2
+    from research_engineer.benchmark.p2_benchmark import run_p2
 
     if tier not in ("all", "deterministic", "llm"):
         typer.echo(f"❌ Unknown tier {tier!r}", err=True)
         return 1
     if tier == "deterministic":
-        from research_engineer.service.benchmark import DEFAULT_SUITE_PATH
-        from research_engineer.service.benchmark_runner import (
+        from research_engineer.benchmark.benchmark import DEFAULT_SUITE_PATH
+        from research_engineer.benchmark.benchmark_runner import (
             BenchmarkRunner,
         )
 
@@ -4055,6 +4048,18 @@ def benchmark_run(
         typer.echo(f"   {metric}: {value}")
     typer.echo(f"   Verdict: {report.verdict}")
     return 0
+
+
+@app.command()
+def chat() -> None:
+    """Open the interactive codex-style research session.
+
+    Slash commands (/research, /analyze, /llm, /status, /help) dispatch
+    to the platform agents; free-form lines go to the configured LLM.
+    """
+    from research_engineer.tui import ChatSession
+
+    asyncio.run(ChatSession().run())
 
 
 if __name__ == "__main__":

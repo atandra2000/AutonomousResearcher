@@ -12,7 +12,7 @@ single-variable benchmark arms. No new evaluation framework is introduced:
 * :func:`freeze_baseline` records every reproducibility input of the P2
   final run and refuses to proceed when the live environment does not
   reproduce it.
-* Arms execute through ``research_engineer.service.p2_benchmark.run_p2``,
+* Arms execute through ``research_engineer.benchmark.p2_benchmark.run_p2``,
   i.e. the full E7 production path (API -> store -> worker -> AgentRuntime
   -> ToolGateway -> SafetyController -> checkpointing -> evaluation -> E6).
 
@@ -30,12 +30,12 @@ from typing import Any, Literal
 import yaml  # type: ignore[import-untyped]  # PyYAML
 from pydantic import BaseModel, Field, model_validator
 
-from research_engineer.service.benchmark import (
+from research_engineer.benchmark.benchmark import (
     DEFAULT_SUITE_V2_PATH,
     load_benchmark_suite,
     validate_benchmark_suite,
 )
-from research_engineer.service.p2_benchmark import (
+from research_engineer.benchmark.p2_benchmark import (
     DEFAULT_VARIANCE_CASES,
     config_fingerprint,
     sha256_text,

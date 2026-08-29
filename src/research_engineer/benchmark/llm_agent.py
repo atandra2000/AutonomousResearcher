@@ -54,6 +54,13 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
+from research_engineer.benchmark.agents import AgentFactoryRegistry, AgentFactoryReturn
+from research_engineer.benchmark.bench_agents import (
+    EmptyInput,
+    NoteWriteInput,
+    ProbeInput,
+    RuntimeAwareAdapter,
+)
 from research_engineer.llm.base import (
     LLMMessage,
     LLMRequest,
@@ -61,13 +68,6 @@ from research_engineer.llm.base import (
     ToolCall,
     ToolDefinition,
     ToolResult,
-)
-from research_engineer.service.agents import AgentFactoryRegistry, AgentFactoryReturn
-from research_engineer.service.bench_agents import (
-    EmptyInput,
-    NoteWriteInput,
-    ProbeInput,
-    RuntimeAwareAdapter,
 )
 
 logger = logging.getLogger(__name__)

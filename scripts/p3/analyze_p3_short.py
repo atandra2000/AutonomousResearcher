@@ -16,7 +16,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from research_engineer.service.p3_experiment import (
+from research_engineer.benchmark.p3_experiment import (
     mean_ci,
     wilson_interval,
 )

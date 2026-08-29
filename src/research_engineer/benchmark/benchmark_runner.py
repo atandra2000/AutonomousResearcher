@@ -1,16 +1,11 @@
-"""P1 §5 - End-to-end benchmark runner through the production stack.
+"""P1 §5 - End-to-end benchmark runner over the production runtime path.
 
-Every case is submitted through the real service layer
-(``RunManager -> SQLite/Postgres store -> queue -> AgentWorker ->
-AgentRuntime -> ToolGateway -> SafetyController -> checkpointing ->
-telemetry``) and graded afterwards from the *worker's persisted payload*
-(the same bytes an operator would see through ``GET /runs/{id}``). This is
-deliberately NOT the scripted E4 factory path - production agents are what
-the benchmark measures.
-
-The containerized pilot (:mod:`research_engineer.scripts` /
-``scripts/pilot_benchmark.py``) exercises the HTTP/API/auth layer on top;
-both share this runner's aggregation and reporting.
+Every case executes through the real agent runtime stack (``AgentRuntime
+-> ToolGateway -> SafetyController -> checkpointing``) exactly as an
+autonomous CLI run does, and is graded afterwards from the *persisted
+payload* built from the finished run context — the same bytes an operator
+would inspect on disk. This is deliberately NOT the scripted E4 factory
+path - production agents are what the benchmark measures.
 
 Outputs a versioned report (JSON + markdown): headline
 **autonomous task completion rate under fixed budgets**, the full P1 §6
@@ -22,7 +17,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import time
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime
@@ -32,6 +26,13 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from research_engineer.benchmark.agents import (
+    DEFAULT_AGENT_KIND,
+    AgentFactoryRegistry,
+)
+from research_engineer.benchmark.bench_agents import register_benchmark_kinds
+from research_engineer.benchmark.benchmark import load_benchmark_suite
+from research_engineer.benchmark.safety import build_default_safety_chain
 from research_engineer.eval.graders import GradingRequest, build_grader
 from research_engineer.eval.models import EvalSuite
 from research_engineer.improve.mining import (
@@ -41,17 +42,7 @@ from research_engineer.improve.mining import (
 )
 from research_engineer.runtime.checkpoint_stores import SQLiteCheckpointStore
 from research_engineer.runtime.models import AgentTermination
-from research_engineer.service.agents import AgentFactoryRegistry
-from research_engineer.service.artifacts import ArtifactStore
-from research_engineer.service.bench_agents import register_benchmark_kinds
-from research_engineer.service.benchmark import load_benchmark_suite
-from research_engineer.service.manager import RunManager
-from research_engineer.service.models import CreateRunRequest, RunStatus
-from research_engineer.service.queue import build_run_queue
-from research_engineer.service.serve import build_default_safety_chain
-from research_engineer.service.store import SQLiteRunStore
-from research_engineer.service.telemetry import ServiceTelemetry
-from research_engineer.service.worker import AgentWorker
+from research_engineer.runtime.runtime import AgentRuntime
 
 #: P1 failure taxonomy (§11 categories).
 FAILURE_TAXONOMY: tuple[str, ...] = (
@@ -154,7 +145,7 @@ class CaseOutcome(BaseModel):
     agent_kind: str
     submitted_at: datetime
     latency_seconds: float
-    status: str                     # final RunStatus value
+    status: str                     # "completed" | "failed" | "cancelled"
     runtime_success: bool           # AgentTermination.SUCCESS
     graded_success: bool            # required criteria + runtime success
     weighted_score: float
@@ -257,7 +248,7 @@ def classify_failure(outcome: CaseOutcome) -> list[str]:
     """
     labels: set[str] = set()
     reason = f"{outcome.termination_reason} {outcome.termination}".lower()
-    incomplete = outcome.status != RunStatus.COMPLETED.value
+    incomplete = outcome.status != "completed"
 
     if incomplete and ("budget" in reason or "max steps" in reason):
         labels.add("budget")
@@ -344,7 +335,7 @@ def _aggregate(outcomes: list[CaseOutcome]) -> tuple[dict[str, float],
     n_eff = len(effective) if effective else n
     completed_untouched = [
         o for o in outcomes
-        if o.status == RunStatus.COMPLETED.value and o.graded_success
+        if o.status == "completed" and o.graded_success
         and o.human_interventions == 0
         and "budget" not in o.termination.lower()
         and o.termination != "timeout"
@@ -539,7 +530,7 @@ def render_markdown(report: BenchmarkReport) -> str:
 
 
 class BenchmarkRunner:
-    """Execute a benchmark suite through the full production stack.
+    """Execute a benchmark suite over the production runtime path.
 
     P2 extensions (both optional, backward compatible):
 
@@ -554,14 +545,10 @@ class BenchmarkRunner:
         self,
         base_dir: Path | str,
         *,
-        cycles_per_poll: int = 400,
-        poll_seconds: float = 0.02,
         extra_graders: dict[str, Any] | None = None,
         factories: AgentFactoryRegistry | None = None,
     ) -> None:
         self.base_dir = Path(base_dir)
-        self._cycles = cycles_per_poll
-        self._poll = poll_seconds
         self._extra_graders = extra_graders or {}
         self._factories = factories
 
@@ -638,84 +625,107 @@ class BenchmarkRunner:
     async def _run_once(
         self, suite: EvalSuite, repeat: int, rep_dir: Path
     ) -> list[CaseOutcome]:
-        store = SQLiteRunStore(rep_dir / "runs.db")
-        queue = build_run_queue(_ServiceConfigShim())
-        manager = RunManager(store, queue, ServiceTelemetry())
-
-        artifacts_root = rep_dir / "artifacts"
-        gateway, controller = build_default_safety_chain(
-            _ArtifactConfigShim(artifacts_root)
+        checkpoint_store = SQLiteCheckpointStore(
+            str(rep_dir / "checkpoints.db")
         )
         if self._factories is not None:
             factories = self._factories
         else:
             factories = AgentFactoryRegistry(config_max_steps=12)
             register_benchmark_kinds(factories)
-        worker = AgentWorker(
-            store=store,
-            queue=queue,
-            checkpoint_store=SQLiteCheckpointStore(
-                str(rep_dir / "checkpoints.db")
-            ),
-            artifacts=ArtifactStore(artifacts_root),
-            factories=factories,
-            telemetry=ServiceTelemetry(),
-            poll_interval_seconds=self._poll,
-            tool_gateway=gateway,
-            safety_controller=controller,
-            require_safety_chain=True,
-        )
 
         results: list[CaseOutcome] = []
-        try:
-            for case in suite.cases:
-                meta = dict(case.metadata)
-                kind = str(meta.pop("agent_kind"))
-                overrides = dict(meta.pop("agent_overrides") or {})
-                notes_before = _notes_snapshot(artifacts_root)
-                created = await manager.submit(CreateRunRequest(
-                    goal=case.goal,
-                    metadata={"agent_kind": kind, **meta},
-                    budget_overrides=overrides,
-                ))
-                final = await self._await_terminal(
-                    worker, store, created.run_id,
-                    deadline=case.timeout_seconds or 120.0,
-                )
-                payload = final.result or {}
-                added = len(
-                    _notes_snapshot(artifacts_root) - notes_before
-                )
-                results.append(await self._outcome_for(
-                    case, repeat, final, payload, added,
-                    extra_graders=self._extra_graders or None,
-                ))
-        finally:
-            await worker.drain(5)
+        for case in suite.cases:
+            case_dir = rep_dir / case.case_id
+            workspace = case_dir / "workspace"
+            workspace.mkdir(parents=True, exist_ok=True)
+            gateway, controller = build_default_safety_chain(workspace)
+            notes_before = _notes_snapshot(workspace)
+            overrides = dict(case.metadata.get("agent_overrides") or {})
+            payload, submitted_at = await self._execute_case(
+                case, factories, checkpoint_store, gateway, controller,
+                overrides,
+            )
+            (case_dir / "result.json").write_text(
+                json.dumps(payload, indent=2, default=str),
+                encoding="utf-8",
+            )
+            added = len(
+                _notes_snapshot(workspace) - notes_before
+            )
+            results.append(await self._outcome_for(
+                case, repeat, payload, submitted_at, added,
+                extra_graders=self._extra_graders or None,
+            ))
         return results
 
-    async def _await_terminal(
-        self, worker: AgentWorker, store: SQLiteRunStore, run_id: str,
-        *, deadline: float,
-    ) -> Any:
-        t0 = time.monotonic()
-        while time.monotonic() - t0 < deadline:
-            await worker.try_claim_and_execute()
-            record = await store.get(run_id)
-            if record is not None and record.status in TERMINAL_STATUSES:
-                return record
-            await asyncio.sleep(self._poll)
-        record = await store.get(run_id)
-        if record is not None and record.status in TERMINAL_STATUSES:
-            return record
-        raise TimeoutError(
-            f"benchmark case {run_id} did not reach terminal state in "
-            f"{deadline}s"
+    async def _execute_case(
+        self,
+        case: Any,
+        factories: AgentFactoryRegistry,
+        checkpoint_store: Any,
+        gateway: Any,
+        controller: Any,
+        overrides: dict[str, Any],
+    ) -> tuple[dict[str, Any], datetime]:
+        """Run one case directly through ``AgentRuntime``; return payload.
+
+        Mirrors the production execution recipe: build the agent from the
+        registry, attach the runtime so every tool call crosses the
+        gateway + safety chain, run to a terminal state under the case
+        deadline, and build the same JSON payload graders consume.
+        """
+        submitted_at = datetime.now()
+        deadline = float(case.timeout_seconds or 120.0)
+        try:
+            adapter, policy = await factories.build(
+                str(case.metadata.get("agent_kind", DEFAULT_AGENT_KIND)),
+                overrides,
+            )
+            runtime = AgentRuntime(
+                planner=adapter.planner,
+                actor=adapter.actor,
+                observer=adapter.observer,
+                evaluator=adapter.evaluator,
+                policy=policy,
+                checkpoint_store=checkpoint_store,
+                tool_gateway=gateway,
+                safety_controller=controller,
+            )
+            attach = getattr(adapter, "attach_runtime", None)
+            if attach is not None:
+                attach(runtime)
+            execution = await asyncio.wait_for(
+                runtime.run(
+                    case.goal,
+                    metadata={"case_id": case.case_id},
+                ),
+                timeout=deadline,
+            )
+        except TimeoutError:
+            return (
+                _failure_payload(
+                    "timeout", f"case exceeded {deadline:g}s deadline",
+                    submitted_at,
+                ),
+                submitted_at,
+            )
+        except Exception as exc:  # noqa: BLE001 - failures become outcomes
+            return (
+                _failure_payload(
+                    "error", f"{type(exc).__name__}: {exc}", submitted_at,
+                ),
+                submitted_at,
+            )
+        return (
+            _payload_from_context(execution.context, submitted_at),
+            submitted_at,
         )
 
     async def _outcome_for(
         self, case: Any, repeat: int,
-        record: Any, payload: dict[str, Any], artifacts_added: int,
+        payload: dict[str, Any], submitted_at: datetime,
+        artifacts_added: int,
         *,
         extra_graders: dict[str, Any] | None = None,
     ) -> CaseOutcome:
@@ -749,9 +759,10 @@ class BenchmarkRunner:
             category=str(case.metadata.get("category")),
             mode=str(case.metadata.get("mode")),
             agent_kind=str(case.metadata.get("agent_kind")),
-            submitted_at=record.created_at,
+            submitted_at=submitted_at,
             latency_seconds=float(ctx.duration_seconds),
-            status=record.status.value,
+            status=_status_from_termination(
+                str(payload.get("termination") or "")),
             runtime_success=ctx.is_success(),
             graded_success=graded_success,
             weighted_score=weighted,
@@ -811,24 +822,121 @@ class BenchmarkRunner:
         return spreads
 
 
-TERMINAL_STATUSES = {
-    RunStatus.COMPLETED, RunStatus.FAILED, RunStatus.CANCELLED,
-}
+def _status_from_termination(termination: str) -> str:
+    """Map an ``AgentTermination`` value to the run-status vocabulary."""
+    if termination == "cancelled":
+        return "cancelled"
+    if termination in ("error", "safety_terminated", "timeout"):
+        return "failed"
+    return "completed"
 
 
-# ---------------------------------------------------------------------------
-# Tiny config shims (the runner only touches two ServiceConfig attrs)
-# ---------------------------------------------------------------------------
+def _failure_payload(
+    termination: str, reason: str, submitted_at: datetime,
+) -> dict[str, Any]:
+    """Payload for a case that never produced a finished run context."""
+    return {
+        "output": None,
+        "termination": termination,
+        "reason": reason,
+        "steps": 0,
+        "execution_id": "",
+        "submitted_at": submitted_at.isoformat(),
+        "context": {},
+    }
 
 
-class _ServiceConfigShim:
-    postgres_dsn = ""
-    checkpoint_db_path = None
+def _context_summary(context: Any) -> dict[str, Any]:
+    """Compact, JSON-safe snapshot of a finished ``AgentContext``.
+
+    Downstream consumers (benchmark grading/metrics, E8 mining) rebuild
+    their analysis inputs from this payload without live runtime state:
+    budget counters, the E4/E8 ``tool_call_log``, E5 safety decisions, and
+    per-step outcomes.
+    """
+    metadata = getattr(context, "metadata", {}) or {}
+    safety_state = metadata.get("safety_state")
+    if isinstance(safety_state, dict):
+        decisions = safety_state.get("decisions")
+        if isinstance(decisions, list):
+            # keep last 50 decisions; full history stays in the checkpoint
+            safety_state = {**safety_state, "decisions": decisions[-50:]}
+    return {
+        "execution_id": getattr(context, "execution_id", ""),
+        "state": str(
+            getattr(getattr(context, "state", None), "value",
+                    getattr(context, "state", "")) or ""
+        ),
+        "current_step": getattr(context, "current_step", 0),
+        "tool_calls": getattr(context, "tool_calls", 0),
+        "tokens": getattr(context, "tokens", 0),
+        "cost_usd": getattr(context, "cost_usd", 0.0),
+        "recoverable_errors": getattr(context, "recoverable_errors", 0),
+        "fatal_errors": sum(
+            1 for s in getattr(context, "steps", []) or []
+            if getattr(s, "error", None) is not None
+        ),
+        "stagnation_count": getattr(context, "stagnation_count", 0),
+        "best_score": getattr(context, "best_score", 0.0),
+        "duration_seconds": getattr(context, "duration_seconds", 0.0),
+        "human_interventions": int(
+            metadata.get("human_interventions", 0) or 0
+        ),
+        "tool_call_log": [
+            entry
+            for entry in (metadata.get("tool_call_log") or [])
+            if isinstance(entry, dict)
+        ],
+        "safety_state": (
+            safety_state if isinstance(safety_state, dict) else None
+        ),
+        "steps": [
+            {
+                "step": getattr(s, "step", 0),
+                "score": getattr(s, "score", 0.0),
+                "error": (
+                    {
+                        "message": s.error.message,
+                        "type": s.error.error_type,
+                        "recoverable": s.error.recoverable,
+                        "phase": (
+                            s.error.phase.value
+                            if s.error.phase is not None else ""
+                        ),
+                    }
+                    if s.error is not None
+                    else None
+                ),
+                "tool_calls": getattr(s, "tool_calls", 0),
+                "tokens": getattr(s, "tokens", 0),
+                "cost_usd": getattr(s, "cost_usd", 0.0),
+                "duration_seconds": getattr(s, "duration_seconds", 0.0),
+            }
+            for s in getattr(context, "steps", []) or []
+        ],
+    }
 
 
-class _ArtifactConfigShim:
-    def __init__(self, artifact_dir: Path) -> None:
-        self.artifact_dir = artifact_dir
+def _payload_from_context(
+    context: Any, submitted_at: datetime,
+) -> dict[str, Any]:
+    """Build the persisted result payload from a finished run context.
+
+    The same JSON shape graders and metrics consume through
+    :class:`_StoredExecutionView`.
+    """
+    termination = str(
+        getattr(context.termination, "value", context.termination) or ""
+    )
+    return {
+        "output": getattr(context, "output", None),
+        "termination": termination,
+        "reason": getattr(context, "termination_reason", None),
+        "steps": len(getattr(context, "steps", []) or []),
+        "execution_id": getattr(context, "execution_id", ""),
+        "submitted_at": submitted_at.isoformat(),
+        "context": _context_summary(context),
+    }
 
 
 def _notes_snapshot(artifacts_root: Path) -> set[str]:

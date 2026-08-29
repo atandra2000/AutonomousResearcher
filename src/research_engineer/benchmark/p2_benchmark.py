@@ -29,20 +29,20 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from research_engineer.eval.models import EvalSuite
-from research_engineer.service.agents import AgentFactoryRegistry
-from research_engineer.service.benchmark import (
+from research_engineer.benchmark.agents import AgentFactoryRegistry
+from research_engineer.benchmark.benchmark import (
     DEFAULT_SUITE_PATH,
     DEFAULT_SUITE_V2_PATH,
     load_benchmark_suite,
 )
-from research_engineer.service.benchmark_runner import (
+from research_engineer.benchmark.benchmark_runner import (
     BenchmarkReport,
     BenchmarkRunner,
     CaseOutcome,
 )
-from research_engineer.service.llm_agent import register_llm_agent_kinds
-from research_engineer.service.llm_judge import build_llm_quality_grader
+from research_engineer.benchmark.llm_agent import register_llm_agent_kinds
+from research_engineer.benchmark.llm_judge import build_llm_quality_grader
+from research_engineer.eval.models import EvalSuite
 
 #: Cases re-executed per repeat pass to measure score variance. Chosen to
 #: span every category plus the numeric-derivation cases most likely to
@@ -282,7 +282,7 @@ def build_p2_factories(
 ) -> AgentFactoryRegistry:
     """Registry carrying the four deterministic kinds plus ``llm_react``."""
     registry = AgentFactoryRegistry(config_max_steps=config_max_steps)
-    from research_engineer.service.bench_agents import (
+    from research_engineer.benchmark.bench_agents import (
         register_benchmark_kinds,
     )
 

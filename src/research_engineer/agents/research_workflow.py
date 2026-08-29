@@ -1,30 +1,24 @@
-"""Phase 15 - Research workflow framework.
+"""Phase 15 - Research workflow stage authority.
 
-A generic multi-stage research orchestrator that transforms a research
-goal into a complete research workflow: literature review → knowledge
+The seven-stage research pipeline — literature discovery → knowledge
 synthesis → hypothesis generation → experiment planning → experiment
-execution → result analysis → report generation.
-
-The framework is built on the same principles as the
-:class:`DelegationFramework` (Phase 13): stages communicate through a
-shared structured context (:class:`SharedResearchContext`), not prompt
-chaining. Each stage reads what it needs and writes its outputs back,
-enabling full traceability from research goal to final conclusions.
+execution → result analysis → report generation — is orchestrated
+exclusively by the LangGraph engine (:mod:`research_engineer.graphs`).
+This module is the stage-executor authority the graph delegates to:
+it owns the stage agents and the shared structured context
+(:class:`SharedResearchContext`), and executes one stage at a time.
 
 Design principles:
 - **Structured artifacts**: All inter-stage communication flows through
   :class:`SharedResearchContext`; stages never call each other directly.
-- **Configurable pipeline**: Stages can be skipped, reordered, or
-  replaced via :class:`ResearchConfig`.
+- **Configurable pipeline**: Stages can be skipped via
+  :class:`ResearchConfig` (honored by the graph).
 - **Full traceability**: Each stage produces a
   :class:`ResearchStageRecord` with timing, status, and output.
-- **Backward compatible**: The framework is additive; existing agents
-  and workflows are unchanged.
 """
 
 from __future__ import annotations
 
-import asyncio
 import time
 from datetime import datetime
 from typing import Any
@@ -40,11 +34,9 @@ from research_engineer.agents.research_stages import (
     ResultAnalyzerAgent,
 )
 from research_engineer.models.research import (
-    ResearchResult,
     ResearchStageRecord,
     ResearchStageStatus,
     ResearchStageType,
-    ResearchWorkflowStatus,
     SharedResearchContext,
 )
 
@@ -53,7 +45,8 @@ class ResearchConfig:
     """Configuration for the research workflow.
 
     Controls which stages run, paper/hypothesis limits, and experiment
-    execution settings.
+    execution settings. Orchestration always goes through the LangGraph
+    engine; ``thread_id`` names the checkpoint thread.
     """
 
     def __init__(
@@ -67,13 +60,8 @@ class ResearchConfig:
         stream: bool = True,
         output_dir: str = "output/research",
         llm_enabled: bool = True,
-        parallel_stages: bool = False,
-        max_concurrent: int = 4,
-        engine: str = "native",
         thread_id: str | None = None,
     ) -> None:
-        if engine not in {"native", "langgraph"}:
-            raise ValueError("engine must be 'native' or 'langgraph'")
         self.max_papers = max_papers
         self.max_hypotheses = max_hypotheses
         self.dry_run_experiments = dry_run_experiments
@@ -82,18 +70,15 @@ class ResearchConfig:
         self.stream = stream
         self.output_dir = output_dir
         self.llm_enabled = llm_enabled
-        self.parallel_stages = parallel_stages
-        self.max_concurrent = max_concurrent
-        self.engine = engine
         self.thread_id = thread_id
 
 
 class ResearchWorkflowFramework:
-    """Generic multi-stage research workflow orchestrator.
+    """Stage executor for the seven-stage research pipeline.
 
-    Runs the full research pipeline: literature discovery → knowledge
-    synthesis → hypothesis generation → experiment planning → experiment
-    execution → result analysis → report generation.
+    The LangGraph engine (``research_engineer.graphs.ResearchGraph``)
+    drives orchestration; this class owns the stage agents and executes
+    one stage at a time against the shared research context.
 
     Parameters
     ----------
@@ -146,123 +131,6 @@ class ResearchWorkflowFramework:
                 if not self.config.llm_enabled:
                     agent.llm_provider = None
                 self._stage_agents[stage_type] = agent
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
-
-    async def run(
-        self,
-        research_goal: str,
-        repo_path: str = ".",
-        config: ResearchConfig | None = None,
-        stream_sink: Any | None = None,
-    ) -> ResearchResult:
-        """Run the full autonomous research workflow.
-
-        Args:
-            research_goal: The research objective to investigate.
-            repo_path: Repository for experiment execution.
-            config: Optional config override.
-            stream_sink: Optional LLM streaming sink.
-
-        Returns:
-            :class:`ResearchResult` with all stage records and the
-            final report.
-        """
-        start = time.time()
-        cfg = config or self.config
-        ctx = SharedResearchContext(
-            research_goal=research_goal,
-            repo_path=repo_path,
-            output_dir=cfg.output_dir,
-            max_papers=cfg.max_papers,
-            max_hypotheses=cfg.max_hypotheses,
-            dry_run_experiments=cfg.dry_run_experiments,
-            experiment_timeout=cfg.experiment_timeout,
-            stream=cfg.stream,
-            skip_stages=cfg.skip_stages,
-        )
-        stages: list[ResearchStageRecord] = []
-        status = ResearchWorkflowStatus.RUNNING
-        top_error: str | None = None
-
-        pipeline: list[ResearchStageType] = [
-            ResearchStageType.LITERATURE_DISCOVERY,
-            ResearchStageType.KNOWLEDGE_SYNTHESIS,
-            ResearchStageType.HYPOTHESIS_GENERATION,
-            ResearchStageType.EXPERIMENT_PLANNING,
-            ResearchStageType.EXPERIMENT_EXECUTION,
-            ResearchStageType.RESULT_ANALYSIS,
-            ResearchStageType.REPORT_GENERATION,
-        ]
-
-        try:
-            for stage_type in pipeline:
-                if stage_type in ctx.skip_stages:
-                    stages.append(
-                        ResearchStageRecord(
-                            stage_id=f"stage_{uuid4().hex[:8]}",
-                            stage_type=stage_type,
-                            status=ResearchStageStatus.SKIPPED,
-                            summary="Skipped per config.",
-                        )
-                    )
-                    continue
-                stage_record = await self._run_stage(
-                    stage_type, ctx, stream_sink
-                )
-                stages.append(stage_record)
-                if stage_record.status == ResearchStageStatus.FAILED:
-                    status = ResearchWorkflowStatus.PARTIAL
-                    top_error = stage_record.error or "Stage failed"
-                    break
-            if status == ResearchWorkflowStatus.RUNNING:
-                status = ResearchWorkflowStatus.COMPLETED
-        except Exception as e:
-            status = ResearchWorkflowStatus.FAILED
-            top_error = str(e)
-
-        return ResearchResult(
-            workflow_id=ctx.workflow_id,
-            research_goal=research_goal,
-            status=status,
-            stages=stages,
-            papers_found=len(ctx.papers),
-            hypotheses_generated=len(ctx.hypotheses),
-            experiments_run=len(ctx.experiment_outcomes),
-            final_report=ctx.final_report,
-            report_path=ctx.report_path,
-            generated_files=[ctx.report_path] if ctx.report_path else [],
-            processing_time_seconds=round(time.time() - start, 2),
-            timestamp=datetime.now(),
-            error=top_error,
-        )
-
-    async def run_stage_group(
-        self,
-        stage_types: list[ResearchStageType],
-        ctx: SharedResearchContext,
-        stream_sink: Any | None = None,
-    ) -> list[ResearchStageRecord]:
-        """Execute a group of independent research stages concurrently.
-
-        Args:
-            stage_types: List of ResearchStageType enum values to execute.
-            ctx: SharedResearchContext passed to each stage.
-            stream_sink: Optional LLM streaming sink.
-
-        Returns:
-            List of ResearchStageRecord results.
-        """
-        tasks = [
-            self._run_stage(st, ctx, stream_sink)
-            for st in stage_types
-            if st not in ctx.skip_stages
-        ]
-        if not tasks:
-            return []
-        return list(await asyncio.gather(*tasks))
 
     # ------------------------------------------------------------------
     # Stage execution

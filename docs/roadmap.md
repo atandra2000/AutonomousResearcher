@@ -78,16 +78,13 @@ orchestration layer for autonomous agents.
 
 ---
 
-## v2.3 — Web UI dashboard
+## v2.3 — CLI-native ergonomics
 
-**Goal:** Visualize loops, memory, and the knowledge graph in a browser.
-
-- [ ] FastAPI app serving loop state + iteration history
-- [ ] Live loop monitoring (WebSocket streaming)
-- [ ] Knowledge-graph visualization (D3.js / vis.js)
-- [ ] Memory browser (search, filter, inspect)
-- [ ] Experiment metric charts (Plotly)
-- [ ] Approval-gate UI (approve/reject from the browser)
+- [ ] Streaming token output in the chat session (`/research` stages + LLM turns)
+- [ ] Session persistence: resume a chat thread from a checkpoint
+- [ ] Knowledge-graph + memory visualization rendered as terminal graphs
+- [ ] Experiment metric sparklines in the loop monitor
+- [ ] Approval-gate prompts inline in the chat session
 
 ---
 
@@ -140,10 +137,13 @@ This project follows [semantic versioning](https://semver.org/):
 
 *Last updated: v2.0 · 15/15 phases complete*
 
-## E7 — Production Deployment & Service Architecture ✅ COMPLETE
+## Benchmark execution path (CLI-dedicated) ✅ CURRENT
 
-Docker Compose stack (`deploy/`) with API + worker containers, PostgreSQL
-(runs table, `SKIP LOCKED` queue, E2 checkpoints), an artifact volume, and an
-OpenTelemetry collector. The FastAPI service lives in
-`research_engineer.service` and reuses every E1–E6 layer unchanged.
-See `docs/deployment.md`; the container smoke test is `scripts/smoke_test.sh`.
+Benchmarks run **directly through the production runtime path** — the
+same `AgentRuntime → ToolGateway → SafetyController → checkpointing`
+stack an autonomous CLI run uses. There is no separate serving tier:
+`BenchmarkRunner` builds the safety chain per case, executes via
+`AgentRuntime`, persists the finished run context as JSON, and grades
+the persisted payload. The former queue/worker/API service layer was
+removed in the CLI-dedicated rework; the benchmark machinery now lives
+in `research_engineer.benchmark`.

@@ -1,22 +1,26 @@
 # Framework-Stack Migration — LangGraph & LangChain
 
-The platform's execution core (agents, tools, typed models, gateway, service
-API) is framework-agnostic. This migration adds an **opt-in** LangGraph /
-LangChain runtime alongside the native one without changing any default
-behavior, public contract, or existing tool.
+The platform's execution core (agents, tools, typed models, gateway,
+safety) is framework-agnostic. LangGraph is **the** research orchestration
+engine: the seven research stages run as a LangGraph `StateGraph` with
+optional durable snapshots, and there is no second (native) engine.
 
 ## Design invariants
 
-- **Native engine remains the default.** `ResearchConfig.engine` is
-  `"native"` unless explicitly set to `"langgraph"`; the CLI flag mirrors
-  this (`--engine native`).
+- **LangGraph is the only engine.** `ResearchConfig` carries a
+  `thread_id` (not an `engine` selector); `ResearchOrchestrator.run`
+  always delegates to `graphs.ResearchGraph`.
+- **The framework stays the stage authority.** The graph owns ordering,
+  state, and persistence; stage execution is delegated to
+  `ResearchWorkflowFramework._run_stage`, which owns the stage agents
+  and the shared context.
 - **The gateway stays the execution authority.** LangChain tools are thin
   adapters whose only execution path is `ToolGateway.execute` — policy,
   approval, sandboxing, timeouts, and output caps all still apply.
 - **Tools and models are unchanged.** The existing `Tool[Input, Output]`
   ABC and Pydantic v2 models sit at every boundary; nothing was rewritten.
-- **Everything is optional.** Durable graph snapshots need the `[service]`
-  extra; LangSmith tracing is off unless env vars enable it.
+- **Snapshots are optional.** Durable graph snapshots need the
+  `postgres` extra; LangSmith tracing is off unless env vars enable it.
 
 ## Components
 
@@ -48,7 +52,7 @@ result = await graph.run(goal, repo_path, config=cfg, thread_id="t1")
 
 | Condition | Yields |
 |-----------|--------|
-| `RE_LANGGRAPH_CHECKPOINT_DSN` set | `AsyncPostgresSaver` (`setup()` runs on open; requires the `[service]` extra — `langgraph-checkpoint-postgres`) |
+| `RE_LANGGRAPH_CHECKPOINT_DSN` set | `AsyncPostgresSaver` (`setup()` runs on open; requires the `postgres` extra — `langgraph-checkpoint-postgres`) |
 | DSN set but extra missing | `RuntimeError` (fail fast, no silent downgrade) |
 | No DSN (default) | `None` → graph runs without snapshots |
 
@@ -91,47 +95,22 @@ wraps the E3 `ToolGateway` as a LangChain `StructuredTool`:
 
 ### Orchestrator + CLI wiring
 
-- `ResearchConfig` gained `engine` (validated against
-  `{"native", "langgraph"}`) and `thread_id`.
+- `ResearchConfig` carries `thread_id` (the `engine` selector is gone —
+  LangGraph is the only engine).
 - `ResearchOrchestrator.run` imports `research_engineer.graphs` lazily
-  and, for `engine == "langgraph"`, opens `checkpoint_from_environment()`
-  around the run; otherwise the native framework path is unchanged.
+  and always opens `checkpoint_from_environment()` around the run.
 
 ```bash
-research-engineer research "Design a more efficient diffusion transformer" --engine langgraph
-research-engineer research "Novel loss function" --engine langgraph --thread-id migration-001
+research-engineer research "Design a more efficient diffusion transformer"
+research-engineer research "Novel loss function" --thread-id migration-001
 ```
-
-### Web console — `apps/web/`
-
-A minimal Next.js (App Router) console that proxies the E7 run API:
-
-- `proxy.ts` (Next 16 proxy/middleware) gates the UI; Auth.js v5
-  (`next-auth@beta`) authenticates users via OIDC.
-- Server routes forward run submission/status/cancel/resume/result to the
-  FastAPI service with the bearer token — service credentials never reach
-  the browser.
-- Local dev: `pnpm install && pnpm dev` inside `apps/web`; CI runs
-  `pnpm typecheck` + `pnpm build` (the `web` job in
-  `.github/workflows/ci.yml`).
-
-## Deployment wiring
-
-`deploy/docker-compose.yml` adds:
-
-| Piece | Detail |
-|-------|--------|
-| `web` service | Builds `apps/web/Dockerfile`, depends on `api` being healthy, gets `RE_SERVICE_API_URL` + bearer token + `AUTH_SECRET`/`AUTH_OIDC_ISSUER`/`AUTH_OIDC_CLIENT_ID` |
-| API/worker env | `RE_LANGGRAPH_CHECKPOINT_DSN` (in-stack Postgres), `LANGSMITH_TRACING`/`PROJECT`/`ENDPOINT`/`API_KEY`, `LANGCHAIN_CALLBACKS_BACKGROUND` |
-
-`deploy/.env.example` documents all of these (LangSmith defaults off).
 
 ## Dependencies
 
 | Package | Extra | Purpose |
 |---------|-------|---------|
 | `langchain>=1.0.0`, `langchain-openai>=1.0.0`, `langgraph>=1.0.0`, `langsmith>=0.4.0` | core | engine + provider + adapter |
-| `langgraph-checkpoint-postgres>=3.0.0` | `[service]` | durable graph snapshots |
+| `langgraph-checkpoint-postgres>=3.0.0`, `psycopg[binary]` | `postgres` | durable graph snapshots |
 
 ## Testing
 

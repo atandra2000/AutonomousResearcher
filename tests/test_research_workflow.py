@@ -431,61 +431,37 @@ class TestReportGeneratorAgent:
 # ---------------------------------------------------------------------------
 
 
-class TestResearchWorkflowFramework:
+class TestFrameworkStageExecution:
+    """Stage-executor surface of the framework (orchestration = LangGraph)."""
+
     @pytest.mark.asyncio
-    async def test_full_workflow_dry_run(self, tmp_path):
-        from research_engineer.agents import ResearchConfig, ResearchWorkflowFramework
+    async def test_run_stage_completes(self, tmp_path):
+        from research_engineer.agents import (
+            ResearchConfig,
+            ResearchWorkflowFramework,
+        )
 
         framework = ResearchWorkflowFramework(
-            terminal_tool=_FakeTerminal(),  # type: ignore[arg-type]
             config=ResearchConfig(
-                max_papers=5,
-                max_hypotheses=3,
-                dry_run_experiments=True,
-                output_dir=str(tmp_path / "out"),
-                llm_enabled=False,
+                output_dir=str(tmp_path / "out"), llm_enabled=False,
             ),
         )
-        result = await framework.run(
-            research_goal="Efficient diffusion transformers",
+        ctx = SharedResearchContext(
+            research_goal="Test",
             repo_path=str(tmp_path),
+            output_dir=str(tmp_path / "out"),
         )
-        assert result.status == ResearchWorkflowStatus.COMPLETED
-        assert len(result.stages) == 7
-        assert all(
-            s.status == ResearchStageStatus.COMPLETED for s in result.stages
+        record = await framework._run_stage(
+            ResearchStageType.KNOWLEDGE_SYNTHESIS, ctx, None,
         )
-        assert result.papers_found >= 0
-        assert result.hypotheses_generated > 0
-        assert result.experiments_run > 0
-        assert len(result.final_report) > 0
-        assert result.report_path != ""
+        assert record.status == ResearchStageStatus.COMPLETED
 
     @pytest.mark.asyncio
-    async def test_workflow_with_skipped_stages(self, tmp_path):
-        from research_engineer.agents import ResearchConfig, ResearchWorkflowFramework
-
-        framework = ResearchWorkflowFramework(
-            config=ResearchConfig(
-                skip_stages=[
-                    ResearchStageType.EXPERIMENT_EXECUTION,
-                    ResearchStageType.RESULT_ANALYSIS,
-                ],
-                output_dir=str(tmp_path / "out"),
-                llm_enabled=False,
-            ),
+    async def test_run_stage_failure_captured(self, tmp_path):
+        from research_engineer.agents import (
+            ResearchConfig,
+            ResearchWorkflowFramework,
         )
-        result = await framework.run(
-            research_goal="Test", repo_path=str(tmp_path),
-        )
-        assert result.status == ResearchWorkflowStatus.COMPLETED
-        # 7 stages, 2 skipped.
-        skipped = [s for s in result.stages if s.status == ResearchStageStatus.SKIPPED]
-        assert len(skipped) == 2
-
-    @pytest.mark.asyncio
-    async def test_workflow_stage_failure(self, tmp_path):
-        from research_engineer.agents import ResearchConfig, ResearchWorkflowFramework
 
         class _FailAgent:
             agent_name = "FailAgent"
@@ -494,42 +470,44 @@ class TestResearchWorkflowFramework:
                 raise RuntimeError("Stage failed")
 
         framework = ResearchWorkflowFramework(
-            config=ResearchConfig(
-                output_dir=str(tmp_path / "out"),
-            ),
+            config=ResearchConfig(output_dir=str(tmp_path / "out")),
             stage_agents={
                 ResearchStageType.LITERATURE_DISCOVERY: _FailAgent(),
             },
         )
-        result = await framework.run(
-            research_goal="Test", repo_path=str(tmp_path),
-        )
-        assert result.status == ResearchWorkflowStatus.PARTIAL
-        assert result.stages[0].status == ResearchStageStatus.FAILED
-        assert result.error is not None
-
-    @pytest.mark.asyncio
-    async def test_run_stage_group_concurrent(self, tmp_path):
-        from research_engineer.agents import ResearchConfig, ResearchWorkflowFramework
-
-        framework = ResearchWorkflowFramework(
-            config=ResearchConfig(output_dir=str(tmp_path / "out")),
-        )
         ctx = SharedResearchContext(
-            research_goal="Test parallelism",
+            research_goal="Test",
             repo_path=str(tmp_path),
             output_dir=str(tmp_path / "out"),
         )
-        stage_records = await framework.run_stage_group(
-            [
-                ResearchStageType.LITERATURE_DISCOVERY,
-                ResearchStageType.KNOWLEDGE_SYNTHESIS,
-            ],
-            ctx,
+        record = await framework._run_stage(
+            ResearchStageType.LITERATURE_DISCOVERY, ctx, None,
         )
-        assert len(stage_records) == 2
-        for rec in stage_records:
-            assert rec.status == ResearchStageStatus.COMPLETED
+        assert record.status == ResearchStageStatus.FAILED
+        assert "Stage failed" in str(record.error)
+
+    @pytest.mark.asyncio
+    async def test_unregistered_stage_is_skipped(self, tmp_path):
+        from research_engineer.agents import (
+            ResearchConfig,
+            ResearchWorkflowFramework,
+        )
+
+        framework = ResearchWorkflowFramework(
+            config=ResearchConfig(
+                output_dir=str(tmp_path / "out"), llm_enabled=False,
+            ),
+        )
+        ctx = SharedResearchContext(
+            research_goal="Test",
+            repo_path=str(tmp_path),
+            output_dir=str(tmp_path / "out"),
+        )
+        framework._stage_agents.pop(ResearchStageType.REPORT_GENERATION)
+        record = await framework._run_stage(
+            ResearchStageType.REPORT_GENERATION, ctx, None,
+        )
+        assert record.status == ResearchStageStatus.SKIPPED
 
     @pytest.mark.asyncio
     async def test_concurrent_experiment_execution(self, tmp_path):
@@ -602,7 +580,7 @@ class TestResearchOrchestrator:
         assert len(result.final_report) > 0
 
     @pytest.mark.asyncio
-    async def test_orchestrator_runs_the_langgraph_engine(self, tmp_path):
+    async def test_orchestrator_run_uses_langgraph_engine(self, tmp_path):
         from research_engineer.agents import ResearchConfig, ResearchOrchestrator
 
         orch = ResearchOrchestrator(
@@ -612,7 +590,7 @@ class TestResearchOrchestrator:
             research_goal="Graph-backed efficient attention",
             repo_path=str(tmp_path),
             config=ResearchConfig(
-                engine="langgraph",
+                thread_id="wf-thread-001",
                 max_papers=3,
                 max_hypotheses=2,
                 dry_run_experiments=True,
@@ -640,15 +618,6 @@ class TestResearchCLI:
         assert result.exit_code == 0
         assert "research" in result.output.lower()
         assert "goal" in result.output.lower()
-
-    def test_research_help_lists_graph_engine(self):
-        from typer.testing import CliRunner
-
-        from research_engineer.cli import app
-
-        result = CliRunner().invoke(app, ["research", "--help"])
-        assert result.exit_code == 0
-        assert "--engine" in result.output
 
     def test_research_help_lists_graph_thread_id(self):
         from typer.testing import CliRunner

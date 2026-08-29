@@ -1,16 +1,15 @@
 # AGENTS.md - Autonomous ML Research Engineer
 
 > **Project:** `AutonomousMLResearchEngineer/` · **Type:** 15-phase
-> multi-agent ML research platform + production deployment stack ·
+> multi-agent ML research platform as a CLI-dedicated product ·
 > **Version:** 0.9.0 · **Stats:** 23 agents · 61 typed tools · 17 pydantic
-> v2 schema modules (251 classes) · **1477 tests — 1475 passing, 2 network-skipped** · plus agent-eval
-> harness (`eval/`, E4), continuous-improvement loop (`improve/`, E8),
-> P1/P2 research benchmarks (`benchmark` CLI), a Next.js console
-> (`apps/web`), and a Docker Compose production stack (`deploy/`: FastAPI
-> api + worker + Postgres queue + OTel collector + web console, E7).
-> **Stack:** Python 3.12, pydantic v2, typer, httpx, arxiv, pymupdf,
-> chromadb, sentence-transformers, langgraph/langchain (opt-in),
-> pytest-asyncio, ruff, mypy.
+> v2 schema modules (251 classes) · **tests — see Test Status** · plus
+> agent-eval harness (`eval/`, E4), continuous-improvement loop
+> (`improve/`, E8), and P1/P2 research benchmarks (`benchmark` CLI)
+> executing through the production runtime path.
+> **Stack:** Python 3.12, pydantic v2, typer, rich, prompt_toolkit,
+> httpx, arxiv, pymupdf, chromadb, sentence-transformers,
+> langgraph/langchain, pytest-asyncio, ruff, mypy.
 
 This file is the **developer reference manual** for the platform. It is
 intentionally detailed (architecture diagrams, source tree, CLI command
@@ -66,11 +65,8 @@ research-engineer benchmark {p1|p2|list|compare} # P1 deterministic / P2 LLM-bac
 # Review gate
 research-engineer review                         # interactive approval of plans/patches/experiments
 
-# Production deployment (E7 stack: api + worker + postgres + otel-collector)
-cd deploy && cp .env.example .env                # set POSTGRES_PASSWORD + RE_SERVICE_API_TOKEN
-docker compose up -d --build
-curl -s localhost:8000/health && curl -s localhost:8000/ready
-scripts/smoke_test.sh [--down]                   # full deploy→run→crash→recover probe
+# Interactive session (codex-style REPL)
+research-engineer chat                           # /research, /analyze, /llm, /status, /help
 
 # Dev — NOTE: bare `uv run pytest` resolves to Homebrew's Python 3.14
 # pytest on this machine and fails collection; always go through python -m.
@@ -309,11 +305,12 @@ CLI → ResearchOrchestrator
       output/research/<workflow_id>/research_report.md + .json
 ```
 
-Opt-in LangGraph engine: `--engine langgraph` runs the same seven stages
-as a LangGraph state machine (`graphs/research.py`); with
+Opt-in LangGraph engine — now the ONLY engine: the seven stages run as a
+LangGraph state machine (`graphs/research.py`); with
 `RE_LANGGRAPH_CHECKPOINT_DSN` set, `AsyncPostgresSaver` snapshots each
-node. `ResearchConfig.engine` defaults to `"native"` — behavior is
-unchanged unless opted in. See `docs/framework_stack_migration.md`.
+node. `ResearchOrchestrator` always delegates to the graph; the workflow
+framework is the stage-executor authority. See
+`docs/framework_stack_migration.md`.
 
 ---
 
@@ -333,16 +330,14 @@ src/research_engineer/
 ├── improve/                   # E8 continuous improvement: mining, proposals, gate, pipeline
 ├── graphs/                    # LangGraph adapter for Phase 15 (ResearchGraph, env-based
 │                              #   Postgres checkpoints; opt-in via --engine langgraph)
-├── gateway/ runtime/ service/ safety/ observability/   # E1–E3/E5–E7 platform infra layers
+├── gateway/ runtime/ benchmark/ safety/ observability/  # E1–E3/E5 platform infra + benchmark machinery
 ├── models/                    # 17 pydantic v2 schema modules, 251 classes total
 └── tools/                     # 61 typed tools + base.py, base_cache.py, rate_limiter, _stats.py
 
-deploy/                        # E7 production stack: Dockerfile, docker-compose.yml
-                               #   (api + worker + postgres + otel-collector + web), .env.example
-apps/web/                      # Next.js console for the E7 run API (CI: pnpm typecheck + build)
-scripts/                       # smoke_test.sh (deploy probe), ci_mypy.sh (baseline gate)
+benchmark/                     # P1/P2 benchmark machinery: runner, suites, LLM agent/judge
+scripts/                       # ci_mypy.sh (baseline gate)
 configs/                       # mypy-baseline.txt + experiment configs
-docs/                          # 21 documentation files (architecture, deployment, CLI, …)
+docs/                          # 21 documentation files (architecture, CLI, …)
 ```
 
 Model schema modules (`models/`): paper, summary, plan, planner, repo,
@@ -365,12 +360,13 @@ layers (all under `src/research_engineer/` unless noted):
   working-directory confinement, timeouts).
 - **E4 eval/** — graded agent-eval suites (deterministic + LLM-judged).
 - **E5 observability/** — structured logs, metrics; optional OpenTelemetry
-  export via the `telemetry` extra + `deploy/otel-collector-config.yaml`.
+  export via the `telemetry` extra.
 - **E6 safety/** — approval gates and guardrails shared by agents.
-- **E7 service/ + deploy/** — FastAPI run API (`POST /runs`,
-  status/cancel/resume/result, bearer auth, `/health`, `/ready`),
-  Postgres-backed queue (`FOR UPDATE SKIP LOCKED`), worker with heartbeat
-  + crash recovery, Docker Compose stack, `scripts/smoke_test.sh`.
+- **E7 benchmark execution path** — the serving tier (FastAPI run API,
+  queue, worker, Docker Compose) was removed in the CLI-dedicated
+  rework; benchmark cases execute directly through `AgentRuntime` +
+  gateway/safety + checkpointing and grade the persisted payloads
+  (`benchmark/`).
 - **E8 improve/** — mines E4 reports into improvement candidates with an
   approve/promote gate (PostgreSQL-backed store).
 
@@ -380,7 +376,7 @@ layers (all under `src/research_engineer/` unless noted):
 
 1. **`uv run` everywhere** — never `python` directly (root rule).
 2. **Pytest-then-lint-then-mypy** before declaring any change complete.
-3. **Never** reduce test coverage below **1462 passing** (2 network-skipped).
+3. **Never** reduce test coverage below **1442 passing** (2 network-skipped).
 4. **Repository-agnostic** — never hardcode assumptions about specific repos.
 5. **Paper-agnostic** — must work for any ML paper (attention, MoE,
    diffusion, etc.).
@@ -424,14 +420,15 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-**1477 tests — 1475 passing, 2 network-skipped** (verified via
-`uv run python -m pytest -q`, 2026-08-30) — never reduce. Includes the
-original phase suites plus tests for the E4 eval harness, E8 improvement
-loop, the E1–E7 platform layers (runtime, checkpoints, gateway policy,
-service API, Postgres queue), LLM layer extensions (openai / anthropic /
-local ollama providers, streaming, resilience), P1/P2 benchmarks, and
-the framework-stack suites (LangGraph research graph, LangGraph
-checkpoints, LangChain provider + gateway adapter).
+**1444 tests — 1442 passing, 2 network-skipped** (verified via
+`uv run python -m pytest -q`, 2026-08-30, CLI-dedicated rework) — never
+reduce. Includes the original phase suites plus tests for the E4 eval
+harness, E8 improvement loop, the platform layers (runtime,
+checkpoints, gateway policy, safety), LLM layer extensions (openai /
+anthropic / local ollama providers, streaming, resilience), P1/P2
+benchmarks over the direct runtime path, the interactive chat session
+(`tui/`), and the framework-stack suites (LangGraph research graph,
+LangGraph checkpoints, LangChain provider + gateway adapter).
 Coverage target >90%.
 
 ## CI / Type-Debt Policy
@@ -441,8 +438,7 @@ Coverage target >90%.
   the legacy debt can shrink but never grow. Re-baseline deliberately
   after fixing a batch.
 - GitHub Actions runs pytest + ruff + the mypy baseline gate on every push
-  (see `.github/workflows/ci.yml`). A separate `web` job runs
-  `pnpm typecheck` + `pnpm build` for `apps/web`.
+  (see `.github/workflows/ci.yml`).
 - `network` pytest marker: tests needing live internet (arXiv API) are
   skipped when offline — CI runs fully offline.
 

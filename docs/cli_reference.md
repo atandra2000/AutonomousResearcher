@@ -85,20 +85,31 @@ Run an end-to-end autonomous research workflow. Orchestrates literature → synt
 ```bash
 research-engineer research <goal> [--repo PATH] [--max-papers N] [--max-hypotheses N] [--dry-run] [--timeout SEC]
                  [--output-dir DIR] [--format console|json|markdown] [--llm/--no-llm]
-                 [--engine native|langgraph] [--thread-id ID]
+                 [--thread-id ID]
 ```
 
 ```bash
 research-engineer research "Design a more efficient diffusion transformer" --max-papers 30
 research-engineer research "Design a more efficient diffusion transformer" --max-papers 30 --max-hypotheses 5 --dry-run
-research-engineer research "Design a more efficient diffusion transformer" --engine langgraph
-research-engineer research "Novel loss function" --engine langgraph --thread-id migration-001
+research-engineer research "Novel loss function" --thread-id migration-001
 ```
 
-`--engine langgraph` routes the same seven stages through the LangGraph
-state machine (`src/research_engineer/graphs/`); durable per-node
-snapshots additionally require `RE_LANGGRAPH_CHECKPOINT_DSN` (Postgres).
+Research runs always go through the LangGraph state machine
+(`src/research_engineer/graphs/`). `--thread-id` namespaces checkpoint
+snapshots; durable per-node snapshots additionally require
+`RE_LANGGRAPH_CHECKPOINT_DSN` (Postgres, `postgres` extra).
 See [Framework-Stack Migration](framework_stack_migration.md).
+
+### `chat`
+
+Interactive codex-style session over the same agents. Slash commands
+(`/research`, `/analyze`, `/llm`, `/status`, `/help`, `/exit`) dispatch
+to the platform; free-form lines go to the configured LLM. Rendered
+with rich; input history via prompt_toolkit.
+
+```bash
+research-engineer chat
+```
 
 ### `get`
 
