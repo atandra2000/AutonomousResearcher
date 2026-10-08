@@ -62,3 +62,8 @@ htmlcov/
 logs/
 # Vendored CPU torch wheels - see deploy/wheels/README.md
 deploy/wheels/*.whl
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+.claude/

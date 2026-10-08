@@ -1,7 +1,7 @@
 """Anthropic LLM provider.
 
 Talks to the native Anthropic Messages API (``POST {base_url}/v1/messages``)
-over httpx — Claude 3.5/3.7 Sonnet, Opus, etc. Connection settings are
+over httpx — any Messages-API-compatible endpoint. Connection settings are
 sourced from constructor arguments with environment-variable fallbacks:
 
 ================ ==================== ==============================
@@ -9,7 +9,7 @@ Setting          Env var              Default
 ================ ==================== ==============================
 ``base_url``      ``ANTHROPIC_BASE_URL``      ``https://api.anthropic.com``
 ``api_key``       ``ANTHROPIC_API_KEY``       (none)
-``default_model`` ``ANTHROPIC_MODEL`` / ``ANTHROPIC_DEFAULT_MODEL``  ``\"claude-3-5-sonnet-latest\"``
+``default_model`` ``ANTHROPIC_MODEL`` / ``ANTHROPIC_DEFAULT_MODEL``  (none — set explicitly)
 ``timeout``       ``ANTHROPIC_TIMEOUT``       ``60``
 ================ ==================== ==============================
 
@@ -55,8 +55,11 @@ class AnthropicProvider(LLMProvider):
     DEFAULT_BASE_URL = "https://api.anthropic.com"
 
     #: Anthropic requires an explicit ``max_tokens``; used when the request
-    #: does not specify one.
-    DEFAULT_MAX_TOKENS = 1024
+    #: does not specify one. Thinking counts toward this ceiling on the current
+    #: Claude generation even when its text is not returned, so a thinking-off
+    #: sized default truncates replies mid-thought. Callers that need a
+    #: deliberately short output set their own cap.
+    DEFAULT_MAX_TOKENS = 16000
 
     def __init__(
         self,
@@ -77,7 +80,7 @@ class AnthropicProvider(LLMProvider):
             default_model
             or os.environ.get("ANTHROPIC_MODEL")
             or os.environ.get("ANTHROPIC_DEFAULT_MODEL")
-            or "claude-3-5-sonnet-latest"
+            or ""
         )
         timeout_s = timeout or float(os.environ.get("ANTHROPIC_TIMEOUT", "60"))
         self._timeout = timeout_s
@@ -311,8 +314,11 @@ class AnthropicProvider(LLMProvider):
             "model": model,
             "messages": messages,
             "max_tokens": request.max_tokens or self.DEFAULT_MAX_TOKENS,
-            "temperature": request.temperature,
         }
+        # Sampling parameters are removed on the current Claude generation and
+        # return a 400, so request.temperature is not forwarded here. Pass
+        # sampling options through request.extra when a target model still
+        # takes them.
         if system_parts:
             payload["system"] = "\n".join(system_parts)
         if request.stop:

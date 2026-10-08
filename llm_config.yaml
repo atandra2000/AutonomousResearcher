@@ -72,20 +72,21 @@ providers:
   # tracing. Set LANGSMITH_TRACING/LANGSMITH_API_KEY only in deployment.
   # langchain:
   #   type: langchain
-  #   base_url: https://api.openai.com
+  #   base_url: https://api.openai.com   # OpenRouter: https://openrouter.ai/api/v1
   #   api_key: ${OPENAI_API_KEY}
   #   default_model: gpt-4o
   #   timeout: 60
 
-  # --- Anthropic (see llm/anthropic_provider.py) ------------------------
-  # Maps to AnthropicProvider. Native Anthropic Messages API (Claude 3.5/3.7
-  # Sonnet, Opus). Note: the Messages API requires an explicit max_tokens;
-  # the provider applies a default when a request omits it.
+  # --- Anthropic Messages API (see llm/anthropic_provider.py) ----------
+  # Maps to AnthropicProvider (Messages-API wire format, any compatible
+  # endpoint). Note: the Messages API requires an explicit max_tokens;
+  # the provider applies a default when a request omits it. Unused here —
+  # OpenRouter / cline-pass go through the OpenAI-compatible provider above.
   # anthropic:
   #   type: anthropic
   #   base_url: https://api.anthropic.com
   #   api_key: ${ANTHROPIC_API_KEY}
-  #   default_model: claude-3-5-sonnet-latest
+  #   default_model: <set explicitly>
   #   timeout: 60
 
   # --- Local Ollama (see llm/local_ollama_provider.py) ------------------
@@ -112,9 +113,6 @@ pricing:
   gpt-4o: [2.50, 10.00]
   gpt-4o-mini: [0.15, 0.60]
   o1: [15.00, 60.00]
-  # Anthropic
-  claude-3-5-sonnet: [3.00, 15.00]
-  claude-3-opus: [15.00, 75.00]
   # Local models are free
   llama3: [0.0, 0.0]
 

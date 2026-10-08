@@ -36,11 +36,6 @@ _BUILTIN_PRICING: dict[str, tuple[float, float]] = {
     "o1": (15.00, 60.00),
     "o1-mini": (1.10, 4.40),
     "o3-mini": (1.10, 4.40),
-    # Anthropic
-    "claude-3-5-sonnet": (3.00, 15.00),
-    "claude-3-7-sonnet": (3.00, 15.00),
-    "claude-3-opus": (15.00, 75.00),
-    "claude-3-haiku": (0.25, 1.25),
     # Ollama Cloud models used by this project (conservative placeholders).
     "glm-5.2:cloud": (0.50, 1.50),
     "kimi-k2.7-code": (0.60, 2.20),

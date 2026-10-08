@@ -389,8 +389,8 @@ layers (all under `src/research_engineer/` unless noted):
 
 1. **`uv run` everywhere** — never `python` directly (root rule).
 2. **Pytest-then-lint-then-mypy** before declaring any change complete.
-3. **Never** reduce test coverage below **1451 passing** (2 optional-dependency
-   skipped).
+3. **Never** reduce test coverage — the passing count from
+   `uv run python -m pytest -q` must not go down.
 4. **Repository-agnostic** — never hardcode assumptions about specific repos.
 5. **Paper-agnostic** — must work for any ML paper (attention, MoE,
    diffusion, etc.).
@@ -434,9 +434,8 @@ All tools follow `Tool[Input, Output]` ABC:
 
 ## Test Status
 
-**1453 tests — 1451 passing, 2 optional-dependency skipped** (verified via
-`uv run python -m pytest -q`, 2026-08-30, Codex-like interactive CLI pass) —
-never reduce. Includes the original phase suites plus tests for the E4 eval
+**Full suite green** via `uv run python -m pytest -q` — never reduce the passing
+count. Includes the original phase suites plus tests for the E4 eval
 harness, E8 improvement loop, the platform layers (runtime,
 checkpoints, gateway policy, safety), LLM layer extensions (openai /
 anthropic / local ollama providers, streaming, resilience), P1/P2

@@ -15,12 +15,12 @@ Integrity contract:
   ``JUDGE_ERROR`` (``error_kind="judge_error"`` on the grader result), so
   evaluator malfunctions are distinguishable from — and never counted as —
   a genuine zero score against the agent. No score is ever fabricated.
-* Responses are parsed strictly (``SCORE: <float>``) and clamped to [0, 1].
+* Responses are parsed strictly (a JSON ``score`` field) and clamped to [0, 1].
 """
 
 from __future__ import annotations
 
-import re
+import json
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -32,11 +32,27 @@ Score the candidate output ONLY against the given rubric. Be skeptical; \
 reward evidence-grounded, structured, quantified reasoning and penalize \
 vagueness, unsupported claims, and missing required sections.
 
-Reply with EXACTLY one line in this format and nothing else:
-SCORE: <number between 0.0 and 1.0>
+Reply with a single JSON object: {"score": <number between 0.0 and 1.0>, "rationale": "<one sentence>"}.
 """
 
-_SCORE_RE = re.compile(r"SCORE\s*[:=]?\s*(\d+(?:\.\d+)?)")
+
+def _parse_score(content: str) -> float | None:
+    """Read ``score`` out of the judge's JSON verdict.
+
+    The provider layer has no structured-output field, so the verdict is
+    requested as JSON and parsed here. That is the only parse step; there is
+    no marker line and no regex to keep in sync with the prompt.
+    """
+    text = content.strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        obj = json.loads(text[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    value = obj.get("score") if isinstance(obj, dict) else None
+    return float(value) if isinstance(value, (int, float)) else None
 
 
 async def _judge_call(provider: Any, prompt: str, rubric: str,
@@ -53,17 +69,17 @@ async def _judge_call(provider: Any, prompt: str, rubric: str,
         ],
         temperature=0.0,
         # Reasoning-style judges spend visible budget on internal CoT
-        # before emitting the SCORE line; 2048 avoids the flash-class
-        # reasoning models exhausting the window pre-SCORE (observed
+        # before emitting the verdict; 2048 avoids the flash-class
+        # reasoning models exhausting the window pre-verdict (observed
         # truncated/unparseable replies at 1024).
         max_tokens=2048,
     )
     response = await provider.complete(request)
     content = str(getattr(response, "content", "") or "")
-    match = _SCORE_RE.search(content)
-    if match is None:
+    score = _parse_score(content)
+    if score is None:
         return 0.0, f"unparseable judge reply: {content[:200]}"
-    return min(1.0, max(0.0, float(match.group(1)))), content
+    return min(1.0, max(0.0, score)), content
 
 
 def make_judge_score_fn(
@@ -88,8 +104,8 @@ def make_judge_score_fn(
 
 
 def _last_ok(raw: str) -> bool:
-    """True when the reply carried a parseable marker line."""
-    return _SCORE_RE.search(raw) is not None
+    """True when the reply carried a parseable verdict."""
+    return _parse_score(raw) is not None
 
 
 def build_llm_quality_grader() -> Any:

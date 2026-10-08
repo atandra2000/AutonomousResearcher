@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Autonomous ML Research Engineer — Telemetry & Artifact Dataflow",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 520],
+    "views": [
+      {
+        "id": "ingest-pipeline",
+        "label": "Ingestion & Analysis",
+        "focus": ["arxiv_src", "repo_src", "parser", "vectorizer"],
+        "note": "Literature and codebases ingested into AST symbol trees and dense embeddings."
+      },
+      {
+        "id": "execution-telemetry",
+        "label": "Execution & Telemetry",
+        "focus": ["vectorizer", "sqlite_runs", "chroma_db"],
+        "note": "Subprocess telemetry, metrics, and state captured in SQLite and ChromaDB."
+      },
+      {
+        "id": "artifact-delivery",
+        "label": "Reports & Checkpoints",
+        "focus": ["sqlite_runs", "chroma_db", "reports", "checkpoints"],
+        "note": "Final research findings compiled into markdown reports and durable checkpoints."
+      }
+    ]
+  },
+  "stages": [
+    { "label": "Sources" },
+    { "label": "Ingest & Parse" },
+    { "label": "Index & Vectorize" },
+    { "label": "Store & Reconcile" },
+    { "label": "Publish & Report" }
+  ],
+  "nodes": [
+    { "id": "arxiv_src", "type": "external", "label": "arXiv & PDF", "sublabel": "papers / abstract", "stage": 0, "row": 0, "tag": "PDF API" },
+    { "id": "repo_src", "type": "external", "label": "Target Git Repo", "sublabel": "codebase tree", "stage": 0, "row": 2, "tag": "local disk" },
+    { "id": "parser", "type": "backend", "label": "AST & Paper Parser", "sublabel": "PyMuPDF · AST symbols", "stage": 1, "row": 1, "tag": "structured" },
+    { "id": "vectorizer", "type": "backend", "label": "Hybrid Indexer", "sublabel": "symbol graph + BM25", "stage": 2, "row": 1, "tag": "hybrid" },
+    { "id": "sqlite_runs", "type": "database", "label": "SQLite Run Store", "sublabel": "runs · patches · metrics", "stage": 3, "row": 0, "tag": "tables" },
+    { "id": "chroma_db", "type": "database", "label": "ChromaDB Store", "sublabel": "vector embeddings", "stage": 3, "row": 2, "tag": "vectors" },
+    { "id": "reports", "type": "database", "label": "Research Reports", "sublabel": "research_report.md", "stage": 4, "row": 0, "tag": "markdown" },
+    { "id": "checkpoints", "type": "database", "label": "LangGraph State", "sublabel": "thread snapshots", "stage": 4, "row": 2, "tag": "checkpoint" }
+  ],
+  "flows": [
+    { "id": "f-arxiv-parser", "from": "arxiv_src", "to": "parser", "label": "PDF text", "variant": "default" },
+    { "id": "f-repo-parser", "from": "repo_src", "to": "parser", "label": "AST syntax", "variant": "default" },
+    { "id": "f-parser-vec", "from": "parser", "to": "vectorizer", "label": "symbols & text", "variant": "emphasis" },
+    { "id": "f-vec-sqlite", "from": "vectorizer", "to": "sqlite_runs", "label": "task records", "variant": "emphasis" },
+    { "id": "f-vec-chroma", "from": "vectorizer", "to": "chroma_db", "label": "dense vectors", "variant": "default" },
+    { "id": "f-sqlite-report", "from": "sqlite_runs", "to": "reports", "label": "metric tables", "variant": "emphasis" },
+    { "id": "f-chroma-ckpt", "from": "chroma_db", "to": "checkpoints", "label": "state snapshot", "variant": "default" }
+  ],
+  "cards": [
+    {
+      "title": "Multi-Modal Ingestion Pipeline",
+      "dot": "cyan",
+      "items": [
+        "Extracts text, equations, and tables from PDFs alongside Python AST symbol definitions",
+        "Normalizes diverse sources into structured Pydantic v2 domain schemas"
+      ]
+    },
+    {
+      "title": "Hybrid Indexing & Memory",
+      "dot": "emerald",
+      "items": [
+        "Combines BM25 lexical keyword matching with ChromaDB dense semantic vector embeddings",
+        "Enables high-precision symbol resolution and cross-run research recall"
+      ]
+    },
+    {
+      "title": "Durable Artifact Synthesis",
+      "dot": "violet",
+      "items": [
+        "Every run commits task logs, unified patches, and evaluation metrics into SQLite",
+        "Generates comprehensive Markdown research reports with full provenance citations"
+      ]
+    }
+  ]
+}

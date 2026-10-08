@@ -1,0 +1,82 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Autonomous ML Research Engineer — Research & Self-Repair Workflow",
+    "quality_profile": "showcase",
+    "legend": { "mode": "hidden" },
+    "views": [
+      {
+        "id": "full-research-loop",
+        "label": "Research Cycle",
+        "focus": ["goal", "lit_disc", "hypo", "plan", "patch", "train", "eval", "report"],
+        "note": "Main research trajectory: literature discovery, hypothesis planning, execution, and reporting."
+      },
+      {
+        "id": "self-repair-path",
+        "label": "Self-Repair Loop",
+        "focus": ["eval", "fail_detect", "repair_strat", "patch"],
+        "note": "Autonomous self-healing: traceback diagnosis and iterative patch refinement."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "discovery", "label": "Discovery & Hypothesis" },
+    { "id": "exec", "label": "Planning & Implementation" },
+    { "id": "repair", "label": "Evaluation & Self-Repair", "variant": "exception" }
+  ],
+  "mainPath": ["goal", "lit_disc", "hypo", "plan", "patch", "train", "eval", "report"],
+  "nodes": [
+    { "id": "goal", "type": "external", "label": "Research Goal", "sublabel": "CLI / prompt", "lane": "discovery", "col": 0, "width": 116, "height": 46 },
+    { "id": "lit_disc", "type": "backend", "label": "LitDiscovery", "sublabel": "arXiv · Semantic", "lane": "discovery", "col": 1, "width": 116, "height": 46 },
+    { "id": "hypo", "type": "backend", "label": "HypothesisGen", "sublabel": "ranked claims", "lane": "discovery", "col": 2, "width": 116, "height": 46 },
+
+    { "id": "plan", "type": "backend", "label": "ExperimentPlan", "sublabel": "variables & metrics", "lane": "exec", "col": 2, "width": 116, "height": 46 },
+    { "id": "patch", "type": "backend", "label": "CodingAgent", "sublabel": "unified diff patch", "lane": "exec", "col": 3, "width": 116, "height": 46 },
+    { "id": "train", "type": "backend", "label": "ExperimentExec", "sublabel": "train subprocess", "lane": "exec", "col": 4, "width": 116, "height": 46 },
+    { "id": "eval", "type": "backend", "label": "EvaluationAgent", "sublabel": "metric compare", "lane": "exec", "col": 5, "width": 116, "height": 46 },
+
+    { "id": "fail_detect", "type": "security", "label": "FailureAnalyzer", "sublabel": "traceback parse", "lane": "repair", "col": 3, "width": 116, "height": 46 },
+    { "id": "repair_strat", "type": "security", "label": "RepairStrategist", "sublabel": "patch refinement", "lane": "repair", "col": 4, "width": 116, "height": 46 },
+    { "id": "report", "type": "database", "label": "ResearchReport", "sublabel": "markdown / json", "lane": "repair", "col": 5, "width": 116, "height": 46 }
+  ],
+  "edges": [
+    { "id": "e-goal-lit", "from": "goal", "to": "lit_disc" },
+    { "id": "e-lit-hypo", "from": "lit_disc", "to": "hypo" },
+    { "id": "e-hypo-plan", "from": "hypo", "to": "plan", "label": "claims", "variant": "emphasis" },
+    { "id": "e-plan-patch", "from": "plan", "to": "patch" },
+    { "id": "e-patch-train", "from": "patch", "to": "train", "label": "patch", "variant": "emphasis" },
+    { "id": "e-train-eval", "from": "train", "to": "eval", "label": "metrics" },
+    { "id": "e-eval-report", "from": "eval", "to": "report", "label": "success", "variant": "emphasis" },
+
+    { "id": "e-eval-fail", "from": "eval", "to": "fail_detect", "label": "error", "role": "error", "variant": "security" },
+    { "id": "e-fail-strat", "from": "fail_detect", "to": "repair_strat" },
+    { "id": "e-strat-patch", "from": "repair_strat", "to": "patch", "label": "retry", "role": "return" }
+  ],
+  "cards": [
+    {
+      "title": "Autonomous 7-Stage Pipeline",
+      "dot": "cyan",
+      "items": [
+        "StateGraph chains Literature Discovery through Hypothesis Generation to Execution",
+        "Each stage outputs structured Pydantic artifacts with full provenance tracing"
+      ]
+    },
+    {
+      "title": "Patch-First Implementation",
+      "dot": "emerald",
+      "items": [
+        "CodingAgent generates unified diffs validated by AST parsers and test suites",
+        "SafetyController gates destructive shell commands and unsafe file mutations"
+      ]
+    },
+    {
+      "title": "Self-Healing Experiment Loop",
+      "dot": "rose",
+      "items": [
+        "FailureAnalyzer categorizes runtime crashes, NaN losses, and out-of-memory errors",
+        "RepairStrategist feeds error contexts back to CodingAgent for up to 5 self-repairs"
+      ]
+    }
+  ]
+}

@@ -35,7 +35,7 @@ All fifteen phases are production-ready:
 **Goal:** Run the platform on any OpenAI-compatible provider, not just Ollama Cloud.
 
 - [x] `OpenAIProvider` (GPT-4o, o1, etc.)
-- [x] `AnthropicProvider` (Claude 3.5 Sonnet, Opus)
+- [x] `AnthropicProvider` (Messages-API wire, model pinned at config time)
 - [x] `LocalOllamaProvider` (local Ollama daemon, `http://localhost:11434`)
 - [x] Provider health checks + automatic failover
 - [x] Cost tracking per agent (token usage → USD)

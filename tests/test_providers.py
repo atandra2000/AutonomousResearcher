@@ -155,14 +155,14 @@ class TestAnthropicProvider:
         return AnthropicProvider(
             base_url="https://api.anthropic.com",
             api_key="test-key",
-            default_model="claude-3-5-sonnet-latest",
+            default_model="test-model",
             client=client,
         )
 
     @pytest.mark.asyncio
     async def test_complete_success(self):
         payload = {
-            "model": "claude-3-5-sonnet-latest",
+            "model": "test-model",
             "content": [{"type": "text", "text": "hello"}],
             "stop_reason": "end_turn",
             "usage": {"input_tokens": 3, "output_tokens": 2},
@@ -170,7 +170,7 @@ class TestAnthropicProvider:
         prov = self._make(payload)
         resp = await prov.complete(_req())
         assert resp.content == "hello"
-        assert resp.model == "claude-3-5-sonnet-latest"
+        assert resp.model == "test-model"
         assert resp.provider == "anthropic"
         assert resp.usage.total_tokens == 5
         assert resp.finish_reason == "end_turn"
@@ -197,7 +197,7 @@ class TestAnthropicProvider:
     @pytest.mark.asyncio
     async def test_complete_with_tools_parses_tool_use(self):
         payload = {
-            "model": "claude-3-5-sonnet-latest",
+            "model": "test-model",
             "content": [
                 {"type": "tool_use", "id": "toolu_1", "name": "search", "input": {"q": "x"}}
             ],

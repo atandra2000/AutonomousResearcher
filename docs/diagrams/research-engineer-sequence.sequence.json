@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Autonomous ML Research Engineer — Inter-Agent Delegation & Execution Trace",
+    "quality_profile": "showcase",
+    "legend": { "mode": "hidden" },
+    "viewBox": [960, 535],
+    "views": [
+      {
+        "id": "delegation",
+        "label": "Goal Decomposition",
+        "focus": ["user", "task_agent", "architect", "coder"],
+        "note": "User prompt enters TaskAgent, decomposed by ArchitectAgent into subtasks."
+      },
+      {
+        "id": "execution-eval",
+        "label": "Tool Execution & Eval",
+        "focus": ["coder", "gateway", "tester", "repair"],
+        "note": "CodingAgent calls ToolGateway to write diffs, TestAgent runs tests, RepairAgent intercepts errors."
+      },
+      {
+        "id": "memory-commit",
+        "label": "Memory & State Commit",
+        "focus": ["repair", "coder", "memory", "user"],
+        "note": "Refined patch passes tests, MemoryAgent commits run context to SQLite and vector store."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "User / CLI", "sublabel": "Typer REPL" },
+    { "id": "task_agent", "type": "backend", "label": "TaskAgent", "sublabel": "coordinator" },
+    { "id": "architect", "type": "backend", "label": "Architect", "sublabel": "plan & decomp" },
+    { "id": "coder", "type": "backend", "label": "CodingAgent", "sublabel": "patch gen" },
+    { "id": "gateway", "type": "messagebus", "label": "ToolGateway", "sublabel": "61 tools" },
+    { "id": "tester", "type": "backend", "label": "TestAgent", "sublabel": "pytest & ast" },
+    { "id": "repair", "type": "security", "label": "RepairAgent", "sublabel": "analyzer" },
+    { "id": "memory", "type": "database", "label": "MemoryAgent", "sublabel": "SQLite/Chroma" }
+  ],
+  "segments": [
+    { "from": 140, "to": 235, "label": "1 · Goal Decomposition" },
+    { "from": 248, "to": 360, "label": "2 · Patch & Execution" },
+    { "from": 372, "to": 460, "label": "3 · Test & Commit" }
+  ],
+  "messages": [
+    { "from": "user", "to": "task_agent", "y": 165, "label": "task \"Implement SWA\"", "variant": "emphasis" },
+    { "from": "task_agent", "to": "architect", "y": 195, "label": "decompose(goal)", "variant": "default" },
+    { "from": "architect", "to": "task_agent", "y": 225, "label": "SubtaskPlan(3)", "variant": "return" },
+
+    { "from": "task_agent", "to": "coder", "y": 258, "label": "execute_step(spec)", "variant": "emphasis" },
+    { "from": "coder", "to": "gateway", "y": 288, "label": "apply_diff(patch)", "variant": "emphasis" },
+    { "from": "gateway", "to": "coder", "y": 318, "label": "DiffResult(ok=True)", "variant": "return" },
+    { "from": "coder", "to": "tester", "y": 348, "label": "run_tests(\"swa\")", "variant": "default" },
+
+    { "from": "repair", "to": "coder", "y": 385, "label": "RepairStrategy(p2)", "variant": "return" },
+    { "from": "tester", "to": "memory", "y": 415, "label": "store_run(ok=True)", "variant": "emphasis" },
+    { "from": "task_agent", "to": "user", "y": 445, "label": "TaskResult(completed)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "task_agent", "from": 160, "to": 230, "type": "backend" },
+    { "participant": "architect", "from": 190, "to": 230, "type": "backend" },
+    { "participant": "task_agent", "from": 252, "to": 450, "type": "backend" },
+    { "participant": "coder", "from": 252, "to": 390, "type": "backend" },
+    { "participant": "gateway", "from": 282, "to": 322, "type": "messagebus" },
+    { "participant": "tester", "from": 342, "to": 370, "type": "backend" },
+    { "participant": "repair", "from": 365, "to": 390, "type": "security" },
+    { "participant": "memory", "from": 410, "to": 450, "type": "database" }
+  ],
+  "cards": [
+    {
+      "title": "Hierarchical Delegation",
+      "dot": "cyan",
+      "items": [
+        "TaskAgent coordinates with ArchitectAgent for domain-informed task decomposition"
+      ]
+    },
+    {
+      "title": "Tool Gateway Execution",
+      "dot": "emerald",
+      "items": [
+        "All writes, diffs, and AST inspections route through typed Pydantic ToolGateway"
+      ]
+    },
+    {
+      "title": "Autonomous Healing",
+      "dot": "rose",
+      "items": [
+        "Runtime test failures trigger FailureAnalyzer rather than aborting the session"
+      ]
+    }
+  ]
+}

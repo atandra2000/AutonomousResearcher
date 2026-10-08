@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autonomous ML Research Engineer — Interactive Visual Systems Guide</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f5f0;--paper:#ffffff;--ink:#142328;--muted:#53666d;--line:#d5ded9;--accent:#087f8c;--soft:#e5f4f6;--code-bg:#ebf5f7}
+@media(prefers-color-scheme:dark){:root{--bg:#0e191c;--paper:#162428;--ink:#e3eeeb;--muted:#a3b8b6;--line:#2e4449;--accent:#6fe3f2;--soft:#18363c;--code-bg:#1a2f34}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent);text-underline-offset:4px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+header,main,footer{max-width:1160px;margin:auto;padding:36px 24px}
+header{padding-top:60px;padding-bottom:20px}
+.eyebrow{font:600 12px/1.5 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(36px,5.5vw,68px);line-height:1.05;margin:12px 0 20px;font-weight:800;letter-spacing:-.03em}
+.lead{font-size:clamp(18px,2.2vw,22px);line-height:1.5;color:var(--muted);max-width:880px;margin-bottom:30px}
+.pill-bar{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}
+.pill{background:var(--paper);border:1px solid var(--line);padding:6px 14px;border-radius:999px;font:500 13px ui-monospace,monospace;color:var(--muted)}
+.pill strong{color:var(--ink)}
+.jump-nav{display:flex;flex-wrap:wrap;gap:12px;margin:30px 0;padding:16px 20px;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.jump-nav a{font-weight:600;font-size:14px;text-decoration:none;padding:6px 12px;border-radius:8px;background:var(--soft);color:var(--accent)}
+.jump-nav a:hover{opacity:.85}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin:30px 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.03)}
+.card h3{margin-top:0;font-size:20px;display:flex;align-items:center;justify-content:space-between}
+.card p{color:var(--muted);font-size:15px}
+.card-btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-size:14px;margin-top:12px}
+@media(prefers-color-scheme:dark){.card-btn{color:#0e191c}}
+.simulator-box{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:28px;margin:32px 0}
+.ctrl-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin:20px 0}
+label{font:600 13px ui-monospace,monospace;color:var(--muted);display:block;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select,input[type=number]{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.calc-result{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px}
+.calc-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.calc-stat:last-child{border-bottom:none}
+.calc-stat strong{font-family:ui-monospace,monospace;font-size:16px;color:var(--accent)}
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+th,td{padding:10px 14px;border:1px solid var(--line);text-align:left}
+th{background:var(--soft);font-weight:600}
+code{font-family:ui-monospace,monospace;font-size:13px;background:var(--code-bg);padding:2px 6px;border-radius:4px}
+footer{border-top:1px solid var(--line);margin-top:60px;font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Interactive Visual Systems Guide</div>
+  <h1>Autonomous ML Research Engineer</h1>
+  <p class="lead">
+    A codex-style CLI and multi-agent orchestration platform that closes the ML research loop: reads papers, maps codebases, designs hypotheses, writes unified diff patches, executes experiments, and generates publication-grade research reports.
+  </p>
+  <div class="pill-bar">
+    <div class="pill">Phases: <strong>15 Integrated Phases</strong></div>
+    <div class="pill">Agent Roster: <strong>20 Specialized Agents</strong></div>
+    <div class="pill">Tool Gateway: <strong>61 Typed Pydantic Tools</strong></div>
+    <div class="pill">Orchestration: <strong>LangGraph StateGraph</strong></div>
+    <div class="pill">Memory: <strong>AST Graph + ChromaDB + SQLite</strong></div>
+  </div>
+  <nav class="jump-nav">
+    <a href="#diagrams">Showcase Diagrams</a>
+    <a href="#loop-sim">Research Loop Simulator</a>
+    <a href="#budget-calc">Compute & LLM Calculator</a>
+    <a href="#specs">System Specifications</a>
+    <a href="#receipts">Verification Evidence</a>
+  </nav>
+</header>
+
+<main>
+  <section id="diagrams">
+    <div class="eyebrow">Standalone Showcase Deliverables</div>
+    <h2>Architecture & Workflow Maps</h2>
+    <p>Four standalone Archify diagrams verified with 9/9 showcase checks, 0 composition errors, and responsive multi-viewport capture.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Multi-Agent Architecture <span>🏛️</span></h3>
+        <p>Top-level coordination across 20 specialized agents: CLI REPL, ResearchOrchestrator, TaskAgent, Multi-Agent Delegation Cluster, and ToolGateway.</p>
+        <code>docs/diagrams/research-engineer-architecture.html</code>
+        <br>
+        <a class="card-btn" href="research-engineer-architecture.html">Open Diagram ↗</a>
+      </div>
+
+      <div class="card">
+        <h3>Research & Self-Repair Workflow <span>🔄</span></h3>
+        <p>End-to-end 7-stage research trajectory: literature discovery, hypothesis synthesis, unified patch implementation, execution, and self-healing repair loops.</p>
+        <code>docs/diagrams/research-engineer-workflow.html</code>
+        <br>
+        <a class="card-btn" href="research-engineer-workflow.html">Open Diagram ↗</a>
+      </div>
+
+      <div class="card">
+        <h3>Agent Delegation & Trace <span>⚡</span></h3>
+        <p>Detailed sequence trace: User prompt enters TaskAgent, decomposed by ArchitectAgent, executed via CodingAgent & ToolGateway, and committed by MemoryAgent.</p>
+        <code>docs/diagrams/research-engineer-sequence.html</code>
+        <br>
+        <a class="card-btn" href="research-engineer-sequence.html">Open Diagram ↗</a>
+      </div>
+
+      <div class="card">
+        <h3>Telemetry & Artifact Dataflow <span>📊</span></h3>
+        <p>Data lifecycle from arXiv PDFs and repository AST trees through hybrid BM25/ChromaDB indexing to SQLite run records and Markdown reports.</p>
+        <code>docs/diagrams/research-engineer-dataflow.html</code>
+        <br>
+        <a class="card-btn" href="research-engineer-dataflow.html">Open Diagram ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="loop-sim">
+    <div class="simulator-box">
+      <div class="eyebrow">Interactive Systems Experiment</div>
+      <h2>Autonomous Research Loop & Self-Repair Simulator</h2>
+      <p>Simulate how the 7-stage LangGraph workflow and Phase 14 Self-Repair engine iterate on ML hypotheses, apply unified diffs, run tests, and recover from runtime failures.</p>
+
+      <div class="ctrl-row">
+        <div>
+          <label for="max-iterations">Max Loop Iterations</label>
+          <select id="max-iterations" onchange="resetSim()">
+            <option value="3">3 Iterations (Rapid Probe)</option>
+            <option value="5" selected>5 Iterations (Standard Run)</option>
+            <option value="10">10 Iterations (Exhaustive Study)</option>
+          </select>
+        </div>
+        <div>
+          <label for="error-rate">Synthetic Bug / Failure Rate: <span id="err-rate-val">30%</span></label>
+          <input type="range" id="error-rate" min="0" max="80" step="5" value="30" oninput="document.getElementById('err-rate-val').textContent=this.value+'%';">
+        </div>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <button id="step-btn" onclick="stepResearchLoop()" style="padding:10px 18px;border-radius:8px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-weight:600;font-size:14px">Execute Next Stage</button>
+        <button onclick="resetSim()" style="padding:10px 18px;border-radius:8px;background:var(--soft);color:var(--ink);border:1px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;margin-left:10px">Reset</button>
+      </div>
+
+      <div class="calc-result">
+        <div class="calc-stat">
+          <span>Active Pipeline Stage:</span>
+          <strong id="curr-stage" style="color:var(--accent)">Idle (Ready)</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Iteration / Cycle:</span>
+          <strong id="curr-iter">0 / 5</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Validated Hypotheses / Patches:</span>
+          <strong id="patch-count">0</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Autonomous Self-Repairs Triggered:</span>
+          <strong id="repair-count">0</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Research Status:</span>
+          <strong id="loop-status">READY</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="budget-calc">
+    <div class="simulator-box">
+      <div class="eyebrow">Planning Calculator</div>
+      <h2>Autonomous Research LLM & Tool Budget Estimator</h2>
+      <p>Estimate token consumption, tool executions, and API costs across candidate model providers (Ollama Cloud, Anthropic, OpenAI) for an end-to-end research campaign.</p>
+
+      <div class="ctrl-row">
+        <div>
+          <label for="num-papers">Candidate Papers to Ingest</label>
+          <input type="number" id="num-papers" value="20" min="5" max="100" onchange="updateBudgetCalc()">
+        </div>
+        <div>
+          <label for="num-hypotheses">Hypotheses to Implement</label>
+          <input type="number" id="num-hypotheses" value="3" min="1" max="10" onchange="updateBudgetCalc()">
+        </div>
+        <div>
+          <label for="model-tier">LLM Routing Tier</label>
+          <select id="model-tier" onchange="updateBudgetCalc()">
+            <option value="ollama" selected>Ollama Cloud (glm-5.3-flash / kimi-k2.7)</option>
+            <option value="anthropic">Anthropic (Claude Sonnet 3.5 / Haiku)</option>
+            <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calc-result" id="budget-results">
+        <div class="calc-stat">
+          <span>Total Estimated LLM Tokens:</span>
+          <strong id="total-tokens">-- k Tokens</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Typed Tool Invocations:</span>
+          <strong id="tool-invocations">-- calls</strong>
+        </div>
+        <div class="calc-stat">
+          <span>Estimated API Cost:</span>
+          <strong id="est-cost" style="font-size:18px;color:var(--accent)">$--</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="specs">
+    <div class="eyebrow">Architecture Specifications</div>
+    <h2>System Parameters & Symbols</h2>
+    <table>
+      <thead>
+        <tr><th>Module / Layer</th><th>Functionality</th><th>Symbol Anchor</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Research Graph</strong></td><td>7-stage LangGraph StateGraph engine with thread persistence</td><td><code>src/research_engineer/graphs/research.py:ResearchGraph</code></td></tr>
+        <tr><td><strong>Task Agent</strong></td><td>Terminal-first coding agent with subtask delegation & reviews</td><td><code>src/research_engineer/agents/task_agent.py:TaskAgent</code></td></tr>
+        <tr><td><strong>Tool Gateway</strong></td><td>61 typed Pydantic tools with schema validation and async I/O</td><td><code>src/research_engineer/gateway/tool_gateway.py:ToolGateway</code></td></tr>
+        <tr><td><strong>Self-Repair Engine</strong></td><td>FailureAnalyzer traceback parser & RepairStrategist diff refiner</td><td><code>src/research_engineer/agents/self_repair.py:SelfRepairEngine</code></td></tr>
+        <tr><td><strong>Repository Memory</strong></td><td>AST symbol extractor, BM25 keyword index, and symbol graph</td><td><code>src/research_engineer/memory/repo_memory.py:RepositoryMemory</code></td></tr>
+        <tr><td><strong>Storage Schema</strong></td><td>SQLite tables for runs, patches, evaluations, and ChromaDB vectors</td><td><code>src/research_engineer/memory/sqlite_store.py:SQLiteStore</code></td></tr>
+        <tr><td><strong>Safety Controller</strong></td><td>Fail-closed gatekeeper for diff reviews and safe execution</td><td><code>src/research_engineer/safety/safety_controller.py:SafetyController</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="receipts">
+    <div class="eyebrow">Verification Evidence</div>
+    <h2>Delivery Receipts & Artifact Hashes</h2>
+    <p>All delivered HTML artifacts are verified with SHA-256 bindings. For details see <a href="RECEIPTS.md">RECEIPTS.md</a> and <a href="research_engineer_receipts.json">research_engineer_receipts.json</a>.</p>
+    <table>
+      <thead>
+        <tr><th>Artifact</th><th>Type</th><th>SHA-256 Hash</th><th>Byte Size</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>research-engineer-architecture.html</code></td><td>architecture</td><td><code>6b0da82452e5834940a5991dc0c9ba4d8dfd2570a504a74285fbccd90d6d2680</code></td><td>720,659 B</td></tr>
+        <tr><td><code>research-engineer-workflow.html</code></td><td>workflow</td><td><code>bc34442a3ead07a1e83e71a9414b4bf135e9b0fc4192c4c87f4fc0b64667b4fb</code></td><td>713,143 B</td></tr>
+        <tr><td><code>research-engineer-sequence.html</code></td><td>sequence</td><td><code>add3c0bfd1fb35df4f2f8d75d7e1ac3d6bcea434a0c2f8cfc3350d49434e42e2</code></td><td>713,945 B</td></tr>
+        <tr><td><code>research-engineer-dataflow.html</code></td><td>dataflow</td><td><code>2d7306a7bbcaf527279c870eb4a72d9ee144358c4e915e9d943b118c2949385c</code></td><td>713,950 B</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+  <p>Autonomous ML Research Engineer · Interactive Visual Systems Guide · Verified Archify Showcase Delivery.</p>
+</footer>
+
+<script>
+const STAGES = [
+  "Literature Discovery (arXiv / Semantic Scholar)",
+  "Knowledge Synthesis & Claim Extraction",
+  "Hypothesis Generation & Ranking",
+  "Experiment Planning (Variables & Metrics)",
+  "CodingAgent Patch Generation (Unified Diff)",
+  "Experiment Execution (Training Subprocess)",
+  "Result Analysis & Evaluation",
+  "Report Generation (research_report.md)"
+];
+
+let simState = {
+  stageIdx: 0,
+  iteration: 0,
+  maxIterations: 5,
+  patches: 0,
+  repairs: 0,
+  status: "READY"
+};
+
+function resetSim() {
+  simState.maxIterations = parseInt(document.getElementById('max-iterations').value, 10);
+  simState.stageIdx = 0;
+  simState.iteration = 0;
+  simState.patches = 0;
+  simState.repairs = 0;
+  simState.status = "READY";
+  updateSimUI();
+}
+
+function stepResearchLoop() {
+  if (simState.status === "COMPLETED") return;
+
+  if (simState.iteration >= simState.maxIterations) {
+    simState.status = "COMPLETED";
+    document.getElementById('curr-stage').textContent = "Completed Research Campaign";
+    document.getElementById('loop-status').textContent = "COMPLETED";
+    return;
+  }
+
+  const stage = STAGES[simState.stageIdx];
+  document.getElementById('curr-stage').textContent = stage;
+
+  // Check for synthetic failure on execution stage
+  const errRate = parseInt(document.getElementById('error-rate').value, 10);
+  if (simState.stageIdx === 5 && Math.random() * 100 < errRate) {
+    simState.repairs++;
+    document.getElementById('curr-stage').textContent = "Self-Repair Triggered: FailureAnalyzer diagnosing traceback...";
+    document.getElementById('loop-status').textContent = "REPAIRING";
+    updateSimUI();
+    return;
+  }
+
+  if (simState.stageIdx === 4) {
+    simState.patches++;
+  }
+
+  simState.stageIdx++;
+  if (simState.stageIdx >= STAGES.length) {
+    simState.stageIdx = 2; // Loop back to hypothesis generation for next iteration
+    simState.iteration++;
+  }
+
+  simState.status = simState.iteration >= simState.maxIterations ? "COMPLETED" : "RUNNING";
+  updateSimUI();
+}
+
+function updateSimUI() {
+  document.getElementById('curr-iter').textContent = simState.iteration + ' / ' + simState.maxIterations;
+  document.getElementById('patch-count').textContent = simState.patches;
+  document.getElementById('repair-count').textContent = simState.repairs;
+  document.getElementById('loop-status').textContent = simState.status;
+}
+
+function updateBudgetCalc() {
+  const papers = parseInt(document.getElementById('num-papers').value, 10);
+  const hypotheses = parseInt(document.getElementById('num-hypotheses').value, 10);
+  const tier = document.getElementById('model-tier').value;
+
+  // Rough estimation formula:
+  // Ingest: 4k tokens/paper
+  // Planning & Code: 15k tokens/hypothesis
+  // Eval & Report: 20k tokens
+  const totalTokens = (papers * 4000) + (hypotheses * 15000) + 20000;
+  const toolCalls = (papers * 2) + (hypotheses * 12) + 8;
+
+  let costPerMillion = 0.5; // Ollama default flash tier
+  if (tier === 'anthropic') costPerMillion = 3.0;
+  if (tier === 'openai') costPerMillion = 2.5;
+
+  const cost = (totalTokens / 1000000) * costPerMillion;
+
+  document.getElementById('total-tokens').textContent = (totalTokens / 1000).toFixed(1) + ' k Tokens';
+  document.getElementById('tool-invocations').textContent = toolCalls + ' calls';
+  document.getElementById('est-cost').textContent = '$' + cost.toFixed(3);
+}
+
+updateBudgetCalc();
+resetSim();
+</script>
+</body>
+</html>
