@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "project": "AutonomousMLResearchEngineer",
+  "generated_at": "2026-09-05T12:00:00Z",
+  "receipts": [
+    {
+      "diagram": "research-engineer-architecture",
+      "type": "architecture",
+      "output_html": "research-engineer-architecture.html",
+      "spec_json": "research-engineer-architecture.architecture.json",
+      "artifact_sha256": "6b0da82452e5834940a5991dc0c9ba4d8dfd2570a504a74285fbccd90d6d2680",
+      "artifact_bytes": 720659,
+      "spec_sha256": "80a4464bbfe3d6f0fa181e5e20f96214c6170e37d23cdc066c96f376af0ecd51",
+      "spec_bytes": 5176,
+      "showcase_checks": "9/9",
+      "composition_errors": 0,
+      "composition_warnings": 0,
+      "browser_evidence": "passed"
+    },
+    {
+      "diagram": "research-engineer-workflow",
+      "type": "workflow",
+      "output_html": "research-engineer-workflow.html",
+      "spec_json": "research-engineer-workflow.workflow.json",
+      "artifact_sha256": "bc34442a3ead07a1e83e71a9414b4bf135e9b0fc4192c4c87f4fc0b64667b4fb",
+      "artifact_bytes": 713143,
+      "spec_sha256": "0974c3a92b037bbd16123b1f491bd19a5263e37af1dff987da8ac89981148cf3",
+      "spec_bytes": 4477,
+      "showcase_checks": "9/9",
+      "composition_errors": 0,
+      "composition_warnings": 0,
+      "browser_evidence": "passed"
+    },
+    {
+      "diagram": "research-engineer-sequence",
+      "type": "sequence",
+      "output_html": "research-engineer-sequence.html",
+      "spec_json": "research-engineer-sequence.sequence.json",
+      "artifact_sha256": "add3c0bfd1fb35df4f2f8d75d7e1ac3d6bcea434a0c2f8cfc3350d49434e42e2",
+      "artifact_bytes": 713945,
+      "spec_sha256": "2c173a5be6363a8400cc69970c7ebb7df47059657ae87aabb673c0eb729942f7",
+      "spec_bytes": 4361,
+      "showcase_checks": "9/9",
+      "composition_errors": 0,
+      "composition_warnings": 0,
+      "browser_evidence": "passed"
+    },
+    {
+      "diagram": "research-engineer-dataflow",
+      "type": "dataflow",
+      "output_html": "research-engineer-dataflow.html",
+      "spec_json": "research-engineer-dataflow.dataflow.json",
+      "artifact_sha256": "2d7306a7bbcaf527279c870eb4a72d9ee144358c4e915e9d943b118c2949385c",
+      "artifact_bytes": 713950,
+      "spec_sha256": "540a8f1315043e369edb6a4feb0b48fc1870db17b7b54b97cbb98234750b2fbe",
+      "spec_bytes": 4136,
+      "showcase_checks": "9/9",
+      "composition_errors": 0,
+      "composition_warnings": 0,
+      "browser_evidence": "passed"
+    }
+  ]
+}

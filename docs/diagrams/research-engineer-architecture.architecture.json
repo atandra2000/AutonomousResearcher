@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Autonomous ML Research Engineer — Multi-Agent System Architecture",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "agent-orchestration",
+        "label": "Agent Orchestration",
+        "focus": ["cli_repl", "orchestrator", "task_agent", "delegation_cluster", "repair_engine", "llm_router"],
+        "note": "Top-level orchestration across 20 specialized agents with provider-agnostic LLM routing."
+      },
+      {
+        "id": "runtime-memory",
+        "label": "Runtime & Memory",
+        "focus": ["tool_gateway", "repo_memory", "sqlite_store", "safety_ctrl"],
+        "note": "Execution substrate: 61 typed Pydantic tools, AST symbol graph, and persistent SQLite/ChromaDB state."
+      }
+    ]
+  },
+  "components": [
+    { "id": "cli_repl", "type": "frontend", "label": "Typer CLI & REPL", "sublabel": "research-engineer chat", "tag": "terminal UX", "pos": [40, 150], "size": [140, 70] },
+    { "id": "orchestrator", "type": "backend", "label": "ResearchOrchestrator", "sublabel": "LangGraph StateGraph", "tag": "7 stages", "pos": [220, 150], "size": [160, 70] },
+    { "id": "task_agent", "type": "backend", "label": "TaskAgent", "sublabel": "terminal-first coder", "tag": "Phase 11", "pos": [420, 150], "size": [150, 70] },
+    { "id": "delegation_cluster", "type": "backend", "label": "Multi-Agent Cluster", "sublabel": "Architect · Reviewer · Test", "tag": "Phase 13", "pos": [610, 150], "size": [170, 70] },
+    { "id": "repair_engine", "type": "security", "label": "Self-Repair Engine", "sublabel": "Analyzer & Strategist", "tag": "Phase 14", "pos": [820, 150], "size": [160, 70] },
+    { "id": "llm_router", "type": "cloud", "label": "ModelRouter", "sublabel": "Ollama Cloud · OpenAI", "tag": "Phase 10", "pos": [1020, 150], "size": [150, 70] },
+
+    { "id": "tool_gateway", "type": "messagebus", "label": "ToolGateway", "sublabel": "61 typed Pydantic tools", "tag": "async I/O", "pos": [220, 360], "size": [160, 75] },
+    { "id": "repo_memory", "type": "database", "label": "Repository Memory", "sublabel": "symbol graph + BM25", "tag": "AST parser", "pos": [420, 360], "size": [150, 75] },
+    { "id": "sqlite_store", "type": "database", "label": "SQLite & Vector DB", "sublabel": "runs · checkpoints · ChromaDB", "tag": "persistence", "pos": [610, 360], "size": [170, 75] },
+    { "id": "safety_ctrl", "type": "security", "label": "SafetyController", "sublabel": "patch review · read-only gate", "tag": "fail-closed", "pos": [820, 360], "size": [160, 75] }
+  ],
+  "boundaries": [
+    { "label": "Agentic Orchestration (src/research_engineer/agents/)", "kind": "region", "wraps": ["orchestrator", "task_agent", "delegation_cluster", "repair_engine"] },
+    { "label": "Runtime & Storage Substrate (src/research_engineer/runtime/ & memory/)", "kind": "region", "wraps": ["tool_gateway", "repo_memory", "sqlite_store", "safety_ctrl"] }
+  ],
+  "connections": [
+    { "id": "c-cli-orch", "from": "cli_repl", "to": "orchestrator", "label": "user goal", "labelAt": [200, 234] },
+    { "id": "c-orch-task", "from": "orchestrator", "to": "task_agent", "label": "plan steps", "labelAt": [400, 234] },
+    { "id": "c-task-deleg", "from": "task_agent", "to": "delegation_cluster", "label": "delegate", "labelAt": [590, 234] },
+    { "id": "c-deleg-repair", "from": "delegation_cluster", "to": "repair_engine", "label": "on failure", "labelAt": [800, 234] },
+    { "id": "c-repair-router", "from": "repair_engine", "to": "llm_router", "label": "repair prompt", "labelAt": [1000, 234] },
+    { "id": "c-orch-gateway", "from": "orchestrator", "to": "tool_gateway", "fromSide": "bottom", "toSide": "top", "label": "typed I/O", "labelAt": [300, 290] },
+    { "id": "c-task-memory", "from": "task_agent", "to": "repo_memory", "fromSide": "bottom", "toSide": "top", "label": "hybrid search", "labelAt": [495, 290] },
+    { "id": "c-deleg-sqlite", "from": "delegation_cluster", "to": "sqlite_store", "fromSide": "bottom", "toSide": "top", "label": "run metrics", "labelAt": [695, 290] },
+    { "id": "c-repair-safety", "from": "repair_engine", "to": "safety_ctrl", "fromSide": "bottom", "toSide": "top", "label": "gate check", "labelAt": [900, 290] }
+  ],
+  "cards": [
+    {
+      "title": "Autonomous 15-Phase Architecture",
+      "dot": "cyan",
+      "items": [
+        "20 specialized agents coordinate over 61 typed tools with full async/await contracts",
+        "Decomposes complex ML engineering into literature, planning, patch-first code, and eval"
+      ]
+    },
+    {
+      "title": "LangGraph State Machine",
+      "dot": "emerald",
+      "items": [
+        "7-stage research workflow executed as a durable, checkpointed StateGraph",
+        "Supports resumable execution threads and PostgreSQL/SQLite state snapshots"
+      ]
+    },
+    {
+      "title": "Self-Repair & Memory Substrate",
+      "dot": "violet",
+      "items": [
+        "FailureAnalyzer and RepairStrategist diagnose tracebacks and generate targeted repair patches",
+        "Hybrid retrieval combining AST symbol graphs, BM25 indexing, and ChromaDB embeddings"
+      ]
+    }
+  ]
+}

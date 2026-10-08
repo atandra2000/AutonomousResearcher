@@ -45,7 +45,7 @@ class TestAnthropicStreamParser:
         return AnthropicProvider(
             base_url="https://api.anthropic.com",
             api_key="test-key",
-            default_model="claude-3-5-sonnet-latest",
+            default_model="test-model",
         )
 
     def test_parse_text_delta(self) -> None:
@@ -123,14 +123,14 @@ class TestAnthropicStream:
         return AnthropicProvider(
             base_url="https://api.anthropic.com",
             api_key="test-key",
-            default_model="claude-3-5-sonnet-latest",
+            default_model="test-model",
             client=client,
         )
 
     @pytest.mark.asyncio
     async def test_stream_yields_text_deltas(self) -> None:
         body = (
-            'event: message_start\ndata: {"type":"message_start","message":{"model":"claude-3-5-sonnet-latest"}}\n\n'
+            'event: message_start\ndata: {"type":"message_start","message":{"model":"test-model"}}\n\n'
             'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"text"}}\n\n'
             'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}\n\n'
             'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" world"}}\n\n'
@@ -157,7 +157,7 @@ class TestAnthropicStream:
         # When request.stream is False, stream() delegates to complete(), which
         # expects a non-streamed JSON payload.
         payload = {
-            "model": "claude-3-5-sonnet-latest",
+            "model": "test-model",
             "content": [{"type": "text", "text": "hello"}],
             "stop_reason": "end_turn",
             "usage": {"input_tokens": 3, "output_tokens": 2},
@@ -166,7 +166,7 @@ class TestAnthropicStream:
         prov = AnthropicProvider(
             base_url="https://api.anthropic.com",
             api_key="test-key",
-            default_model="claude-3-5-sonnet-latest",
+            default_model="test-model",
             client=client,
         )
         req = _req().model_copy(update={"stream": False})

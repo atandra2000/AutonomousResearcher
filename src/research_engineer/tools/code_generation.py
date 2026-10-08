@@ -486,9 +486,9 @@ class CodeGenerationTool(Tool[CodeGenerationInput, CodeGenerationOutput]):
                     LLMMessage(
                         role=LLMRole.SYSTEM,
                         content=(
-                            "You are an expert ML engineer. Return ONLY the "
+                            "You are an expert ML engineer. Output the "
                             "complete final content of the target file as raw "
-                            "source code. No markdown fences, no commentary."
+                            "source code — no markdown fences, no commentary."
                         ),
                     ),
                     LLMMessage(role=LLMRole.USER, content=prompt),

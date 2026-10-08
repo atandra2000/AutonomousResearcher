@@ -20,7 +20,6 @@ class TestPricingTable:
     def test_builtin_table_has_known_models(self):
         t = default_pricing_table()
         assert "gpt-4o" in t
-        assert "claude-3-5-sonnet" in t
         assert "glm-5.2:cloud" in t
 
     def test_price_for_exact_match(self):

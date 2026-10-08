@@ -140,8 +140,7 @@ scripts/ci_mypy.sh           # mypy — fails only on NEW errors vs baseline
 
 ## Docs
 
-See [`docs/`](docs/) — architecture, CLI reference, LLM integration,
-benchmark methodology, and the LangGraph framework-stack notes.
+See [`docs/`](docs/) — explore the [Interactive Visual Systems Guide](docs/diagrams/research_engineer_visual_guide.html) and architecture maps, CLI reference, LLM integration, benchmark methodology, and LangGraph framework-stack notes.
 
 ## License
 

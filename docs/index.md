@@ -7,6 +7,10 @@ Complete documentation for the **Autonomous ML Research Engineer** v0.9.0 — a 
 > sub-apps · **1451 passing, 2 optional-dependency skipped** · plus the E4 agent-eval harness,
 > E8 continuous-improvement loop, and P1/P2 research benchmarks.
 
+## Visual Systems Atlas
+
+Explore the [Interactive Visual Systems Guide](diagrams/research_engineer_visual_guide.html): four verified Archify showcase maps ([Multi-Agent System Architecture](diagrams/research-engineer-architecture.html), [Research & Self-Repair Workflow](diagrams/research-engineer-workflow.html), [Agent Delegation & Trace](diagrams/research-engineer-sequence.html), [Telemetry & Artifact Dataflow](diagrams/research-engineer-dataflow.html)), interactive Research Loop simulator, LLM & Tool compute budget calculator, and [verification receipts](diagrams/RECEIPTS.md).
+
 ---
 
 ## Start here

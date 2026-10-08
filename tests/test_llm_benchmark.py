@@ -370,7 +370,7 @@ def test_llm_quality_grader_through_extra_graders(tmp_path: Path) -> None:
     class JudgeProvider:
         async def complete(self, request: Any) -> Any:
             seen_prompts.append(request.messages[1].content)
-            return _Reply("SCORE: 0.9")
+            return _Reply('{"score": 0.9, "rationale": "excellent"}')
 
     from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
@@ -439,7 +439,7 @@ def test_extra_grader_receives_per_criterion_config(tmp_path: Path) -> None:
     class JudgeProvider:
         async def complete(self, request: Any) -> Any:
             seen_rubrics.append(request.messages[1].content)
-            return _Reply("SCORE: 0.8")
+            return _Reply('{"score": 0.8, "rationale": "good"}')
 
     from research_engineer.benchmark.llm_judge import make_judge_score_fn
 
